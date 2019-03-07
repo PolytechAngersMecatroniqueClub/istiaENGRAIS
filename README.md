@@ -35,3 +35,9 @@ Now, inside this folder you'll find 2 ROS nodes, "robot_control" and "robot_keyb
 
 - Robot Control: "roscore" in a terminal, "rosrun robot_control robot_control" in another, and visualize everything in "rviz". Don't forget to have gazebo running in another terminal.
 - Robot Keyboard Control: "roscore" in a terminal, "rosrun robot_control robot_keyboard_control" in another. Don't forget to have gazebo running in another terminal.
+
+
+# Common changes
+Some common changes to same of these files are:
+
+- In "~/.gazebo/models/project_robot_sphere/model.sdf", you can change the minimum or maximum angle searching for "min_angle" and "max_angle", and the number of sensor rays searching for "samples"
