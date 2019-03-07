@@ -15,7 +15,7 @@ In order to use all the modules, some settings must be done.
 To use the model, put the "project_robot_sphere" folder inside "~/.gazebo/models", no additional settings required.
 
 ## Plugin
-To use the plugin, place the "robot_plugin" folder at any place. Then, every time you wish to use the plubin, you must open a terminal in "~/<path>/robot_plugin/build", run the command "make" (and run the command again if you change any file inside "~/<path>/robot_plugin" and run the command "export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:~/<path>robot_plugin/build". My recommendation is to put the last command inside ".bashrc" in the home folder. Finally, use "gazebo ../robot.world" command to run gazebo. To summarize: 
+To use the plugin, place the "robot_plugin" folder at any place. Then, every time you wish to use the plubin, you must open a terminal in " ~/<path>/robot_plugin/build", run the command "make" (and run the command again if you change any file inside " ~/<path>/robot_plugin" and run the command "export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:~/<path>robot_plugin/build". My recommendation is to put the last command inside ".bashrc" in the home folder. Finally, use "gazebo ../robot.world" command to run gazebo. To summarize: 
 1) Open a terminal inside HOME (control++shift+t) and run "gedit .bashrc".
 2) Paste the command "export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:~/<path>/robot_plugin/build" as the last line in the file, then save and close the file reopen the terminal.
 3) Navigate to the plugin "cd ~/<path>/robot_plugin/build".
