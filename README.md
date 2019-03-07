@@ -12,24 +12,24 @@ This project contains 3 parts, where 2 of them are related to simulation, and 1 
 In order to use all the modules, some settings must be done.
 
 ## Model
-To use the model, put the "project_robot_sphere" folder inside "~/.gazebo/models", no additional settings required.
+To use the model, put the "project_robot_sphere" folder inside "/home/username/.gazebo/models", no additional settings required.
 
 ## Plugin
-To use the plugin, place the "robot_plugin" folder at any place. Then, every time you wish to use the plubin, you must open a terminal in "~/<folder_path>/robot_plugin/build", run the command "make" (and run the command again if you change any file inside "~/<folder_path>/robot_plugin" and run the command "export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:~/<folder_path>robot_plugin/build". My recommendation is to put the last command inside ".bashrc" in the home folder. Finally, use "gazebo ../robot.world" command to run gazebo. To summarize: 
+To use the plugin, place the "robot_plugin" folder at any place. Then, every time you wish to use the plubin, you must open a terminal in "/home/username/<folder_path>/robot_plugin/build", run the command "make" (and run the command again if you change any file inside "/home/username/<folder_path>/robot_plugin" and run the command "export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}: /home/username/<folder_path>robot_plugin/build". My recommendation is to put the last command inside ".bashrc" in the home folder. Finally, use "gazebo ../robot.world" command to run gazebo. To summarize: 
 1) Open a terminal inside HOME (control++shift+t) and run "gedit .bashrc".
-2) Paste the command "export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:~/<folder_path>/robot_plugin/build" as the last line in the file, then save and close the file reopen the terminal.
-3) Navigate to the plugin "cd ~/<folder_path>/robot_plugin/build".
+2) Paste the command "export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}: /home/username/<folder_path>/robot_plugin/build" as the last line in the file, then save and close the file reopen the terminal.
+3) Navigate to the plugin "cd /home/username/<folder_path>/robot_plugin/build".
 4) Use "make" command.
 5) Use "gazebo --verbose ../robot.world" to run gazebo with the plugin.
 6) To test if everything is fine, run "rosnode list" and check if "/gazebo_node" is on the list. Then run "rostopic list" and check if "/robot/sensor/data", "/robot/sensor/vel_cmd", "/robot/wheels/instant_vel_cmd" and "/robot/wheels/vel_cmd" are there.
 
 ## Control
-To use the robot control, I recommend to run "gedit .bashrc" in home folder, and add the line "source ~/<catkin_path>/devel/setup.bash" as the last line of the file. Then, save and close the file and reopen terminal. Now that your catkin workspace is the ROS default, navigate to "cd ~/<catkin_path>/src" and paste the "robot_control" folder there. Then, open a terminal in "~/<catkin_path>" and run "catkin_make". To summarize:
+To use the robot control, I recommend to run "gedit .bashrc" in home folder, and add the line "source /home/username/<catkin_path>/devel/setup.bash" as the last line of the file. Then, save and close the file and reopen terminal. Now that your catkin workspace is the ROS default, navigate to "cd /home/username/<catkin_path>/src" and paste the "robot_control" folder there. Then, open a terminal in "/home/username/<catkin_path>" and run "catkin_make". To summarize:
 
 1) Open "gedit .bashrc" in home folder.
-2) Paste "source ~/<catkin_path>/devel/setup.bash" as the last line in the file, save and close it then reopen the terminal.
-3) Paste the "robot_control" folder inside "~/<catkin_path>/src".
-4) Open a terminal in "~/<catkin_path>" and run "catkin_make".
+2) Paste "source /home/username/<catkin_path>/devel/setup.bash" as the last line in the file, save and close it then reopen the terminal.
+3) Paste the "robot_control" folder inside "/home/username/<catkin_path>/src".
+4) Open a terminal in "/home/username/<catkin_path>" and run "catkin_make".
 
 Now, inside this folder you'll find 2 ROS nodes, "robot_control" and "robot_keyboard_control", the first used to get the sensor's data comming from gazebo, and calculate lines, and the latter used to move the robot inside gazebo using the keyboard's arrows (warning: moving the robot is a bit awkward). To use them, run:
 
