@@ -199,10 +199,8 @@ include_directories(
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
 
-add_executable(robot_control src/robot_control.cpp)
+add_executable(robot_control src/robot_control.cpp src/include/Point.cpp src/include/Utility.cpp src/include/Model.cpp src/include/Pearl.cpp)
 target_link_libraries(robot_control ${catkin_LIBRARIES})
-add_dependencies(robot_control robot_control_gencpp)
 
 add_executable(robot_keyboard_control src/robot_keyboard_control.cpp)
 target_link_libraries(robot_keyboard_control ${catkin_LIBRARIES})
-add_dependencies(robot_keyboard_control robot_control_gencpp)
