@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <launch>
     <!-- to set the GAZEBO_MODEL_PATH environment variable to be able to find our cutom models -->
-    <env name="GAZEBO_MODEL_PATH" value="/home/remy/UABOX/catkin_ws/src/engrais/engrais_gazebo/models/" />
+    <env name="GAZEBO_MODEL_PATH" value="$(find engrais_gazebo)/models/" />
 
     <!-- starting the world with our difficult configuration -->
     <include file="$(find gazebo_ros)/launch/empty_world.launch">
