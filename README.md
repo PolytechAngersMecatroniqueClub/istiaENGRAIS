@@ -10,13 +10,32 @@ This project contains 3 parts, where 2 of them are related to simulation, and 1 
 
 # How to use ?
 start the gazebo easy simulation : 
+
+----
     roslaunch engrais_gazebo engrais_easy.launch
+----
+
 start the gazebo complicated simulation : 
+
+----
     roslaunch engrais_gazebo engrais_complicated.launch
+----
+
 start rviz : 
+
+----
     roslaunch engrais_gazebo rviz.launch
+----
+
 start the keyboard controller node
+
+----
     rosrun engrais_control robot_keyboard_control
+----
+
 start the pearl associated node
+
+----
     rosrun engrais_control robot_control
+----
 
