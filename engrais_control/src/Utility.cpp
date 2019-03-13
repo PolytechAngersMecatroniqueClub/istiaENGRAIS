@@ -25,5 +25,26 @@ void Utility::printInColor(const std::string msg, const int color){ //Checked
     if(color == RED || color == BLUE)
         std::cout << std::endl;
 }
+// -------------------------------------------------------------------------------------------------------
+std::vector<int> Utility::randomDiffVector(const int min, const int max, const int size){
+    std::vector<int> r(size, -1);
+    int randNum;
+
+    if((max-min+1) < size){
+        Utility::printInColor("Wrong usage of randomDiffVector, max - min + 1 should be greater than the size", RED);
+        return r;
+    }
+
+    for(int i = 0; i < size; i++){
+        while(true){
+            randNum = Utility::randomInt(min, max);
+            if(findIndex(r, randNum) == MIN_INT)
+                break;
+        }
+        r[i] = randNum;
+    }
+
+    return r;
+}
 
 //********************************************************************************************************

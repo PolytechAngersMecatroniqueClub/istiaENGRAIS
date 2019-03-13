@@ -24,6 +24,7 @@ add_executable(robot_control robot_control.cpp
     src/Utility.cpp
     src/Model.cpp
     src/Pearl.cpp
+    src/Ruby.cpp
 )
 target_link_libraries(robot_control ${catkin_LIBRARIES})
 

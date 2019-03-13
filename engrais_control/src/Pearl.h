@@ -59,7 +59,7 @@ class Pearl{
         //------------------------------------------------------------------------------------------------
         double removeTinyModels(const int = INITIAL_NUMBER_OF_POINTS); //Checked 
         //------------------------------------------------------------------------------------------------
-        double calculateAdditionalEnergy(); //Checked
+        double calculateAdditionalEnergy() const; //Checked
         //------------------------------------------------------------------------------------------------
         double expansionEnergy(); //Checked
 
@@ -78,7 +78,7 @@ class Pearl{
 		//------------------------------------------------------------------------------------------------
         void fuseEqualModels(); //Checked
         //------------------------------------------------------------------------------------------------
-        std::pair<Model, Model> findBestModels(); //Checked
+        std::pair<Model, Model> findBestModels() const; //Checked
         //------------------------------------------------------------------------------------------------
         friend std::ostream & operator << (std::ostream &, const Pearl &); //Checked
 

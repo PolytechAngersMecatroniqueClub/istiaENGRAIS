@@ -166,7 +166,7 @@ double Pearl::removeTinyModels(const int minimum_points) { //Checked
     return gainEnergy;
 }
 //--------------------------------------------------------------------------------------------------------
-double Pearl::calculateAdditionalEnergy() { //Checked 
+double Pearl::calculateAdditionalEnergy() const { //Checked 
     double addEnergy = 0;
     for(int model = 0; model < models.size(); model++)
         for(int model2 = model + 1; model2 < models.size(); model2++)
@@ -231,18 +231,40 @@ void Pearl::fuseEqualModels(){ //Checked
     }
 }
 //--------------------------------------------------------------------------------------------------------
-std::pair<Model, Model> Pearl::findBestModels(){ //Checked
+std::pair<Model, Model> Pearl::findBestModels() const { //Checked
     std::pair<Model, Model> ret; //first = left, second = right
     
-    for(Model m : models){
-        if(ret.first.getPointsSize() < m.getPointsSize() && m.getIntercept() >= 0){
-            ret.first = m;
+    double fitness;
+    double bestFitnessLeft = MAX_DBL;
+    double bestFitnessRight = MAX_DBL;
+
+    int bestLeftPos = MIN_INT;
+    int bestRightPos = MIN_INT; //MAX_INT
+    
+    for(int model = 0; model < models.size(); model++){
+        fitness = models[model].getPointsSize() != 0 ? (fabs(models[model].getIntercept()) + models[model].getEnergy()) / (double)(models[model].getPointsSize()) : MAX_DBL;
+
+        if(fitness < bestFitnessLeft && models[model].getIntercept() >= 0){
+            bestFitnessLeft = fitness;
+            bestLeftPos = model;
         }
-        if(ret.second.getPointsSize() < m.getPointsSize() && m.getIntercept() < 0){
-            ret.second = m;
+        else if(fitness < bestFitnessRight && models[model].getIntercept() < 0){
+            bestFitnessRight = fitness;
+            bestRightPos = model;
         }
     }
-    return ret;
+
+    if(bestLeftPos != MIN_INT){
+        ret.first = models[bestLeftPos];
+        ret.first.clearPoints();
+        ret.first.setEnergy(0);
+    }
+
+    if(bestRightPos != MIN_INT){
+        ret.second = models[bestRightPos];
+        ret.second.clearPoints();
+        ret.second.setEnergy(0);
+    }
 }
 // -------------------------------------------------------------------------------------------------------
 std::ostream & operator << (std::ostream &out, const Pearl &p){ //Checked

@@ -21,8 +21,6 @@ class Model{
         Model(double = MAX_DBL , double = MAX_DBL , double = MAX_DBL); //Checked
         //------------------------------------------------------------------------------------------------
         Model(const std::vector<Point> & ); //Checked
-        //------------------------------------------------------------------------------------------------
-        ~Model();
 
 
         //------------------------------------------------------------------------------------------------
@@ -68,9 +66,9 @@ class Model{
 inline Model::Model(double aa, double bb, double e) : a(aa), b(bb), energy(e) {} //Checked
 //--------------------------------------------------------------------------------------------------------
 inline Model::Model(const std::vector<Point> & vec) : a(MAX_DBL), b(MAX_DBL), energy(MAX_DBL) { findBestModel(vec); } //Checked
-//--------------------------------------------------------------------------------------------------------
-inline Model::~Model() { pointsInModel.clear(); }
 
+
+//--------------------------------------------------------------------------------------------------------
 inline double Model::getSlope() const { return this->a; } //Checked
 //--------------------------------------------------------------------------------------------------------
 inline double Model::getIntercept() const { return this->b; } //Checked
