@@ -1,6 +1,6 @@
 //********************************************************************************************************
 #include "2_RubyGenetic.h"
-using namespace std;
+
 
 //--------------------------------------------------------------------------------------------------------
 void RubyGenetic::populateOutliers(const sensor_msgs::LaserScan & msg){
@@ -32,7 +32,7 @@ std::pair<Model, Model> RubyGenetic::findLines() {
         std::vector<Model> bestModels;
         std::vector<Point> bestOutliers;
 
-        for (int it = 0; it < 1; it++) {
+        for (int it = 0; it < this->maxNumberOfIterations; it++) {
             searchModels(50);
 
             redistributePoints();

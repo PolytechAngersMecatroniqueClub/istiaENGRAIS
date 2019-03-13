@@ -18,8 +18,6 @@
 
 #include "src/Ruby_Versions/1_RubyPure.h"
 #include "src/Ruby_Versions/2_RubyGenetic.h"
-#include "src/Ruby_Versions/3_RubyGeneticPosNeg.h"
-
 
 using namespace std;
 	
@@ -27,7 +25,6 @@ Pearl pearl;
 
 RubyPure rubyPure;
 RubyGenetic rubyGen;
-RubyGeneticPosNeg rubyGenPN;
 
 
 ros::Subscriber sub;
@@ -126,13 +123,15 @@ void sendLine(const pair<Model, Model> & models) {
     
     pubLineNode.publish(line_list);
 }
+
+
 //--------------------------------------------------------------------------------------------------------
 void OnRosMsg(const sensor_msgs::LaserScan & msg){
     auto start = std::chrono::system_clock::now();
 
-    rubyGenPN.populateOutliers(msg);
+    rubyGen.populateOutliers(msg);
 
-    pair <Model, Model> lines = rubyGenPN.findLines();
+    pair <Model, Model> lines = rubyGen.findLines();
 
     sendLine(lines);
 
