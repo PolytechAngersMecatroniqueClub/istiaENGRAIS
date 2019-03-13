@@ -1,53 +1,25 @@
 //********************************************************************************************************
-#include "Ruby.h"
+#include "2_RubyGenetic.h"
 using namespace std;
+
 //--------------------------------------------------------------------------------------------------------
-void Ruby::populateOutliers(const sensor_msgs::LaserScan & msg){
+void RubyGenetic::populateOutliers(const sensor_msgs::LaserScan & msg){
     double angle = msg.angle_min;
 
-    nOfPositivePoints = nOfNegativePoints = 0;
-
-    std::vector<Point> negativePoints;
     outliers.clear();
 
     for(int i = 0; i < models.size(); i++)
         models[i].clearPoints();
 
     for(int i = 0; i < msg.ranges.size(); i++){
-        if(!isinf(msg.ranges[i])){
-            Point p(msg.ranges[i] * cos(angle), msg.ranges[i] * sin(angle));
-
-            if(p.getY() >= 0){
-                outliers.push_back(p);
-                nOfPositivePoints++;
-            }
-            else{
-                negativePoints.push_back(p);
-                nOfNegativePoints++;
-            }
-        }
+        if(!isinf(msg.ranges[i]))
+            outliers.push_back(Point(msg.ranges[i] * cos(angle), msg.ranges[i] * sin(angle)));
         
         angle += msg.angle_increment;
     }
-
-    outliers.insert(outliers.end(), negativePoints.begin(), negativePoints.end());
-    /*double angle = msg.angle_min;
-
-    outliers.clear();
-
-    for(int i = 0; i < models.size(); i++)
-        models[i].clearPoints();
-
-    for(int i = 0; i < msg.ranges.size(); i++){
-        if(!isinf(msg.ranges[i])){
-            outliers.push_back(Point(msg.ranges[i] * cos(angle), msg.ranges[i] * sin(angle)));
-        }
-        
-        angle += msg.angle_increment;
-    }*/
 }
 //--------------------------------------------------------------------------------------------------------
-std::pair<Model, Model> Ruby::findLines() { 
+std::pair<Model, Model> RubyGenetic::findLines() { 
     std::pair<Model, Model> bestPair;
     std::pair<Model, Model> tempPair;
 
@@ -104,10 +76,10 @@ std::pair<Model, Model> Ruby::findLines() {
 //########################################################################################################
 
 //--------------------------------------------------------------------------------------------------------
-std::vector<Point> Ruby::randomPointsInField(const int num, const int initialOutlierPos, const int finalOutlierPos) { 
+std::vector<Point> RubyGenetic::randomPointsInField(const int num) { 
     std::vector<Point> ret(num);
 
-    std::vector<int> randomNums = Utility::randomDiffVector(initialOutlierPos, finalOutlierPos, num);
+    std::vector<int> randomNums = Utility::randomDiffVector(0, outliers.size() - 1, num);
 
     int pos = 0;
     for(int i : randomNums){
@@ -116,53 +88,20 @@ std::vector<Point> Ruby::randomPointsInField(const int num, const int initialOut
     }
     
     return ret;
-
-    /*vector<Point> ret(num);
-
-    vector<int> randomNums = Utility::randomDiffVector(0, outliers.size() - 1, num);
-
-    int pos = 0;
-    for(int i : randomNums){
-        ret[pos] = outliers[i];
-        pos++;
-    }
-    
-    return ret;*/
 }
 //--------------------------------------------------------------------------------------------------------
-void Ruby::searchModels(const int nbOfModels) { 
-    int numbOfLeftModels = nbOfModels / 2;
-    int numbOfRightModels = nbOfModels - numbOfLeftModels;
-
+void RubyGenetic::searchModels(const int nbOfModels) { 
     if(outliers.size() < INITIAL_NUMBER_OF_POINTS)
-        return;
-
-    if(nOfPositivePoints < INITIAL_NUMBER_OF_POINTS)
-        numbOfLeftModels = 0;
-
-    if(nOfNegativePoints < INITIAL_NUMBER_OF_POINTS)
-        numbOfRightModels = 0;
-
-
-    for(int modelPosNum = 0; modelPosNum < numbOfLeftModels; modelPosNum++){
-        models.push_back(Model::linearFit(randomPointsInField(INITIAL_NUMBER_OF_POINTS, 0, nOfPositivePoints - 1)));
-    }
-    for(int modelNegNum = 0; modelNegNum < numbOfRightModels; modelNegNum++){
-        models.push_back(Model::linearFit(randomPointsInField(INITIAL_NUMBER_OF_POINTS, nOfPositivePoints, outliers.size() - 1)));
-    }
-    
-    /*for(int modelNum = 0; modelNum < nbOfModels; modelNum++){
-        if(outliers.size() < INITIAL_NUMBER_OF_POINTS)
             return;
-
+        
+    for(int modelNum = 0; modelNum < nbOfModels; modelNum++)
         models.push_back(Model::linearFit(randomPointsInField(INITIAL_NUMBER_OF_POINTS)));
-    }*/
 }
 
 //########################################################################################################
 
 //--------------------------------------------------------------------------------------------------------
-double Ruby::calculateEnergy(){ 
+double RubyGenetic::calculateEnergy(){ 
     double energy = 0;
 
     for(Model m : models)
@@ -173,7 +112,7 @@ double Ruby::calculateEnergy(){
     return energy;
 }
 //--------------------------------------------------------------------------------------------------------
-double Ruby::meanNumbOfPoints(){ 
+double RubyGenetic::meanNumbOfPoints(){ 
     double mean = 0;
     for(Model m : models)
         mean += m.getPointsSize();
@@ -184,7 +123,7 @@ double Ruby::meanNumbOfPoints(){
 //########################################################################################################
 
 //--------------------------------------------------------------------------------------------------------
-std::vector<int> Ruby::countParallelLines(){
+std::vector<int> RubyGenetic::countParallelLines(){
     std::vector<int> ret(models.size(), 1);
 
     for(int model = 0; model < models.size(); model++){
@@ -199,7 +138,7 @@ std::vector<int> Ruby::countParallelLines(){
     return ret;
 }
 //--------------------------------------------------------------------------------------------------------
-std::pair<Model, Model> Ruby::eraseBadModels() { 
+std::pair<Model, Model> RubyGenetic::eraseBadModels() { 
     std::pair<Model, Model> ret; //first = left, second = right
     
     double fitness;
@@ -268,8 +207,8 @@ std::pair<Model, Model> Ruby::eraseBadModels() {
 
 //########################################################################################################
 
-std::ostream & operator << (std::ostream &out, const Ruby &r){ 
-    out << "Ruby: [\n\tModels: Vector {\n";
+std::ostream & operator << (std::ostream &out, const RubyGenetic &r){ 
+    out << "RubyGenetic: [\n\tModels: Vector {\n";
     for(int m = 0; m < r.models.size(); m++){
         out << "\t\t[" << m << "]: Model [ a: " << r.models[m].getSlope() << ", b: " << r.models[m].getIntercept() << ", energy: " << r.models[m].getEnergy();
         out << "\n\t\t\tPoints: Vector {";

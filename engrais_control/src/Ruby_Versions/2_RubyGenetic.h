@@ -1,25 +1,21 @@
 //********************************************************************************************************
-#ifndef RUBY_H
-#define RUBY_H
+#ifndef RUBY_GENETIC
+#define RUBY_GENETIC
 
 #include <iostream>
 #include <vector>
 #include <algorithm>
 #include <sensor_msgs/LaserScan.h>
 
-#include "Point.h"
-#include "Utility.h"
-#include "Model.h"
-#include "Pearl.h"
+#include "../Point.h"
+#include "../Utility.h"
+#include "../Model.h"
+#include "../Pearl.h"
 
-class Ruby : public Pearl{
-	public:
-		int nOfPositivePoints = 0;
-		int nOfNegativePoints = 0;
-
+class RubyGenetic : public Pearl{
 	public:
 		//------------------------------------------------------------------------------------------------
-		Ruby();
+		RubyGenetic();
 		//------------------------------------------------------------------------------------------------
 		void populateOutliers(const sensor_msgs::LaserScan & );
 		//------------------------------------------------------------------------------------------------
@@ -29,7 +25,7 @@ class Ruby : public Pearl{
 		//################################################################################################
 
 		//------------------------------------------------------------------------------------------------
-		std::vector<Point> randomPointsInField(const int , const int = 0, const int = 0);
+		std::vector<Point> randomPointsInField(const int);
 		//------------------------------------------------------------------------------------------------
 		void searchModels(const int );
 
@@ -49,10 +45,10 @@ class Ruby : public Pearl{
 
 		//################################################################################################
 		
-		friend std::ostream & operator << (std::ostream &out, const Ruby &r);
+		friend std::ostream & operator << (std::ostream &out, const RubyGenetic &r);
 };
 
-inline Ruby::Ruby(){}
+inline RubyGenetic::RubyGenetic(){}
 
 #endif
 //********************************************************************************************************

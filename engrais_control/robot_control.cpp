@@ -15,15 +15,26 @@
 #include "src/Utility.h"
 #include "src/Model.h"
 #include "src/Pearl.h"
-#include "src/Ruby.h"
+
+#include "src/Ruby_Versions/1_RubyPure.h"
+#include "src/Ruby_Versions/2_RubyGenetic.h"
+#include "src/Ruby_Versions/3_RubyGeneticPosNeg.h"
+
 
 using namespace std;
+	
+Pearl pearl;
 
-Ruby ruby;
+RubyPure rubyPure;
+RubyGenetic rubyGen;
+RubyGeneticPosNeg rubyGenPN;
+
 
 ros::Subscriber sub;
 ros::Publisher pubLineNode;
 
+double totalExecutionTime = 0;
+int timesExecuted = 0;
 
 //--------------------------------------------------------------------------------------------------------
 void prepareLineList(visualization_msgs::Marker & line_list, const double botX, const double topX, const double botY, const double topY) { 
@@ -119,9 +130,9 @@ void sendLine(const pair<Model, Model> & models) {
 void OnRosMsg(const sensor_msgs::LaserScan & msg){
     auto start = std::chrono::system_clock::now();
 
-    ruby.populateOutliers(msg);
+    rubyGenPN.populateOutliers(msg);
 
-    pair <Model, Model> lines = ruby.findLines();
+    pair <Model, Model> lines = rubyGenPN.findLines();
 
     sendLine(lines);
 
@@ -129,6 +140,9 @@ void OnRosMsg(const sensor_msgs::LaserScan & msg){
 
     std::chrono::duration<double> elapsed_seconds = end - start;
     std::time_t end_time = std::chrono::system_clock::to_time_t(end);
+
+    totalExecutionTime += elapsed_seconds.count();
+    timesExecuted++;
 
     std::cout << "finished computation at " << std::ctime(&end_time) << "elapsed time: " << elapsed_seconds.count() << "s\n";
 }
@@ -157,6 +171,8 @@ int main(int argc, char **argv){
 
 
     ROS_INFO("Code ended without errors");
+
+    Utility::printInColor("Total Execution Calculations Time: " + to_string(totalExecutionTime) + "s, running " + to_string(timesExecuted) + " times.\nMean Calculation time: " + to_string(totalExecutionTime/(double)timesExecuted), BLUE);
     return 0;
 }
 

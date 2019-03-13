@@ -1,6 +1,7 @@
 //********************************************************************************************************
 #include "Pearl.h"
 
+
 //--------------------------------------------------------------------------------------------------------
 void Pearl::populateOutliers(const sensor_msgs::LaserScan & msg){ //Checked 
     double angle = msg.angle_min;
@@ -44,7 +45,7 @@ std::pair<Model, Model> Pearl::findLines() { //Checked
 	            reEstimation();
 
 	            eraseBadModels(this->worstEnergySizeRatioAllowed);
-	            
+
 	            fuseEqualModels();
 
 	            newEnergy = expansionEnergy();
@@ -265,6 +266,8 @@ std::pair<Model, Model> Pearl::findBestModels() const { //Checked
         ret.second.clearPoints();
         ret.second.setEnergy(0);
     }
+
+    return ret;
 }
 // -------------------------------------------------------------------------------------------------------
 std::ostream & operator << (std::ostream &out, const Pearl &p){ //Checked
