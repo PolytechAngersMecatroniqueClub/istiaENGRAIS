@@ -211,7 +211,9 @@ void Pearl::eraseBadModels(const double threshRatio) { //Checked
 
 void Pearl::fuseEqualModels(){ //Checked 
     for(int model = 0; model < models.size(); model++){
-        for(int model2 = model + 1; model2 < models.size() && model2 != model && model >= 0 && model2 >= 0; model2++){
+        for(int model2 = model + 1; model2 < models.size() && model >= 0; model2++){
+            if(model2 == model || model2 < 0)
+                continue;
         
             if(fabs(models[model].getSlope() - models[model2].getSlope()) < this->sameSlopeThreshold && fabs(models[model].getIntercept() - models[model2].getIntercept()) < this->sameInterceptThreshold){
                 int model1Size = models[model].getPointsSize();

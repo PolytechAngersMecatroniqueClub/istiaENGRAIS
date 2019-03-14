@@ -7,12 +7,18 @@
 #include <algorithm>
 #include <sensor_msgs/LaserScan.h>
 
+
 #include "../Point.h"
+#include "../WeightedPoint.h"
 #include "../Utility.h"
 #include "../Model.h"
 #include "../Pearl.h"
 
 class RubyGenetic : public Pearl{
+	public:
+		std::vector<Point> initialField;
+		double distanceToBeConsideredSamePoint = 0.1; 
+
 	public:
 		//------------------------------------------------------------------------------------------------
 		RubyGenetic();
@@ -20,6 +26,8 @@ class RubyGenetic : public Pearl{
 		void populateOutliers(const sensor_msgs::LaserScan & );
 		//------------------------------------------------------------------------------------------------
 		std::pair<Model, Model> findLines();
+		//------------------------------------------------------------------------------------------------
+		std::vector<Point> getInitialField() const ;
 
 	public:
 		//################################################################################################
@@ -49,6 +57,8 @@ class RubyGenetic : public Pearl{
 };
 
 inline RubyGenetic::RubyGenetic(){}
+
+inline std::vector<Point> RubyGenetic::getInitialField() const { return initialField; }
 
 #endif
 //********************************************************************************************************

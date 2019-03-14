@@ -23,12 +23,12 @@ class Pearl{
         int divideFactor = 2*INITIAL_NUMBER_OF_POINTS;     
 
         double outlierPenalty = 3;
-        double distanceForOutlier = 1.5;
+        double distanceForOutlier = 0.5;
 
         double additionalEnergyLambda = 4;
         double additionalEnergyCsi = 3;
 
-        double sameSlopeThreshold = 0.3;
+        double sameSlopeThreshold = 0.2;
         double sameInterceptThreshold = 0.5;
 
         double worstEnergySizeRatioAllowed = 0.7;

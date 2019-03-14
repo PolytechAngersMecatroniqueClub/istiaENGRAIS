@@ -21,12 +21,12 @@ include_directories(
 
 add_executable(robot_control robot_control.cpp
     src/Point.cpp
+    src/WeightedPoint.cpp
     src/Utility.cpp
     src/Model.cpp
     src/Pearl.cpp
     src/Ruby_Versions/1_RubyPure.cpp
     src/Ruby_Versions/2_RubyGenetic.cpp
-    src/Ruby_Versions/3_RubyGeneticPosNeg.cpp
 )
 target_link_libraries(robot_control ${catkin_LIBRARIES})
 

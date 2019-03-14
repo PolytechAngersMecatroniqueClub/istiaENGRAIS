@@ -1,55 +1,48 @@
 //********************************************************************************************************
-#ifndef POINT_H
-#define POINT_H
+#ifndef WEIGHTED_POINT_H
+#define WEIGHTED_POINT_H
 
 #include <iostream>
+#include <cmath>
 
-#define MIN_DBL -1e+20
-#define MAX_DBL 1e+20
+#include "Point.h"
 
-#define MIN_INT -10000000
-#define MAX_INT 10000000
-
-class Point{ 
+class WeightedPoint : public Point{ 
 
     private: 
-        double x = MIN_DBL;
-        double y = MIN_DBL;
+        int pointWeight = 1;
 
     public:
         //------------------------------------------------------------------------------------------------
-        Point(); //Checked
+        WeightedPoint(); //Checked
         //------------------------------------------------------------------------------------------------
-        Point(const double , const double ); //Checked
-
-
+        WeightedPoint(const double , const double ); //Checked
         //------------------------------------------------------------------------------------------------
-        double getX() const; //Checked
-        //------------------------------------------------------------------------------------------------
-        double getY() const; //Checked
-
+        WeightedPoint(const double , const double, const int ); //Checked
+        
 
         //------------------------------------------------------------------------------------------------
-        friend std::ostream & operator << (std::ostream & , const Point & ); //Checked
+        int getWeight(); //Checked
+        //------------------------------------------------------------------------------------------------
+        bool fusePoint(WeightedPoint p, double limitDist); //Checked
+        //------------------------------------------------------------------------------------------------
+        friend std::ostream & operator << (std::ostream & , const WeightedPoint & ); //Checked
 
 };
 
 
 //--------------------------------------------------------------------------------------------------------
-inline Point::Point() {} //Checked
+inline WeightedPoint::WeightedPoint(){} //Checked
 //--------------------------------------------------------------------------------------------------------
-inline Point::Point(const double xx, const double yy) : x(xx), y(yy) {} //Checked
+inline WeightedPoint::WeightedPoint(const double xx, const double yy) : Point(xx, yy) {} //Checked
+//--------------------------------------------------------------------------------------------------------
+inline WeightedPoint::WeightedPoint(const double xx, const double yy, const int w) : Point(xx, yy), pointWeight(w) {} //Checked
 
 
+inline int WeightedPoint::getWeight() { return this->pointWeight; } //Checked
 //--------------------------------------------------------------------------------------------------------
-inline double Point::getX() const {return this->x;} //Checked
-//--------------------------------------------------------------------------------------------------------
-inline double Point::getY() const {return this->y;} //Checked
-
-
-//--------------------------------------------------------------------------------------------------------
-inline std::ostream & operator << (std::ostream &out, const Point &p){ //Checked
-    out << "Point: [ x: " << p.x << ", y: " << p.y << " ]";  
+inline std::ostream & operator << (std::ostream &out, const WeightedPoint &p){ //Checked
+    out << "WeightedPoint: [ x: " << p.getX() << ", y: " << p.getY() << ", Weight: " << p.pointWeight << " ]";  
     return out; 
 }
 

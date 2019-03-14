@@ -3,7 +3,7 @@
 
 
 //--------------------------------------------------------------------------------------------------------
-void RubyGenetic::populateOutliers(const sensor_msgs::LaserScan & msg){
+void RubyGenetic::populateOutliers(const sensor_msgs::LaserScan & msg){ 
     double angle = msg.angle_min;
 
     outliers.clear();
@@ -11,12 +11,27 @@ void RubyGenetic::populateOutliers(const sensor_msgs::LaserScan & msg){
     for(int i = 0; i < models.size(); i++)
         models[i].clearPoints();
 
+    WeightedPoint fusedPoint;
+
     for(int i = 0; i < msg.ranges.size(); i++){
-        if(!isinf(msg.ranges[i]))
-            outliers.push_back(Point(msg.ranges[i] * cos(angle), msg.ranges[i] * sin(angle)));
-        
+        if(!isinf(msg.ranges[i])){
+            if(fusedPoint.getX() == MIN_DBL && fusedPoint.getY() == MIN_DBL){
+                fusedPoint = WeightedPoint(msg.ranges[i] * cos(angle), msg.ranges[i] * sin(angle));
+                continue;
+            }
+
+            WeightedPoint p(msg.ranges[i] * cos(angle), msg.ranges[i] * sin(angle));
+
+            if(!fusedPoint.fusePoint(p, this->distanceToBeConsideredSamePoint)){
+                outliers.push_back(fusedPoint);
+                fusedPoint = p;
+            }
+        }
         angle += msg.angle_increment;
     }
+
+    outliers.push_back(fusedPoint);
+    initialField = outliers;
 }
 //--------------------------------------------------------------------------------------------------------
 std::pair<Model, Model> RubyGenetic::findLines() { 
@@ -33,15 +48,17 @@ std::pair<Model, Model> RubyGenetic::findLines() {
         std::vector<Point> bestOutliers;
 
         for (int it = 0; it < this->maxNumberOfIterations; it++) {
-            searchModels(50);
+            searchModels(40);
 
             redistributePoints();
 
             fuseEqualModels();
 
-            numberMinOfPoints = std::max((int)(meanNumbOfPoints() * 0.8), 2);
+            numberMinOfPoints = std::max((int)(meanNumbOfPoints() * 0.8), 3);
+            /*Utility::printInColor("Before Remove Tiny Models", RED);
+            std::cout << (*this) << std::endl;*/
 
-            removeTinyModels(numberMinOfPoints);
+            removeTinyModels(3);
 
             reEstimation();
             
@@ -123,7 +140,7 @@ double RubyGenetic::meanNumbOfPoints(){
 //########################################################################################################
 
 //--------------------------------------------------------------------------------------------------------
-std::vector<int> RubyGenetic::countParallelLines(){
+std::vector<int> RubyGenetic::countParallelLines(){ 
     std::vector<int> ret(models.size(), 1);
 
     for(int model = 0; model < models.size(); model++){
@@ -149,9 +166,12 @@ std::pair<Model, Model> RubyGenetic::eraseBadModels() {
     int bestRightPos = MIN_INT; //MAX_INT
 
     std::vector<int> parrallel = countParallelLines();
+
+    /*Utility::printInColor("Before Erase Bad Models", RED);
+    std::cout << (*this) << std::endl;*/
     
     for(int model = 0; model < models.size(); model++){
-        fitness = models[model].getPointsSize() != 0 ? (fabs(models[model].getIntercept()) + models[model].getEnergy()) / (double)(models[model].getPointsSize()*parrallel[model]) : MAX_DBL;
+        fitness = models[model].getPointsSize() != 0 ? (models[model].getIntercept()*models[model].getIntercept() + models[model].getEnergy()*10) / (double)(models[model].getPointsSize()*models[model].getPointsSize()*parrallel[model]) : MAX_DBL;
 
         if(fitness < bestFitnessLeft && models[model].getIntercept() >= 0){
             bestFitnessLeft = fitness;
@@ -189,6 +209,9 @@ std::pair<Model, Model> RubyGenetic::eraseBadModels() {
             model--;
         }
     }
+
+    /*Utility::printInColor("After Erase Bad Models", RED);
+    std::cout << (*this) << std::endl;*/
 
     if(bestLeftPos != MIN_INT){
         ret.first = models[bestLeftPos];

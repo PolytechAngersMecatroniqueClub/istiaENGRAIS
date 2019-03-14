@@ -12,6 +12,7 @@
 #include <visualization_msgs/Marker.h>
 
 #include "src/Point.h"
+#include "src/WeightedPoint.h"
 #include "src/Utility.h"
 #include "src/Model.h"
 #include "src/Pearl.h"
@@ -34,24 +35,39 @@ double totalExecutionTime = 0;
 int timesExecuted = 0;
 
 //--------------------------------------------------------------------------------------------------------
-void prepareLineList(visualization_msgs::Marker & line_list, const double botX, const double topX, const double botY, const double topY) { 
-        line_list.header.frame_id = "/map";
-        line_list.header.stamp = ros::Time::now();
-        line_list.ns = "points_and_lines";
-        line_list.action = visualization_msgs::Marker::ADD;
-        line_list.pose.orientation.w = 1.0;
+void preparePointsAndLines(visualization_msgs::Marker & line_list, visualization_msgs::Marker & points, const double botX, const double topX, const double botY, const double topY) { 
+        points.header.frame_id = line_list.header.frame_id = "map";
+        points.header.stamp = line_list.header.stamp = ros::Time::now();
+        points.ns = line_list.ns = "points_and_lines";
+        points.action = line_list.action = visualization_msgs::Marker::ADD;
+        points.pose.orientation.w = line_list.pose.orientation.w = 1.0;
 
 
         line_list.id = 0;
+        points.id = 1;
+
+
+        points.type = visualization_msgs::Marker::POINTS;
         line_list.type = visualization_msgs::Marker::LINE_LIST;
+
+		// POINTS markers use x and y scale for width/height respectively
+		points.scale.x = 0.05;
+		points.scale.y = 0.05;
+
+		// Points are blue
+		points.color.r = 1.0;
+		points.color.a = 1.0;
+
 
         // LINE_STRIP/LINE_LIST markers use only the x component of scale, for the line width
         line_list.scale.x = 0.1;
 
 
         // Line list is red
-        line_list.color.r = 1.0;
+        line_list.color.b = 1.0;
         line_list.color.a = 1.0;
+
+
         geometry_msgs::Point p;
 
         p.x = botX;
@@ -90,11 +106,19 @@ void prepareLineList(visualization_msgs::Marker & line_list, const double botX, 
 }
 //--------------------------------------------------------------------------------------------------------
 void sendLine(const pair<Model, Model> & models) { 
-    visualization_msgs::Marker line_list;
+    visualization_msgs::Marker line_list, points;
     geometry_msgs::Point p;
 
-    prepareLineList(line_list, 0.6, -1.2, 0.8, -0.8);
-    
+    preparePointsAndLines(line_list, points, 0.6, -1.2, 0.8, -0.8);
+
+    for(Point point : rubyGen.getInitialField()){
+		p.x = point.getX();
+		p.y = point.getY();
+		p.z = 0.1;
+
+		points.points.push_back(p);
+    }
+
     if(models.first.getSlope() != MAX_DBL && models.first.getIntercept() != MAX_DBL){
 	    p.x = 0;
 	    p.y = models.first.getSlope()*0 + models.first.getIntercept();
@@ -119,9 +143,16 @@ void sendLine(const pair<Model, Model> & models) {
 	    p.y = models.second.getSlope()*p.x + models.second.getIntercept();
 
 	    line_list.points.push_back(p);
-   }
-    
+   	}
+
+    pubLineNode.publish(points);
     pubLineNode.publish(line_list);
+
+    /*if(fabs(models.first.getIntercept()) > 3)
+    	exit(1);
+
+    if(fabs(models.second.getIntercept()) > 3)
+    	exit(1);*/
 }
 
 
@@ -172,6 +203,7 @@ int main(int argc, char **argv){
     ROS_INFO("Code ended without errors");
 
     Utility::printInColor("Total Execution Calculations Time: " + to_string(totalExecutionTime) + "s, running " + to_string(timesExecuted) + " times.\nMean Calculation time: " + to_string(totalExecutionTime/(double)timesExecuted), BLUE);
+    
     return 0;
 }
 
