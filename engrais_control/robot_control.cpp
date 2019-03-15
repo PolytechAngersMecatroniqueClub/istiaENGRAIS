@@ -19,6 +19,7 @@
 
 #include "src/Ruby_Versions/1_RubyPure.h"
 #include "src/Ruby_Versions/2_RubyGenetic.h"
+#include "src/Ruby_Versions/3_RubyGeneticOnePoint.h"
 
 using namespace std;
 	
@@ -26,7 +27,7 @@ Pearl pearl;
 
 RubyPure rubyPure;
 RubyGenetic rubyGen;
-
+RubyGeneticOnePoint rubyGenOP;
 
 ros::Subscriber sub;
 ros::Publisher pubLineNode;
@@ -111,7 +112,7 @@ void sendLine(const pair<Model, Model> & models) {
 
     preparePointsAndLines(line_list, points, 0.6, -1.2, 0.8, -0.8);
 
-    for(Point point : rubyGen.getInitialField()){
+    for(Point point : rubyGenOP.getInitialField()){
 		p.x = point.getX();
 		p.y = point.getY();
 		p.z = 0.1;

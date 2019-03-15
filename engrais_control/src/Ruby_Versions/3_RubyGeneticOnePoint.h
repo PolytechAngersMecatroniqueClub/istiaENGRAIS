@@ -1,6 +1,6 @@
 //********************************************************************************************************
-#ifndef RUBY_GENETIC
-#define RUBY_GENETIC
+#ifndef RUBY_GENETIC_ONE_POINT
+#define RUBY_GENETIC_ONE_POINT
 
 #include <iostream>
 #include <vector>
@@ -9,19 +9,22 @@
 
 
 #include "../Point.h"
+#include "../WeightedPoint.h"
 #include "../Utility.h"
 #include "../Model.h"
 #include "../Pearl.h"
 
-class RubyGenetic : public Pearl{
+class RubyGeneticOnePoint : public Pearl{
 	public:
+		std::vector<Point> initialField;
 
+		double distanceToBeConsideredSamePoint = 0.1; 
 		double numberOfModelsToSearch = 40;
 		double factorToDeletePoints = 0.8;
 
 	public:
 		//------------------------------------------------------------------------------------------------
-		RubyGenetic();
+		RubyGeneticOnePoint();
 		//------------------------------------------------------------------------------------------------
 		void populateOutliers(const sensor_msgs::LaserScan & );
 		//------------------------------------------------------------------------------------------------
@@ -53,10 +56,12 @@ class RubyGenetic : public Pearl{
 
 		//################################################################################################
 		
-		friend std::ostream & operator << (std::ostream &out, const RubyGenetic &r);
+		friend std::ostream & operator << (std::ostream &out, const RubyGeneticOnePoint &r);
 };
 
-inline RubyGenetic::RubyGenetic(){}
+inline RubyGeneticOnePoint::RubyGeneticOnePoint(){}
+
+inline std::vector<Point> RubyGeneticOnePoint::getInitialField() const { return initialField; }
 
 #endif
 //********************************************************************************************************
