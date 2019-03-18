@@ -38,6 +38,8 @@ class Model{
         //------------------------------------------------------------------------------------------------
         double getEnergy() const; //Checked
         //------------------------------------------------------------------------------------------------
+        bool isPopulated() const;
+        //------------------------------------------------------------------------------------------------
         std::vector<Point> getPointsInModel() const; //Checked
         //------------------------------------------------------------------------------------------------
         std::vector<Point>::const_iterator getPointsVecBegin() const; //Checked
@@ -74,6 +76,12 @@ inline double Model::getSlope() const { return this->a; } //Checked
 inline double Model::getIntercept() const { return this->b; } //Checked
 //--------------------------------------------------------------------------------------------------------
 inline double Model::getEnergy() const { return this->energy; } //Checked
+//--------------------------------------------------------------------------------------------------------
+inline bool Model::isPopulated() const { 
+    if(a == MAX_DBL && b == MAX_DBL)
+        return false;
+    return true;
+}
 //--------------------------------------------------------------------------------------------------------
 inline std::vector<Point> Model::getPointsInModel() const { return this->pointsInModel; } //Checked
 //--------------------------------------------------------------------------------------------------------

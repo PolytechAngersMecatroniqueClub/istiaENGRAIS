@@ -34,3 +34,10 @@ target_link_libraries(robot_control ${catkin_LIBRARIES})
 add_executable(robot_keyboard_control robot_keyboard_control.cpp
 )
 target_link_libraries(robot_keyboard_control ${catkin_LIBRARIES})
+
+add_executable(robot_move robot_move.cpp
+    src/Point.cpp
+    src/Utility.cpp
+    src/Model.cpp
+)
+target_link_libraries(robot_move ${catkin_LIBRARIES})

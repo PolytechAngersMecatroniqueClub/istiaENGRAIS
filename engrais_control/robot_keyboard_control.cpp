@@ -15,11 +15,13 @@ using namespace std;
 
 bool sai = false;
 
+
+//--------------------------------------------------------------------------------------------------------
 void RestoreKeyboardBlocking(struct termios *initial_settings){
     tcsetattr(0, TCSANOW, initial_settings);
     return;
 }
-
+//--------------------------------------------------------------------------------------------------------
 void SetKeyboardNonBlock(struct termios *initial_settings){
     struct termios new_settings;
     tcgetattr(0,initial_settings);
@@ -31,10 +33,8 @@ void SetKeyboardNonBlock(struct termios *initial_settings){
     new_settings.c_cc[VTIME] = 0;
     tcsetattr(0, TCSANOW, &new_settings);
 }
-
-
-int main(int argc, char **argv)
-{
+//--------------------------------------------------------------------------------------------------------
+int main(int argc, char **argv){
 	char c;
 
 	ros::init(argc, argv, "robot_keyboard_control_node");
@@ -47,7 +47,7 @@ int main(int argc, char **argv)
 	SetKeyboardNonBlock(&term_settings);
 
 	
-	ros::Publisher pub = node.advertise<std_msgs::Float32MultiArray>("/robot/wheels/instant_vel_cmd", 100);
+	ros::Publisher pub = node.advertise<std_msgs::Float32MultiArray>("/robot_engrais/wheels/instant_vel_cmd", 100);
 
 	std_msgs::Float32MultiArray cmd;
 	cmd.data.clear();

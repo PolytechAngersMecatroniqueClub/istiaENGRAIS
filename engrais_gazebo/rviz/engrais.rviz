@@ -94,7 +94,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /visualization_marker
+      Marker Topic: /robot_engrais/lines
       Name: Marker
       Namespaces:
         points_and_lines: true

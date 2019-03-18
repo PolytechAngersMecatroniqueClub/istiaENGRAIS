@@ -15,8 +15,8 @@
 #include "src/WeightedPoint.h"
 #include "src/Utility.h"
 #include "src/Model.h"
-#include "src/Pearl.h"
 
+#include "src/Pearl.h"
 #include "src/Ruby_Versions/1_RubyPure.h"
 #include "src/Ruby_Versions/2_RubyGenetic.h"
 #include "src/Ruby_Versions/3_RubyGeneticOnePoint.h"
@@ -24,7 +24,6 @@
 using namespace std;
 	
 Pearl pearl;
-
 RubyPure rubyPure;
 RubyGenetic rubyGen;
 RubyGeneticOnePoint rubyGenOP;
@@ -161,9 +160,9 @@ void sendLine(const pair<Model, Model> & models) {
 void OnRosMsg(const sensor_msgs::LaserScan & msg){
     auto start = std::chrono::system_clock::now();
 
-    rubyGen.populateOutliers(msg);
+    rubyGenOP.populateOutliers(msg);
 
-    pair <Model, Model> lines = rubyGen.findLines();
+    pair <Model, Model> lines = rubyGenOP.findLines();
 
     sendLine(lines);
 
@@ -188,7 +187,74 @@ int main(int argc, char **argv){
     ros::NodeHandle node;
 
     sub = node.subscribe("/robot_engrais/lidar_engrais/data", 10, OnRosMsg); // Subscribe to a given topic, in this case "/robot/sensor/data".
-    pubLineNode = node.advertise<visualization_msgs::Marker>("visualization_marker", 10);
+    pubLineNode = node.advertise<visualization_msgs::Marker>("/robot_engrais/lines", 10);
+
+    /*ros::Rate loop_rate(1);
+
+    while(ros::ok()){
+        visualization_msgs::Marker line_list, points;
+        geometry_msgs::Point p;
+        p.z = 0;
+
+        preparePointsAndLines(line_list, points, 0.6, -1.2, 0.8, -0.8);
+
+        p.x = -20;
+        p.y = 5*p.x + 3;
+
+        line_list.points.push_back(p);
+
+        p.x = 20;
+        p.y = 5*p.x + 3;
+
+        line_list.points.push_back(p);
+
+
+
+
+        p.x = -20;
+        p.y = -5*p.x + 3;
+
+        line_list.points.push_back(p);
+
+        p.x = 20;
+        p.y = -5*p.x + 3;
+
+        line_list.points.push_back(p);
+
+
+
+
+        p.x = -20;
+        p.y = 2*p.x + 9;
+
+        line_list.points.push_back(p);
+
+        p.x = 20;
+        p.y = 2*p.x + 9;
+
+        line_list.points.push_back(p);
+
+
+
+        p.x = -20;
+        p.y = -2*p.x + 9;
+
+        line_list.points.push_back(p);
+
+        p.x = 20;
+        p.y = -2*p.x + 9;
+
+        line_list.points.push_back(p);
+        
+
+        pubLineNode.publish(line_list);
+
+        loop_rate.sleep();
+    }
+
+    sub.shutdown();
+    pubLineNode.shutdown();
+    ros::shutdown();*/
 
 
     ROS_INFO("Code Running, press Control+C to end");

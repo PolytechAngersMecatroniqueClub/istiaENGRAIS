@@ -148,7 +148,7 @@ void RobotPlugin::CreateCommunication(){ // Set nodes to receive commands throug
 
     // Create a topic name
 
-    wheels_topic_name  = "~/" + this->robot->GetName() + "/" + "wheels" + "/vel_cmd"; // ~/robot/wheel_2/vel_cmd
+    wheels_topic_name  = "~/" + this->robot->GetName() + "/" + "wheels" + "/vel_cmd"; // ~/robot/wheel/vel_cmd
     sensor_topic_name = "~/" + this->robot->GetName() + "/" + this->sensor->GetName() + "/vel_cmd"; // ~/robot/sensor/vel_cmd
 
     this->wheels_sub = this->node->Subscribe(wheels_topic_name, &RobotPlugin::OnWheelsMsg, this);
