@@ -64,9 +64,13 @@ common::PID RobotPlugin::SetPID(const physics::ModelPtr& _model, const physics::
 
 // ---------------------------------------------------------------------------------------------------
 
-void RobotPlugin::SetPID(const physics::ModelPtr& _model, const physics::JointPtr& _joint, common::PID & pid){
+common::PID RobotPlugin::SetPID(const physics::ModelPtr& _model, const physics::JointPtr& _joint, const physics::JointPtr& _joint2, double P, double I, double D){
+    // Setup a P-controller, with a gain of P
+    common::PID pid = common::PID(P, I, D);     
+    // Apply the P-controller to the joint.
     _model->GetJointController()->SetVelocityPID(_joint->GetScopedName(), pid);
-    return;
+    _model->GetJointController()->SetVelocityPID(_joint2->GetScopedName(), pid);
+    return pid;
 }
 
 // ---------------------------------------------------------------------------------------------------
@@ -89,29 +93,11 @@ void RobotPlugin::InitializeModel(const physics::ModelPtr& _model, const sdf::El
 
     ROS_INFO("Models and Joints found successfully");
 
-    //Set PIDs for each joint as P-Controller 0.1
-    this->sensor_pid = SetPID(this->sensor, this->sensor_top, 0.1);
-    this->wheels_pid = SetPID(this->robot, this->wheel_1, 0.1);
-    SetPID(this->robot, this->wheel_2, this->wheels_pid);
+    //Set PIDs for each joint as P-Controller 10
+    this->sensor_pid = SetPID(this->sensor, this->sensor_top, 10.0);
+    this->wheels_pid = SetPID(this->robot, this->wheel_1, this->wheel_2, 10.0);
 
     ROS_INFO("PIDs have been set for each joint");
-
-    // Default to zero velocity
-    double sensor_angular_velocity = 0.0;
-    double wheel_1_angular_velocity = 0.0;
-    double wheel_2_angular_velocity = 0.0;
-
-    // Check that the velocity element exists, then read the value
-    if (_sdf->HasElement("sensor_velocity"))
-        sensor_angular_velocity = _sdf->Get<double>("sensor_velocity");
-    if (_sdf->HasElement("wheel_1_velocity"))
-        wheel_1_angular_velocity = _sdf->Get<double>("wheel_1_velocity");
-    if (_sdf->HasElement("wheel_2_velocity"))
-        wheel_2_angular_velocity = _sdf->Get<double>("wheel_2_velocity");
-
-    this->sensor->GetJointController()->SetVelocityTarget(sensor_top->GetScopedName(), sensor_angular_velocity);
-    this->robot->GetJointController()->SetVelocityTarget(wheel_1->GetScopedName(), wheel_1_angular_velocity);
-    this->robot->GetJointController()->SetVelocityTarget(wheel_2->GetScopedName(), wheel_2_angular_velocity);
 
     ROS_INFO("Initialization Complete");
 }

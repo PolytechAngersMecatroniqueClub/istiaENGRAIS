@@ -2,12 +2,14 @@
 #ifndef UTILITY_H
 #define UTILITY_H
 
-#include "Point.h" 
 #include <iostream>
 #include <algorithm>
 #include <vector>
 #include <string>
 #include <cmath>
+
+#include "../1_Point/Point.h" 
+
 
 #define BLUE 34
 #define RED 31

@@ -1,11 +1,12 @@
+//********************************************************************************************************
+
 #include <stdio.h> 
 #include <stdlib.h>   
 #include <iostream>
 
-
-#include "src/Point.h"
-#include "src/Utility.h"
-#include "src/Model.h"
+#include "src/robot_findlines_include/1_Point/Point.h"
+#include "src/robot_findlines_include/3_Utility/Utility.h"
+#include "src/robot_findlines_include/4_Model/Model.h"
 
 #include <ros/ros.h>
 
@@ -107,9 +108,28 @@ void OnLineMsg(const visualization_msgs::Marker & msg){
 
     //cout << controlSig << endl << endl<< endl << endl<< endl << endl;
 
-    /*std_msgs::Float32MultiArray wheel_cmd;
+    std_msgs::Float32MultiArray wheel_cmd;
 
-    pubLineNode.publish(wheel_cmd);*/
+    if(controlSig > 0){
+        controlSig /= 10;
+        controlSig = min(controlSig, 1.0);
+
+        wheel_cmd.data.push_back(1.0*(1 - controlSig));
+        wheel_cmd.data.push_back(1);
+    }
+    else if (controlSig < 0){
+        controlSig /= -10;
+        controlSig = min(controlSig, 1.0);
+
+        wheel_cmd.data.push_back(1);
+        wheel_cmd.data.push_back(1.0*(1 - controlSig));
+    }
+    else{
+        wheel_cmd.data.push_back(1);
+        wheel_cmd.data.push_back(1);
+    }
+
+    pubLineNode.publish(wheel_cmd);
 }
 //--------------------------------------------------------------------------------------------------------
 int main(int argc, char **argv){
@@ -131,4 +151,4 @@ int main(int argc, char **argv){
     ROS_INFO("Code ended without errors");
 }
 
-
+//********************************************************************************************************

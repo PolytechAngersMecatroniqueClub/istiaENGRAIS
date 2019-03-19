@@ -7,10 +7,10 @@
 #include <algorithm>
 #include <sensor_msgs/LaserScan.h>
 
-#include "../Point.h"
-#include "../Utility.h"
-#include "../Model.h"
-#include "../Pearl.h"
+#include "../1_Point/Point.h"
+#include "../3_Utility/Utility.h"
+#include "../4_Model/Model.h"
+#include "../5_Pearl/Pearl.h"
 
 class RubyPure : public Pearl{
 	std::pair<Model,Model> savedModels;

@@ -83,7 +83,7 @@ namespace gazebo
             physics::ModelPtr GetNestedModel(const physics::ModelPtr& _model, const std::string name);   // Get model inside a model
             physics::JointPtr GetJoint(const physics::ModelPtr& _model, const std::string name);
             common::PID SetPID(const physics::ModelPtr& _model, const physics::JointPtr& _joint, double P = 0.0, double I = 0.0, double D = 0.0);
-            void SetPID(const physics::ModelPtr& _model, const physics::JointPtr& _joint, common::PID & pid);
+            common::PID SetPID(const physics::ModelPtr& _model, const physics::JointPtr& _joint, const physics::JointPtr& _joint2, double P = 0.0, double I = 0.0, double D = 0.0);
             void InitializeModel(const physics::ModelPtr& _model, const sdf::ElementPtr& _sdf);     //Initialize program getting models, joints, setting PIDs to each joint and initial velocity
             void OnSensorMsg(ConstVector2dPtr &_msg);                                               // Changes sensor's rotation speed
             void OnWheelsMsg(ConstVector2dPtr &_msg);                                               // Changes wheel's rotation speed

@@ -4,8 +4,9 @@
 
 #include <iostream>
 #include <vector>
-#include "Point.h"
-#include "Utility.h"
+
+#include "../1_Point/Point.h"
+#include "../3_Utility/Utility.h"
 
 
 class Model{ 

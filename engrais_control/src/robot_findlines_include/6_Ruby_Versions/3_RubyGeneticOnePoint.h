@@ -8,11 +8,11 @@
 #include <sensor_msgs/LaserScan.h>
 
 
-#include "../Point.h"
-#include "../WeightedPoint.h"
-#include "../Utility.h"
-#include "../Model.h"
-#include "../Pearl.h"
+#include "../1_Point/Point.h"
+#include "../2_WeightedPoint/WeightedPoint.h"
+#include "../3_Utility/Utility.h"
+#include "../4_Model/Model.h"
+#include "../5_Pearl/Pearl.h"
 
 class RubyGeneticOnePoint : public Pearl{
 	public:
