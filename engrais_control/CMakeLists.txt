@@ -85,33 +85,6 @@ if( Boost_FOUND )
   set( HAVE_BOOST "-DHAVE_BOOST" )
 endif()
 
-# Find Package PCAP
-set( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}" ${CMAKE_MODULE_PATH} )
-set( PCAP_DIR "C:/Program Files/WpdPack" )
-find_package( PCAP )
-
-# If Capture from PCAP Files, VelodyneCapture are required PCAP.
-# Please Define HAVE_PCAP in Preprocessor.
-set( HAVE_PCAP )
-if( PCAP_FOUND )
-  set( HAVE_PCAP "-DHAVE_PCAP" )
-endif()
-
-# Disable sleep while reading a pcap
-# Is is useful if you have to parse the result of a pcap faster than real
-# time.
-OPTION( HAVE_FAST_PCAP "Avoid sleeping whilst reading PCAP files " OFF )
-if( HAVE_FAST_PCAP )
-  add_definitions( -DHAVE_FAST_PCAP )
-endif()
-
-# Use GPS timestamps insead of Unix epoch
-# This is specially useful while reading PCAP files.
-OPTION( HAVE_GPSTIME "Use GPS timestamps instead of Unix " OFF )
-if( HAVE_GPSTIME )
-  add_definitions( -DHAVE_GPSTIME )
-endif()
-
 # Use millimeters instead of the default, centimeters.
 OPTION( USE_MILLIMETERS "Use millimeters instead of centimeters " OFF )
 if( USE_MILLIMETERS )
