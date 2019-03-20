@@ -1,0 +1,142 @@
+<?xml version="1.0"?>
+<robot>
+
+<!-- ros_control plugin -->
+    <gazebo>
+        <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+            <robotNamespace>/engrais</robotNamespace>
+            <!-- <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType> -->
+        </plugin>
+    </gazebo>
+
+    <!-- body -->
+    <gazebo reference="world">
+        <turnGravityOff>false</turnGravityOff>
+    </gazebo>
+
+    <gazebo reference="body">
+        <material>Gazebo/Orange</material>
+        <turnGravityOff>false</turnGravityOff>
+    </gazebo>
+
+    <!-- Caster wheel -->
+    <gazebo reference="caster_wheel_back">
+        <mu1>0</mu1>
+        <mu2>0</mu2>
+        <material>Gazebo/Black</material>
+        <turnGravityOff>false</turnGravityOff>
+    </gazebo>
+    <!-- Caster wheel -->
+    <gazebo reference="caster_wheel_front">
+        <mu1>0</mu1>
+        <mu2>0</mu2>
+        <material>Gazebo/Black</material>
+        <turnGravityOff>false</turnGravityOff>
+    </gazebo>
+
+    <!-- <gazebo>
+        <plugin name="differential_drive_controller" filename="libgazebo_ros_diff_drive.so">
+            <alwaysOn>true</alwaysOn>
+            <updateRate>100</updateRate>
+            <leftJoint>left_wheel_joint</leftJoint>
+            <rightJoint>right_wheel_joint</rightJoint>
+            <wheelSeparation>${body_width_x}</wheelSeparation>
+            <wheelDiameter>${2*wheel_radius}</wheelDiameter>
+            <torque>200</torque>
+            <commandTopic>engrais/cmd_vel</commandTopic>
+            <odometryTopic>engrais/odom_diffdrive</odometryTopic>
+            <odometryFrame>odom</odometryFrame>
+            <robotBaseFrame>footprint</robotBaseFrame>
+        </plugin>
+    </gazebo> -->
+
+    <!-- <gazebo reference="differential_plugin">
+        <plugin name="differential_drive_controller" filename="libgazebo_ros_diff_drive.so">
+            <alwaysOn>true</alwaysOn>
+            <updateRate>100</updateRate>
+            <leftJoint>left_wheel_joint</leftJoint>
+            <rightJoint>right_wheel_joint</rightJoint>
+            <wheelSeparation>${body_width_x}</wheelSeparation>
+            <wheelDiameter>${2*wheel_radius}</wheelDiameter>
+            <torque>20</torque>
+            <commandTopic>engrais/cmd_vel</commandTopic>
+            <odometryTopic>engrais/odom_diffdrive</odometryTopic>
+            <odometryFrame>odom</odometryFrame>
+            <robotBaseFrame>footprint</robotBaseFrame>
+        </plugin>
+    </gazebo> -->
+
+  <!-- LiDAR -->
+    <gazebo reference="sick_front_link">
+        <material>Gazebo/Red</material>
+        <sensor type="ray" name="laser_front">
+            <pose>0 0 0 0 0 0</pose>
+            <visualize>true</visualize>
+            <update_rate>40</update_rate>
+            <ray>
+                <scan>
+                    <horizontal>
+                        <samples>${sick_nb_msr}</samples>
+                        <resolution>1</resolution>
+                        <min_angle>${sick_min_angle}</min_angle>
+                        <max_angle>${sick_max_angle}</max_angle>
+                    </horizontal>
+                </scan>
+                <range>
+                    <min>${sick_range_min}</min>
+                    <max>${sick_range_max}</max>
+                    <resolution>0.01</resolution>
+                </range>
+                <noise>
+                    <type>gaussian</type>
+                    <mean>0.0</mean>
+                    <stddev>0.01</stddev>
+                </noise>
+            </ray>
+            <plugin name="laser_front" filename="libgazebo_ros_laser.so">
+                <topicName>/engrais/laser_front/scan</topicName>
+            <frameName>sick_front_link</frameName>
+            </plugin>
+        </sensor>
+    </gazebo>
+
+    <!-- hokuyo -->
+    <gazebo reference="sick_back_link">
+        <material>Gazebo/Blue</material>
+        <sensor type="ray" name="laser_back">
+            <pose>0 0 0 0 0 0</pose>
+            <visualize>true</visualize>
+            <update_rate>40</update_rate>
+            <ray>
+                <scan>
+                    <horizontal>
+                        <samples>${sick_nb_msr}</samples>
+                        <resolution>1</resolution>
+                        <min_angle>${sick_min_angle}</min_angle>
+                        <max_angle>${sick_max_angle}</max_angle>
+                    </horizontal>
+                </scan>
+                <range>
+                    <min>${sick_range_min}</min>
+                    <max>${sick_range_max}</max>
+                    <resolution>0.01</resolution>
+                </range>
+                <noise>
+                    <type>gaussian</type>
+                    <!-- Noise parameters based on published spec for Hokuyo laser
+                    achieving "+-30mm" accuracy at range < 10m.  A mean of 0.0m and
+                    stddev of 0.01m will put 99.7% of samples within 0.03m of the true
+                    reading. -->
+                    <mean>0.0</mean>
+                    <stddev>0.01</stddev>
+                </noise>
+            </ray>
+            <plugin name="laser_back" filename="libgazebo_ros_laser.so">
+                <topicName>/engrais/laser_back/scan</topicName>
+                <frameName>sick_back_link</frameName>
+            </plugin>
+        </sensor>
+    </gazebo>
+
+
+</robot>

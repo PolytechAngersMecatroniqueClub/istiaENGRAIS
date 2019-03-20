@@ -1,0 +1,168 @@
+<?xml version="1.0"?>
+<!-- Revolute-Revolute Manipulator -->
+<robot name="engrais" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- Constants for robot dimensions -->
+    <xacro:property name="PI" value="3.1415926535897931"/>
+
+    <xacro:property name="body_mass"     value="10"  /> <!-- arbitrary value for mass -->
+    <xacro:property name="body_width_x"  value="$(arg body_size_x)"   /> <!-- Square dimensions (widthxwidth) of beams -->
+    <xacro:property name="body_width_y"  value="1"   /> <!-- Square dimensions (widthxwidth) of beams -->
+    <xacro:property name="body_height"   value="0.5" /> <!-- Square dimensions (widthxwidth) of beams -->
+
+    <xacro:property name="caster_radius" value="0.15"/> <!-- arbitrary value for mass -->
+    <xacro:property name="caster_mass"   value="0.1"/>  <!-- arbitrary value for mass -->
+
+    <xacro:property name="wheel_mass"   value="1"    /> <!-- arbitrary value for mass -->
+    <xacro:property name="wheel_radius" value="0.3" /> <!-- Square dimensions (widthxwidth) of beams -->
+    <xacro:property name="wheel_length"    value="0.2" /> <!-- Square dimensions (widthxwidth) of beams -->
+
+    <xacro:property name="sick_size"      value="0.1" /> <!-- Square dimensions (widthxwidth) of beams -->
+    <xacro:property name="sick_range_max" value="4.0" /> <!-- Square dimensions (widthxwidth) of beams -->
+    <xacro:property name="sick_range_min" value="0.1" /> <!-- Square dimensions (widthxwidth) of beams -->
+    <xacro:property name="sick_nb_msr"    value="360" /> <!-- Square dimensions (widthxwidth) of beams -->
+    <xacro:property name="sick_min_angle" value="${-PI/2}" /> <!-- Square dimensions (widthxwidth) of beams -->
+    <xacro:property name="sick_max_angle" value="${PI/2}" /> <!-- Square dimensions (widthxwidth) of beams -->
+
+    <!-- Import all Gazebo-customization elements, including Gazebo colors -->
+    <xacro:include filename="$(find engrais_description)/urdf/engrais.gazebo" />
+    <!-- Import Rviz colors -->
+    <xacro:include filename="$(find engrais_description)/urdf/materials.xacro" />
+    <!-- Import Rviz colors -->
+    <xacro:include filename="$(find engrais_description)/urdf/macros.xacro" />
+
+    <!--    ****************** LINKS ****************** -->
+
+    <link name="footprint" />
+
+    <joint name="base_joint" type="fixed">
+        <parent link="footprint"/>
+        <child link="body"/>
+    </joint>
+
+    <!-- Base Link -->
+    <link name="body">
+        <collision name="body_collision">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="${body_width_x} ${body_width_y} ${body_height}"/>
+            </geometry>
+        </collision>
+
+        <visual name="body_visual">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="${body_width_x} ${body_width_y} ${body_height}"/>
+            </geometry>
+            <material name="orange"/>
+        </visual>
+
+        <inertial name="body_inertial">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <mass value="${body_mass}"/>
+            <box_inertia m="${body_mass}" x="${body_width_x}" y="${body_width_y}" z="${body_mass}"/>
+        </inertial>
+    </link>
+
+    <!-- caster wheel Link -->
+    <link name="caster_wheel_back">
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+            <sphere radius="${caster_radius}"/>
+            </geometry>
+        </collision>
+
+        <visual> 
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+            <sphere radius="${caster_radius}"/>
+            </geometry>
+            <material name="black"/>
+        </visual>
+
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <mass value="${caster_mass}"/>
+            <sphere_inertia m="${caster_mass}" r="${caster_radius}"/>
+        </inertial>
+    </link>
+
+    <joint name="joint_body_caster_wheel_back" type="fixed">
+        <parent link="body"/>
+        <child link="caster_wheel_back"/>
+        <origin xyz="${-body_width_x/2+caster_radius} 0 ${-body_height/2}" rpy="0 0 0"/>
+    </joint>
+
+    <!-- caster wheel Link -->
+    <link name="caster_wheel_front">
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+            <sphere radius="${caster_radius}"/>
+            </geometry>
+        </collision>
+
+        <visual> 
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+            <sphere radius="${caster_radius}"/>
+            </geometry>
+            <material name="black"/>
+        </visual>
+
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <mass value="${caster_mass}"/>
+            <sphere_inertia m="${caster_mass}" r="${caster_radius}"/>
+        </inertial>
+    </link>
+
+    <joint name="joint_body_caster_wheel_front" type="fixed">
+        <parent link="body"/>
+        <child link="caster_wheel_front"/>
+        <origin xyz="${body_width_x/2-caster_radius} 0 ${-body_height/2}" rpy="0 0 0"/>
+    </joint>
+
+
+    <link name="sick_front_link">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <box size="${sick_size} ${sick_size} ${sick_size}"/>
+            </geometry>
+            <material name="Blue" />
+        </visual>
+    </link>
+
+    <joint name="sick_front_joint" type="fixed">
+        <origin xyz="${body_width_x/2 - sick_size/2} 0 ${body_height/2+sick_size/2}" rpy="0 0 0" />
+        <parent link="body"/>
+        <child link="sick_front_link" />
+    </joint>
+
+
+    <link name="sick_back_link">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <box size="${sick_size} ${sick_size} ${sick_size}"/>
+            </geometry>
+            <material name="Red" />
+        </visual>
+    </link>
+
+    <joint name="sick_back_joint" type="fixed">
+        <origin xyz="-${body_width_x/2 - sick_size/2} 0 ${body_height/2+sick_size/2}" rpy="0 0 ${PI}" />
+        <parent link="body"/>
+        <child link="sick_back_link" />
+    </joint>
+
+<!-- ******************** WHEELS LINK ******************** -->
+
+    <wheel leftright="right" parent="body" translateX="0" translateY="${-body_width_y/2-wheel_length/2}" translateZ="${-body_height/2+(wheel_radius-caster_radius)}" wheel_mass="${wheel_mass}" wheel_radius="${wheel_radius}" wheel_height="${wheel_length}"/>
+    <wheel leftright="left" parent="body" translateX="0" translateY="${body_width_y/2+wheel_length/2}" translateZ="${-body_height/2+(wheel_radius-caster_radius)}" wheel_mass="${wheel_mass}" wheel_radius="${wheel_radius}" wheel_height="${wheel_length}"/>
+
+    <!--    ****************** JOINTS ****************** -->
+
+</robot>

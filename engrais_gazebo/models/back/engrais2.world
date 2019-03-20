@@ -1,0 +1,81 @@
+<?xml version="1.0" ?>
+<sdf version="1.4">
+  <!-- We use a custom world for the rrbot so that the camera angle is launched correctly -->
+
+  <world name="default">
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+
+    <!-- Global light source -->
+    <include>
+      <uri>model://sun</uri>
+    </include>
+
+    
+        <population name="row1">
+            <model name="plantgreen1">
+                <include>
+                    <uri>model://plantgreen</uri>
+                </include>
+            </model>
+            <pose>0 5 0 0 0 0</pose>
+            <box>
+                <size>0.3 10 0.01</size>
+            </box>
+            <model_count>30</model_count>
+            <distribution>
+                <type>random</type>
+            </distribution>
+        </population>
+
+        <!--<population name="row2">
+            <model name="plantgreen2">
+                <include>
+                    <uri>model://plantgreen</uri>
+                </include>
+            </model>
+            <pose>3 5 0 0 0 0</pose>
+            <box>
+                <size>0.3 10 0.01</size>
+            </box>
+            <model_count>30</model_count>
+            <distribution>
+                <type>random</type>
+            </distribution>
+        </population>
+
+        <population name="row3">
+            <model name="plantgreen3">
+                <include>
+                    <uri>model://plantgreen</uri>
+                </include>
+            </model>
+            <pose>6 5 0 0 0 0</pose>
+            <box>
+                <size>0.3 10 0.01</size>
+            </box>
+            <model_count>30</model_count>
+            <distribution>
+                <type>random</type>
+            </distribution>
+        </population>
+
+        <population name="outliers">
+            <model name="plantred1">
+                <include>
+                    <uri>model://plantred</uri>
+                </include>
+            </model>
+            <pose>0 5 0 0 0 0</pose>
+            <box>
+                <size>6 10 0.01</size>
+            </box>
+            <model_count>15</model_count>
+            <distribution>
+                <type>random</type>
+            </distribution>
+        </population>-->
+
+  </world>
+</sdf>

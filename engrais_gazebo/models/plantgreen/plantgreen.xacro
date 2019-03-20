@@ -1,0 +1,94 @@
+<?xml version="1.0" ?>
+<sdf version="1.5" xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <xacro:macro name="cylinder_inertia" params="m r h">
+        <inertia>
+            <ixx>${m*(3*r*r+h*h)/12}</ixx> <ixy>0</ixy> <ixz>0</ixz>
+            <iyy>${m*(3*r*r+h*h)/12}</iyy> <iyz>0</iyz>
+            <izz>${m*r*r/2}</izz>
+        </inertia>
+    </xacro:macro>
+
+
+    <xacro:property name="body_mass"   value="0.100" /> <!-- arbitrary value for mass -->
+    <xacro:property name="body_radius" value="0.100" /> <!-- Square dimensions (widthxwidth) of beams -->
+    <xacro:property name="body_length" value="0.010" /> <!-- Square dimensions (widthxwidth) of beams -->
+    <xacro:property name="stem_mass"   value="0.010" /> <!-- arbitrary value for mass -->
+    <xacro:property name="stem_radius" value="0.050" /> <!-- Square dimensions (widthxwidth) of beams -->
+    <xacro:property name="stem_length" value="1.000" /> <!-- Square dimensions (widthxwidth) of beams -->
+
+    <model name="plantgreen">
+        <link name="body">
+            <pose>0 0 ${body_length/2} 0 0 0</pose>
+            <inertial>
+                <mass> ${body_mass} </mass>
+                <cylinder_inertia  m="${body_mass}" r="${body_radius}" h="${body_length}" />
+            </inertial>
+            <collision name="collision">
+                <geometry>
+                    <cylinder>
+                        <length>${body_length}</length>
+                        <radius>${body_radius}</radius>
+                    </cylinder>
+                </geometry>
+            </collision>
+            <visual name="visual">
+                <geometry>
+                    <cylinder>
+                        <length>${body_length}</length>
+                        <radius>${body_radius}</radius>
+                    </cylinder>
+                </geometry>
+                <material>
+                    <ambient>0.1 0.5 0.1 1</ambient>
+                    <diffuse>0.1 0.5 0.2 1</diffuse>
+                    <specular>0 0.5 0 0</specular>
+                    <emissive>0 0 0 1</emissive>
+                </material>
+            </visual>
+        </link>
+
+        <link name="stem">
+            <pose>0 0 ${body_length+stem_length/2+0.001} 0 0 0</pose>
+            <inertial>
+                <mass> ${stem_mass} </mass>
+                <cylinder_inertia  m="${stem_mass}" r="${stem_radius}" h="${stem_length}" />
+            </inertial>
+            <collision name="collision">
+                <geometry>
+                    <cylinder>
+                        <length>${stem_length}</length>
+                        <radius>${stem_radius}</radius>
+                    </cylinder>
+                </geometry>
+            </collision>
+            <visual name="visual">
+                <geometry>
+                    <cylinder>
+                        <length>${stem_length}</length>
+                        <radius>${stem_radius}</radius>
+                    </cylinder>
+                </geometry>
+                <material>
+                    <ambient>0.1 1 0.1 1</ambient>
+                    <diffuse>0.1 1 0.1 1</diffuse>
+                    <specular>0 1 0 0</specular>
+                    <emissive>0 0 0 1</emissive>
+                </material>
+            </visual>
+        </link>
+
+        
+       <joint name="body_stem_joint" type="revolute">
+          <parent>body</parent>
+          <child>stem</child>
+          <axis>
+            <xyz>0 0 1</xyz>
+            <limit>
+              <upper>0</upper>
+              <lower>0</lower>
+            </limit>
+          </axis>
+        </joint>
+
+    </model>
+</sdf>

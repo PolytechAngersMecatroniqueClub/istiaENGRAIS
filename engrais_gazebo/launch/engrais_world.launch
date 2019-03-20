@@ -1,0 +1,38 @@
+<?xml version="1.0" ?>
+<launch>
+    <env name="GAZEBO_MODEL_PATH" value="$(find engrais_gazebo)/models/" />
+
+    <!-- these are the arguments you can pass this launch file, for example paused:=true -->
+    <arg name="paused" default="false"/>
+    <arg name="body_size" default="2"/>
+    <arg name="body_size_2" default="$(eval arg('body_size')/2)"/>
+    <arg name="world" default="engrais"/>
+
+
+    <!-- We resume the logic in empty_world.launch, changing only the name of the world to be launched -->
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+        <arg name="world_name" value="$(find engrais_gazebo)/worlds/$(arg world).world"/>
+    </include>
+
+    <!-- Load the URDF into the ROS Parameter Server -->
+    <param name="robot_description"
+       command="$(find xacro)/xacro '$(find engrais_description)/urdf/engrais.xacro' body_size_x:=$(arg body_size)" />
+
+    <!-- Run a python script to the send a service call to gazebo_ros to spawn a URDF robot -->
+    <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+        args="-urdf -model engrais_robot -param robot_description -x -$(arg body_size_2) -y 0 -Y 0"/>
+
+    <node pkg="tf"
+        type="static_transform_publisher"
+        name="world_laser_front_broadcaster"
+        args="$(arg body_size_2) 0 0 0 0 0 world sick_front_link 100" />
+
+    <node pkg="tf"
+        type="static_transform_publisher"
+        name="world_laser_back_broadcaster"
+        args="-$(arg body_size_2) 0 0 3.14159 0 0 world sick_back_link 100" />
+
+    <!-- ros_control mybot launch file -->
+    <include file="$(find engrais_control)/launch/engrais_control.launch" />
+
+</launch>

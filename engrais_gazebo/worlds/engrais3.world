@@ -1,0 +1,611 @@
+<?xml version="1.0" ?>
+<sdf version="1.4">
+  <world name="default">
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+    <include>
+      <uri>model://sun</uri>
+    </include>
+      <model name="plantgreen_0_1">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>9.852653060846134 -1.3633447447713638 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_0_2">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>1.9515535088263125 -1.3931666866727643 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_0_3">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>9.222556356726525 -1.6172034238772082 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_0_4">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>2.9249052411902756 -1.5456183965182373 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_0_5">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>1.335166873845386 -1.4171697347433236 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_0_6">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>9.722759473826825 -1.5533249270958638 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_0_7">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>6.4794403412467965 -1.4721117194587294 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_0_8">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>6.95523630312459 -1.5044279583779434 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_0_9">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>0.09732244735723539 -1.544745300511776 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_0_10">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>2.3797422410422095 -1.5578890040308826 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_0_11">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>7.5110624874139535 -1.6359521777942336 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_0_12">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>3.535481292318592 -1.5232685704167979 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_0_13">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>7.795348269913948 -1.5782294317622492 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_0_14">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>3.3794500455262053 -1.4697996650676353 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_0_15">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>9.372459496109725 -1.6262034985773157 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_0_16">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>5.588714271047279 -1.5374740038468862 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_0_17">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>8.714410514757828 -1.5370531401035463 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_0_18">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>7.372445071085334 -1.545296198184543 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_0_19">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>8.98770081305716 -1.489243554745695 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_0_20">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>9.19565895727133 -1.457362178580726 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_1_1">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>1.6778323338843193 1.6170480905260756 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_1_2">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>1.8536537751138604 1.5151489901987967 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_1_3">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>9.452035804995367 1.5050623131718244 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_1_4">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>5.1695585425977715 1.615263925755683 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_1_5">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>7.642627778886148 1.6417840485690154 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_1_6">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>3.63230314727221 1.6220616745636747 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_1_7">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>9.344917221592874 1.3622316361022166 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_1_8">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>2.3753629230126805 1.4768966854209165 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_1_9">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>4.905939179890852 1.5962325698512547 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_1_10">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>6.56266491625559 1.4998990477695773 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_1_11">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>8.811659991060685 1.3739660623466403 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_1_12">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>1.0543090231779462 1.475310797225616 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_1_13">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>3.810320374428083 1.5463986720784766 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_1_14">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>5.670526612294098 1.5761336280572507 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_1_15">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>2.0028360090920447 1.5506482528121084 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_1_16">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>3.279921462277132 1.5965546981612155 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_1_17">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>7.932303327445746 1.6044842670381643 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_1_18">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>6.33446062709639 1.469950523894632 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_1_19">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>7.8171914291655495 1.3717726392217164 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_1_20">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>8.642889378728402 1.395694598760026 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_2_1">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>1.9836278700617038 4.546568665378183 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_2_2">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>9.492916926111269 4.479292624435471 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_2_3">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>4.695970145735073 4.417515862392101 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_2_4">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>4.3408496648101815 4.47009702372742 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_2_5">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>9.1249897984715 4.639734810826648 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_2_6">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>3.4678483711420394 4.453125003917756 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_2_7">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>2.672518799437743 4.449706560545104 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_2_8">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>8.355376602399776 4.353005443432975 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_2_9">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>5.7918690858194575 4.398355018610789 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_2_10">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>6.849451593273739 4.482005996065003 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_2_11">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>8.609246159864705 4.464692625680508 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_2_12">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>7.38969610652037 4.462827127604162 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_2_13">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>3.8514567310137107 4.361394576319054 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_2_14">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>4.37235370080788 4.641256054969551 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_2_15">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>6.400786676798428 4.620711455449831 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_2_16">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>6.035153486595769 4.5095601055432875 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_2_17">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>2.5246601248427334 4.490793940979883 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_2_18">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>6.64181559347017 4.612360602779516 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_2_19">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>8.952311483349716 4.626105446351601 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_2_20">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>1.2190575433926099 4.430496947620535 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_3_1">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>0.9981982644511489 7.469876562649561 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_3_2">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>1.1585146929994272 7.417536312896341 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_3_3">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>3.9181265314938516 7.6074155384042825 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_3_4">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>6.36995761622364 7.475477759741772 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_3_5">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>6.719822017420045 7.642189560721222 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_3_6">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>4.69321575075397 7.5895509357303235 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_3_7">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>3.2525709302991546 7.386326031642332 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_3_8">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>0.593772014645545 7.44597503223123 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_3_9">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>2.7903091906605737 7.4781650612026525 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_3_10">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>0.7980527293750805 7.463418020969883 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_3_11">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>1.921698161018609 7.396671414272063 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_3_12">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>7.826639167466313 7.454049683704543 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_3_13">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>7.335054689441875 7.548535648840083 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_3_14">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>6.911689721240739 7.489524995568171 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_3_15">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>0.3487833772640203 7.387061527476807 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_3_16">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>7.113808224864436 7.5366974566632 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_3_17">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>9.286351405839184 7.3694439787857 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_3_18">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>5.045576016496577 7.546153051745198 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_3_19">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>5.732706534381955 7.4329264743381325 0 0 0 0</pose>
+      </model>
+      <model name="plantgreen_3_20">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+        <pose>9.411027677063776 7.599256610921834 0 0 0 0</pose>
+      </model>
+      <model name="plantred_1">
+        <include>
+          <uri>model://plantred</uri>
+        </include>
+        <pose>7.607804901820176 0.6066024147772222 0 0 0 0</pose>
+      </model>
+      <model name="plantred_2">
+        <include>
+          <uri>model://plantred</uri>
+        </include>
+        <pose>6.275508497971667 7.288655573107433 0 0 0 0</pose>
+      </model>
+      <model name="plantred_3">
+        <include>
+          <uri>model://plantred</uri>
+        </include>
+        <pose>9.842565529040325 4.237023698378467 0 0 0 0</pose>
+      </model>
+      <model name="plantred_4">
+        <include>
+          <uri>model://plantred</uri>
+        </include>
+        <pose>4.122929755596859 8.766235602939208 0 0 0 0</pose>
+      </model>
+      <model name="plantred_5">
+        <include>
+          <uri>model://plantred</uri>
+        </include>
+        <pose>9.962410400386549 -0.9024819045464485 0 0 0 0</pose>
+      </model>
+      <model name="plantred_6">
+        <include>
+          <uri>model://plantred</uri>
+        </include>
+        <pose>6.351901909451401 7.908299862915677 0 0 0 0</pose>
+      </model>
+      <model name="plantred_7">
+        <include>
+          <uri>model://plantred</uri>
+        </include>
+        <pose>0.744979541810864 3.1633148881194835 0 0 0 0</pose>
+      </model>
+      <model name="plantred_8">
+        <include>
+          <uri>model://plantred</uri>
+        </include>
+        <pose>5.926555008714519 8.285531513402084 0 0 0 0</pose>
+      </model>
+      <model name="plantred_9">
+        <include>
+          <uri>model://plantred</uri>
+        </include>
+        <pose>9.947911477607596 1.3130745723881403 0 0 0 0</pose>
+      </model>
+      <model name="plantred_10">
+        <include>
+          <uri>model://plantred</uri>
+        </include>
+        <pose>2.7384955953583976 3.2445089479814753 0 0 0 0</pose>
+      </model>
+      <model name="plantred_11">
+        <include>
+          <uri>model://plantred</uri>
+        </include>
+        <pose>3.264222345802855 3.4964488057479706 0 0 0 0</pose>
+      </model>
+      <model name="plantred_12">
+        <include>
+          <uri>model://plantred</uri>
+        </include>
+        <pose>4.8464452759534735 6.448476507393538 0 0 0 0</pose>
+      </model>
+      <model name="plantred_13">
+        <include>
+          <uri>model://plantred</uri>
+        </include>
+        <pose>1.345398138097792 4.982883052498587 0 0 0 0</pose>
+      </model>
+      <model name="plantred_14">
+        <include>
+          <uri>model://plantred</uri>
+        </include>
+        <pose>1.1702517334750606 9.588432626593985 0 0 0 0</pose>
+      </model>
+      <model name="plantred_15">
+        <include>
+          <uri>model://plantred</uri>
+        </include>
+        <pose>7.279238124543015 -1.0998991955972959 0 0 0 0</pose>
+      </model>
+      <model name="plantred_16">
+        <include>
+          <uri>model://plantred</uri>
+        </include>
+        <pose>2.4894852574105153 5.34153387875674 0 0 0 0</pose>
+      </model>
+      <model name="plantred_17">
+        <include>
+          <uri>model://plantred</uri>
+        </include>
+        <pose>2.2677139805901367 8.678097314913096 0 0 0 0</pose>
+      </model>
+      <model name="plantred_18">
+        <include>
+          <uri>model://plantred</uri>
+        </include>
+        <pose>9.785426870819668 5.968250805414573 0 0 0 0</pose>
+      </model>
+      <model name="plantred_19">
+        <include>
+          <uri>model://plantred</uri>
+        </include>
+        <pose>8.139631038143735 0.9093593324791498 0 0 0 0</pose>
+      </model>
+      <model name="plantred_20">
+        <include>
+          <uri>model://plantred</uri>
+        </include>
+        <pose>8.792448982312512 5.200293788537922 0 0 0 0</pose>
+      </model>
+  </world>
+</sdf>
