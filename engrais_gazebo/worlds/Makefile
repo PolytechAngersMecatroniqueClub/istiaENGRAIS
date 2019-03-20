@@ -1,4 +1,4 @@
-all: engrais
+all: engrais engrais2 engrais3
 
 engrais:
 	rosrun xacro xacro -o engrais.world engrais.world.xacro

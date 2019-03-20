@@ -1,5 +1,6 @@
 <?xml version="1.0" ?>
 <sdf version="1.5" xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <!-- macro to compute the inertia of the cylinder -->
     <xacro:macro name="cylinder_inertia" params="m r h">
         <inertia>
             <ixx>${m*(3*r*r+h*h)/12}</ixx> <ixy>0</ixy> <ixz>0</ixz>
@@ -8,15 +9,18 @@
         </inertia>
     </xacro:macro>
 
-
-    <xacro:property name="body_mass"   value="0.500" /> <!-- arbitrary value for mass -->
-    <xacro:property name="body_radius" value="0.100" /> <!-- Square dimensions (widthxwidth) of beams -->
-    <xacro:property name="body_length" value="0.010" /> <!-- Square dimensions (widthxwidth) of beams -->
-    <xacro:property name="stem_mass"   value="0.010" /> <!-- arbitrary value for mass -->
-    <xacro:property name="stem_radius" value="0.050" /> <!-- Square dimensions (widthxwidth) of beams -->
-    <xacro:property name="stem_length" value="1.000" /> <!-- Square dimensions (widthxwidth) of beams -->
+    <!-- constants -->
+    <!-- the body constants (body = base = a kind of root), use to make the plant more stabled -->
+    <xacro:property name="body_mass"   value="0.500" /> <!-- mass of the body - kg -->
+    <xacro:property name="body_radius" value="0.100" /> <!-- radius of the body - m -->
+    <xacro:property name="body_length" value="0.010" /> <!-- length of the body - m -->
+    <!-- the stem constant -->
+    <xacro:property name="stem_mass"   value="0.010" /> <!-- mass of the stem - kg -->
+    <xacro:property name="stem_radius" value="0.050" /> <!-- radius of the stem - m -->
+    <xacro:property name="stem_length" value="1.000" /> <!-- length of the stem - m -->
 
     <model name="plantred">
+        <!-- the body of the plant -->
         <link name="body">
             <pose>0 0 ${body_length/2} 0 0 0</pose>
             <inertial>
@@ -38,6 +42,7 @@
                         <radius>${body_radius}</radius>
                     </cylinder>
                 </geometry>
+                <!-- we want the red plant to be red... -->
                 <material>
                     <ambient>0.5 0.1 0.1 1</ambient>
                     <diffuse>0.5 0.1 0.2 1</diffuse>
@@ -47,6 +52,7 @@
             </visual>
         </link>
 
+        <!-- the stem of the plant -->
         <link name="stem">
             <pose>0 0 ${body_length+stem_length/2+0.001} 0 0 0</pose>
             <inertial>
@@ -77,7 +83,8 @@
             </visual>
         </link>
 
-        
+
+       <!-- fixed joint between the stem and the body, as it is not possible to define a fixed joint, we define a revolute joint with no limits -->
        <joint name="body_stem_joint" type="revolute">
           <parent>body</parent>
           <child>stem</child>

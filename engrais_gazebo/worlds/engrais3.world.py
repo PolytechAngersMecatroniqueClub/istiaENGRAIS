@@ -1,16 +1,17 @@
+#pyhton code that generates a world with random plants and weeds
 import random as random
 
-outputfile = "engrais3.world"
+outputfile = "engrais3.world"  # name of the generated world
 myworld = open(outputfile, "w")
-# parameters:
 
-nb_rows = 4
-nb_plants_rows = 20
-space_between_rows = 3
-row_width = 0.3
-row_lenght = 10
-nb_outliers = 20
-space_min_plants = 0.15
+# parameters:
+nb_rows = 4             # nb rows
+nb_plants_rows = 20     # nb plants in a row
+space_between_rows = 3  # space between two rows (from center to center)
+row_width = 0.3         # width of a row
+row_lenght = 10         # length of a row
+nb_outliers = 20        # nb of outliers in the all field
+space_min_plants = 0.15 # minimal space between two generated plants
 
 myworld.write('<?xml version="1.0" ?>\n')
 myworld.write('<sdf version="1.4">\n')

@@ -1,15 +1,15 @@
 <?xml version="1.0" ?>
 <sdf version="1.5" xmlns:xacro="http://www.ros.org/wiki/xacro">
-    <!-- We use a custom world for the rrbot so that the camera angle is launched correctly -->
+    <!-- default simple world using population grid tag -->
 
-
-    <xacro:property name="nb_rows"              value="4"    /> <!-- arbitrary value for mass -->
-    <xacro:property name="nb_plants_row"        value="30"   /> <!-- Square dimensions (widthxwidth) of beams -->
-    <xacro:property name="space_between_rows"   value="3.00" /> <!-- Square dimensions (widthxwidth) of beams -->
-    <xacro:property name="space_between_plants" value="0.30" /> <!-- Square dimensions (widthxwidth) of beams -->
+    <xacro:property name="nb_rows"              value="4"    /> <!-- number of rows in the field -->
+    <xacro:property name="nb_plants_row"        value="30"   /> <!-- number of plants in a row -->
+    <xacro:property name="space_between_rows"   value="3.00" /> <!-- space between the rows -->
+    <xacro:property name="space_between_plants" value="0.30" /> <!-- space between the plants in a row -->
 
 
     <world name="default">
+        <!-- standard plane -->
         <include>
             <uri>model://ground_plane</uri>
         </include>
@@ -33,21 +33,6 @@
                 <step>${space_between_plants} ${space_between_rows} 0</step>
             </distribution>
         </population>
-
-        <!-- <population name="vegetablesRED">
-        <model name="plantred">
-        <include>
-        <uri>model://plantred</uri>
-        </include>
-        </model>
-        <pose>12 5 0 0 0 0</pose>
-        <distribution>
-        <type>grid</type>
-        <rows>40</rows>
-        <cols>1</cols>
-        <step>3 0.25 0</step>
-        </distribution>
-        </population> -->
 
     </world>
 </sdf>
