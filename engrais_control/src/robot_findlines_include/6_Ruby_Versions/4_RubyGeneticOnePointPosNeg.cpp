@@ -1,9 +1,9 @@
 //********************************************************************************************************
-#include "3_RubyGeneticOnePoint.h"
+#include "4_RubyGeneticOnePointPosNeg.h"
 
-
+using namespace std;
 //--------------------------------------------------------------------------------------------------------
-void RubyGeneticOnePoint::populateOutliers(const sensor_msgs::LaserScan & msg){ 
+void RubyGeneticOnePointPosNeg::populateOutliers(const sensor_msgs::LaserScan & msg){ 
     double angle = msg.angle_min;
 
     outliers.clear();
@@ -19,10 +19,17 @@ void RubyGeneticOnePoint::populateOutliers(const sensor_msgs::LaserScan & msg){
                 WeightedPoint p(msg.ranges[i] * cos(angle), msg.ranges[i] * sin(angle));
 
                 if(!fusedPoint.fusePoint(p, this->distanceToBeConsideredSamePoint)){
-                    outliers.push_back(fusedPoint);
+                    if(p.getY() >= 0){
+                        outliers.insert(outliers.begin(), 1, fusedPoint);
+                        numberOfPositivePointsInOutliers++;
+                    }
+                    else
+                        outliers.insert(outliers.end(), 1, fusedPoint);
+
                     fusedPoint = p;
                 }
             }
+        
             else{
                 fusedPoint = WeightedPoint(msg.ranges[i] * cos(angle), msg.ranges[i] * sin(angle));
             }
@@ -30,11 +37,15 @@ void RubyGeneticOnePoint::populateOutliers(const sensor_msgs::LaserScan & msg){
         angle += msg.angle_increment;
     }
 
-    outliers.push_back(fusedPoint);
+    if(fusedPoint.getY() >= 0)
+        outliers.insert(outliers.begin(), 1, fusedPoint);
+    else
+        outliers.insert(outliers.end(), 1, fusedPoint);
+
     initialField = outliers;
 }
 //--------------------------------------------------------------------------------------------------------
-std::pair<Model, Model> RubyGeneticOnePoint::findLines() { 
+std::pair<Model, Model> RubyGeneticOnePointPosNeg::findLines() { 
     std::pair<Model, Model> bestPair;
     std::pair<Model, Model> tempPair;
 
@@ -91,7 +102,7 @@ std::pair<Model, Model> RubyGeneticOnePoint::findLines() {
 //########################################################################################################
 
 //--------------------------------------------------------------------------------------------------------
-std::vector<Point> RubyGeneticOnePoint::randomPointsInField(const int num) { 
+std::vector<Point> RubyGeneticOnePointPosNeg::randomPointsInField(const int num) const { 
     std::vector<Point> ret(num);
 
     std::vector<int> randomNums = Utility::randomDiffVector(0, outliers.size() - 1, num);
@@ -105,9 +116,17 @@ std::vector<Point> RubyGeneticOnePoint::randomPointsInField(const int num) {
     return ret;
 }
 //--------------------------------------------------------------------------------------------------------
-void RubyGeneticOnePoint::searchModels(const int nbOfModels) { 
+void RubyGeneticOnePointPosNeg::searchModels(const int nbOfModels) { 
+    int numberOfPositiveModels = (int)(nbOfModels/2);
+    int numberOfNegativeModels = nbOfModels - numberOfPositiveModels;
+
     if(outliers.size() < INITIAL_NUMBER_OF_POINTS)
-            return;
+        return;
+
+    if(numberOfPositivePointsInOutliers < INITIAL_NUMBER_OF_POINTS)
+        numberOfPositiveModels = 0;
+
+    if()
         
     for(int modelNum = 0; modelNum < nbOfModels; modelNum++)
         models.push_back(Model::linearFit(randomPointsInField(INITIAL_NUMBER_OF_POINTS)));
@@ -116,7 +135,7 @@ void RubyGeneticOnePoint::searchModels(const int nbOfModels) {
 //########################################################################################################
 
 //--------------------------------------------------------------------------------------------------------
-double RubyGeneticOnePoint::calculateEnergy(){ 
+double RubyGeneticOnePointPosNeg::calculateEnergy() const { 
     double energy = 0;
 
     for(Model m : models)
@@ -127,7 +146,7 @@ double RubyGeneticOnePoint::calculateEnergy(){
     return energy;
 }
 //--------------------------------------------------------------------------------------------------------
-double RubyGeneticOnePoint::meanNumbOfPoints(){ 
+double RubyGeneticOnePointPosNeg::meanNumbOfPoints() const { 
     double mean = 0;
     for(Model m : models)
         mean += m.getPointsSize();
@@ -138,7 +157,7 @@ double RubyGeneticOnePoint::meanNumbOfPoints(){
 //########################################################################################################
 
 //--------------------------------------------------------------------------------------------------------
-std::vector<int> RubyGeneticOnePoint::countParallelLines(){ 
+std::vector<int> RubyGeneticOnePointPosNeg::countParallelLines() const { 
     std::vector<int> ret(models.size(), 1);
 
     for(int model = 0; model < models.size(); model++){
@@ -153,7 +172,7 @@ std::vector<int> RubyGeneticOnePoint::countParallelLines(){
     return ret;
 }
 //--------------------------------------------------------------------------------------------------------
-std::pair<Model, Model> RubyGeneticOnePoint::eraseBadModels() { 
+std::pair<Model, Model> RubyGeneticOnePointPosNeg::eraseBadModels() { 
     std::pair<Model, Model> ret; //first = left, second = right
     
     double fitness;
@@ -228,8 +247,8 @@ std::pair<Model, Model> RubyGeneticOnePoint::eraseBadModels() {
 
 //########################################################################################################
 
-std::ostream & operator << (std::ostream &out, const RubyGeneticOnePoint &r){ 
-    out << "RubyGeneticOnePoint: [\n\tModels: Vector {\n";
+std::ostream & operator << (std::ostream &out, const RubyGeneticOnePointPosNeg &r){ 
+    out << "RubyGeneticOnePointPosNeg: [\n\tModels: Vector {\n";
     for(int m = 0; m < r.models.size(); m++){
         out << "\t\t[" << m << "]: Model [ a: " << r.models[m].getSlope() << ", b: " << r.models[m].getIntercept() << ", energy: " << r.models[m].getEnergy();
         out << "\n\t\t\tPoints: Vector {";

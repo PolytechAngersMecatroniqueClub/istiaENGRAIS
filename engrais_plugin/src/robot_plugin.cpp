@@ -3,6 +3,8 @@
 #define pi 3.1415926535
 #define UPDATE_RATE 30
 
+#include <string>
+
 using namespace std;
 using namespace gazebo;
 

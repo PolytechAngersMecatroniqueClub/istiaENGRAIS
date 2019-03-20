@@ -13,7 +13,8 @@
 #include "../5_Pearl/Pearl.h"
 
 class RubyPure : public Pearl{
-	std::pair<Model,Model> savedModels;
+	public:
+		std::pair<Model,Model> savedModels;
 	
 	public:
 		//------------------------------------------------------------------------------------------------

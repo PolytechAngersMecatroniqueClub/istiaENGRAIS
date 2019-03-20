@@ -13,7 +13,7 @@
 #define INITIAL_NUMBER_OF_POINTS 3
 
 class Pearl{ 
-    protected: 
+    public: 
         std::vector<Model> models;
         std::vector<Point> outliers;    
 
@@ -41,7 +41,7 @@ class Pearl{
         //------------------------------------------------------------------------------------------------
         std::pair<Model, Model> findLines(); //Checked
             
-    protected:
+    public:
     	//------------------------------------------------------------------------------------------------
         void removeModel(const int ); //Checked
 

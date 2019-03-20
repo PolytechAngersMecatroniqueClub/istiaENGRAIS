@@ -22,6 +22,8 @@
 #include "src/robot_findlines_include/6_Ruby_Versions/1_RubyPure.h"
 #include "src/robot_findlines_include/6_Ruby_Versions/2_RubyGenetic.h"
 #include "src/robot_findlines_include/6_Ruby_Versions/3_RubyGeneticOnePoint.h"
+#include "src/robot_findlines_include/6_Ruby_Versions/4_RubyGeneticOnePointPosNeg.h"
+
 
 using namespace std;
 	
@@ -29,12 +31,15 @@ Pearl pearl;
 RubyPure rubyPure;
 RubyGenetic rubyGen;
 RubyGeneticOnePoint rubyGenOP;
+RubyGeneticOnePointPosNeg rubyGenOPPN;
 
 ros::Subscriber sub;
 ros::Publisher pubLineNode;
 
 double totalExecutionTime = 0;
 int timesExecuted = 0;
+
+
 
 //--------------------------------------------------------------------------------------------------------
 void preparePointsAndLines(visualization_msgs::Marker & line_list, visualization_msgs::Marker & points, const double botX, const double topX, const double botY, const double topY) { 
@@ -162,9 +167,13 @@ void sendLine(const pair<Model, Model> & models) {
 void OnRosMsg(const sensor_msgs::LaserScan & msg){
     auto start = std::chrono::system_clock::now();
 
-    rubyGenOP.populateOutliers(msg);
+    rubyGenOPPN.populateOutliers(msg);
 
-    pair <Model, Model> lines = rubyGenOP.findLines();
+    cout << rubyGenOPPN << endl << endl;
+
+    exit(1);
+
+    /*pair <Model, Model> lines = rubyGenOPPN.findLines();
 
     sendLine(lines);
 
@@ -176,7 +185,7 @@ void OnRosMsg(const sensor_msgs::LaserScan & msg){
     totalExecutionTime += elapsed_seconds.count();
     timesExecuted++;
 
-    std::cout << "finished computation at " << std::ctime(&end_time) << "elapsed time: " << elapsed_seconds.count() << "s\n";
+    std::cout << "finished computation at " << std::ctime(&end_time) << "elapsed time: " << elapsed_seconds.count() << "s\n";*/
 }
 //--------------------------------------------------------------------------------------------------------
 int main(int argc, char **argv){
@@ -205,6 +214,7 @@ int main(int argc, char **argv){
 
     Utility::printInColor("Total Execution Calculations Time: " + to_string(totalExecutionTime) + "s, running " + to_string(timesExecuted) + " times.\nMean Calculation time: " + to_string(totalExecutionTime/(double)timesExecuted), BLUE);
     
+
     return 0;
 }
 
