@@ -183,5 +183,6 @@ git rm -rf folderpath
 ```
 sudo apt-get install ros-melodic-gazebo-ros
 sudo apt-get install ros-melodic-controller-manager
+sudo apt install ros-melodic-velocity-controllers
 ```
 
