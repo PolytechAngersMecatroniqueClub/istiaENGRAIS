@@ -1,19 +1,23 @@
 <?xml version="1.0"?>
+<!-- macros used to clean the code -->
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <!-- macros to compute classical inertia matrices -->
+    <!-- inertia of a cylinder -->
     <xacro:macro name="cylinder_inertia" params="m r h">
         <inertia  ixx="${m*(3*r*r+h*h)/12}" ixy = "0" ixz = "0"
             iyy="${m*(3*r*r+h*h)/12}" iyz = "0"
             izz="${m*r*r/2}"
         />
     </xacro:macro>
-
+    <!-- inertia of a box -->
     <xacro:macro name="box_inertia" params="m x y z">
         <inertia  ixx="${m*(y*y+z*z)/12}" ixy = "0" ixz = "0"
             iyy="${m*(x*x+z*z)/12}" iyz = "0"
             izz="${m*(x*x+z*z)/12}"
         />
     </xacro:macro>
-
+    <!-- inertia of a sphere -->
     <xacro:macro name="sphere_inertia" params="m r">
         <inertia  ixx="${2*m*r*r/5}" ixy = "0" ixz = "0"
             iyy="${2*m*r*r/5}" iyz = "0"
@@ -21,7 +25,10 @@
         />
     </xacro:macro>
 
+    <!-- macro use for the left and right wheels -->
+
     <xacro:macro name="wheel" params="leftright parent translateX translateY translateZ wheel_mass wheel_radius wheel_height">
+        <!-- defines the link of the wheel -->
         <link name="${leftright}_wheel">
             <visual>
                 <origin xyz="0 0 0" rpy="${PI/2} 0  0 " /> 
@@ -43,6 +50,7 @@
             </inertial>
         </link>
 
+        <!-- defines the joint between the wheel and the body -->
         <joint name="${leftright}_wheel_joint" type="continuous">
             <parent link="${parent}"/>
             <child link="${leftright}_wheel"/>
@@ -63,7 +71,8 @@
                 <mechanicalReduction>1</mechanicalReduction>
             </actuator>
         </transmission>
-
+        
+        <!-- gazebo informations for the wheel -->
         <gazebo reference="${leftright}_wheel">
             <mu1 value="10"/>
             <mu2 value="10"/>

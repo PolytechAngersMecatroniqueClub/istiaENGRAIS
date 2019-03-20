@@ -1,46 +1,52 @@
 <?xml version="1.0"?>
-<!-- Revolute-Revolute Manipulator -->
+<!--Engrais robot description -->
 <robot name="engrais" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-  <!-- Constants for robot dimensions -->
-    <xacro:property name="PI" value="3.1415926535897931"/>
+    <!--  Constants -->
+    <xacro:property name="PI" value="3.1415926535897931"/> <!-- PI value -->
 
-    <xacro:property name="body_mass"     value="10"  /> <!-- arbitrary value for mass -->
-    <xacro:property name="body_width_x"  value="$(arg body_size_x)"   /> <!-- Square dimensions (widthxwidth) of beams -->
-    <xacro:property name="body_width_y"  value="1"   /> <!-- Square dimensions (widthxwidth) of beams -->
-    <xacro:property name="body_height"   value="0.5" /> <!-- Square dimensions (widthxwidth) of beams -->
+    <!--  Constants for the robot body -->
+    <xacro:property name="body_mass"     value="10"  />                <!-- body mass - kg -->
+    <xacro:property name="body_width_x"  value="$(arg body_size_x)" /> <!-- body lenght - m -->
+    <xacro:property name="body_width_y"  value="1"   />                <!-- body width - m -->
+    <xacro:property name="body_height"   value="0.5" />                <!-- body height - m -->
 
-    <xacro:property name="caster_radius" value="0.15"/> <!-- arbitrary value for mass -->
-    <xacro:property name="caster_mass"   value="0.1"/>  <!-- arbitrary value for mass -->
+    <!--  Constants for the caster wheels, front and back -->
+    <xacro:property name="caster_radius" value="0.15"/> <!-- radius of the caster wheel - m -->
+    <xacro:property name="caster_mass"   value="0.1"/>  <!-- mass of the caster wheel - m -->
 
-    <xacro:property name="wheel_mass"   value="1"    /> <!-- arbitrary value for mass -->
-    <xacro:property name="wheel_radius" value="0.3" /> <!-- Square dimensions (widthxwidth) of beams -->
-    <xacro:property name="wheel_length"    value="0.2" /> <!-- Square dimensions (widthxwidth) of beams -->
+    <!--  Constants for the differentials wheels, left and right -->
+    <xacro:property name="wheel_mass"   value="1"   />    <!-- wheel mass - kg -->
+    <xacro:property name="wheel_radius" value="0.3" />    <!-- wheel radius - m -->
+    <xacro:property name="wheel_length"    value="0.2" /> <!-- wheel length -->
 
-    <xacro:property name="sick_size"      value="0.1" /> <!-- Square dimensions (widthxwidth) of beams -->
-    <xacro:property name="sick_range_max" value="4.0" /> <!-- Square dimensions (widthxwidth) of beams -->
-    <xacro:property name="sick_range_min" value="0.1" /> <!-- Square dimensions (widthxwidth) of beams -->
-    <xacro:property name="sick_nb_msr"    value="360" /> <!-- Square dimensions (widthxwidth) of beams -->
-    <xacro:property name="sick_min_angle" value="${-PI/2}" /> <!-- Square dimensions (widthxwidth) of beams -->
-    <xacro:property name="sick_max_angle" value="${PI/2}" /> <!-- Square dimensions (widthxwidth) of beams -->
+    <!--  Constants for the LiDAR -->
+    <xacro:property name="sick_size"      value="0.1" />      <!-- The LiDAR is represented by a box with sick_size size - m -->
+    <xacro:property name="sick_range_max" value="4.0" />      <!-- Maximal range for the LiDAR - m -->
+    <xacro:property name="sick_range_min" value="0.1" />      <!-- Minimal range for the LiDAR - m -->
+    <xacro:property name="sick_nb_msr"    value="360" />      <!-- Number of measurements in one data set -->
+    <xacro:property name="sick_min_angle" value="${-PI/2}" /> <!-- Minimal angle range -->
+    <xacro:property name="sick_max_angle" value="${PI/2}" />  <!-- Maximal angle range -->
 
-    <!-- Import all Gazebo-customization elements, including Gazebo colors -->
+    <!-- Import all Gazebo-customization elements, including Gazebo colors, LiDAR plugins... -->
     <xacro:include filename="$(find engrais_description)/urdf/engrais.gazebo" />
     <!-- Import Rviz colors -->
     <xacro:include filename="$(find engrais_description)/urdf/materials.xacro" />
-    <!-- Import Rviz colors -->
+    <!-- Import some macro the clean the code -->
     <xacro:include filename="$(find engrais_description)/urdf/macros.xacro" />
 
     <!--    ****************** LINKS ****************** -->
 
+    <!-- artificial base link -->
     <link name="footprint" />
 
+    <!-- Fixed joint between the artificial based link and the body -->
     <joint name="base_joint" type="fixed">
         <parent link="footprint"/>
         <child link="body"/>
     </joint>
 
-    <!-- Base Link -->
+    <!-- Body Link -->
     <link name="body">
         <collision name="body_collision">
             <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -64,7 +70,7 @@
         </inertial>
     </link>
 
-    <!-- caster wheel Link -->
+    <!-- Back caster wheel Link -->
     <link name="caster_wheel_back">
         <collision>
             <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -88,13 +94,14 @@
         </inertial>
     </link>
 
+    <!-- fixed joint between the back caster wheel and the body -->
     <joint name="joint_body_caster_wheel_back" type="fixed">
         <parent link="body"/>
         <child link="caster_wheel_back"/>
         <origin xyz="${-body_width_x/2+caster_radius} 0 ${-body_height/2}" rpy="0 0 0"/>
     </joint>
 
-    <!-- caster wheel Link -->
+    <!-- Front caster wheel Link -->
     <link name="caster_wheel_front">
         <collision>
             <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -118,13 +125,14 @@
         </inertial>
     </link>
 
+    <!-- fixed joint between the front caster wheel and the body -->
     <joint name="joint_body_caster_wheel_front" type="fixed">
         <parent link="body"/>
         <child link="caster_wheel_front"/>
         <origin xyz="${body_width_x/2-caster_radius} 0 ${-body_height/2}" rpy="0 0 0"/>
     </joint>
 
-
+    <!-- Front LiDAR Link -->
     <link name="sick_front_link">
         <visual>
             <origin xyz="0 0 0" rpy="0 0 0" />
@@ -135,6 +143,7 @@
         </visual>
     </link>
 
+    <!-- fixed joint between the front LiDAR and the body -->
     <joint name="sick_front_joint" type="fixed">
         <origin xyz="${body_width_x/2 - sick_size/2} 0 ${body_height/2+sick_size/2}" rpy="0 0 0" />
         <parent link="body"/>
@@ -142,6 +151,7 @@
     </joint>
 
 
+    <!-- Back LiDAR Link -->
     <link name="sick_back_link">
         <visual>
             <origin xyz="0 0 0" rpy="0 0 0" />
@@ -152,17 +162,15 @@
         </visual>
     </link>
 
+    <!-- fixed joint between the back LiDAR and the body -->
     <joint name="sick_back_joint" type="fixed">
         <origin xyz="-${body_width_x/2 - sick_size/2} 0 ${body_height/2+sick_size/2}" rpy="0 0 ${PI}" />
         <parent link="body"/>
         <child link="sick_back_link" />
     </joint>
 
-<!-- ******************** WHEELS LINK ******************** -->
-
+    <!-- macros are used to set the wheel links and joints -->
     <wheel leftright="right" parent="body" translateX="0" translateY="${-body_width_y/2-wheel_length/2}" translateZ="${-body_height/2+(wheel_radius-caster_radius)}" wheel_mass="${wheel_mass}" wheel_radius="${wheel_radius}" wheel_height="${wheel_length}"/>
     <wheel leftright="left" parent="body" translateX="0" translateY="${body_width_y/2+wheel_length/2}" translateZ="${-body_height/2+(wheel_radius-caster_radius)}" wheel_mass="${wheel_mass}" wheel_radius="${wheel_radius}" wheel_height="${wheel_length}"/>
-
-    <!--    ****************** JOINTS ****************** -->
 
 </robot>
