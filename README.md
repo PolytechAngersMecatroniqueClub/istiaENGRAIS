@@ -13,9 +13,9 @@ engrais_control - package created with catkin_create_pkg
 * package.xml
 * CMakeLists.txt
 * config
-** engrais_control.yaml : configuration file for the controllers
+ * engrais_control.yaml : configuration file for the controllers
 * launch
-** engrais_control.launch : to start the controllers
+ * engrais_control.launch : to start the controllers
 
 ## how to use
 
