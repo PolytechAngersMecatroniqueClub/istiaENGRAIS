@@ -178,3 +178,10 @@ git rm filepath
 git rm -rf folderpath
 ```
 
+## to be installed to use those packages
+
+```
+sudo apt-get install ros-melodic-gazebo-ros
+sudo apt-get install ros-melodic-controller-manager
+```
+
