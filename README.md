@@ -1,41 +1,27 @@
 # ENGRAIS
 This repository contains all the packages to simulate and control a robot through an unknown field, using LIDAR sensors.
 
-# Organization
-This project contains 3 parts, where 2 of them are related to simulation, and 1 for control.
+This project contains 3 packages.
 
-- Robot model and environment: robot_model is the folder containing all the robot's parts, physics as well as obstacles (in cylinder form).
-- Robot plugin: robot_plugin is the folder containing the files to establish a communication betwen ROS and Gazebo. Without it, it's impossible to control robot's wheels or get sensor's data outside gazebo.
-- Robot control: robot_control is the folder that contains the ROS nodes that get the sensor's data, calculate lines, send the models to rviz and (eventualy) send control commands to the robot's wheels.
+# engrais_control
 
-# How to use ?
-start the gazebo easy simulation : 
+This package allows to deal with the controllers to interract from ROS to gazebo
 
-----
-    roslaunch engrais_gazebo engrais_easy.launch
-----
+## organisation
 
-start the gazebo complicated simulation : 
+engrais_control - package created with catkin_create_pkg
+* package.xml
+* CMakeLists.txt
+* config
+* * engrais_control.yaml : configuration file for the controllers
+* launch
+* * engrais_control.launch : to start the controllers
 
-----
-    roslaunch engrais_gazebo engrais_complicated.launch
-----
+## how to use
 
-start rviz : 
+You should not have to deal with this package, the launch file is started from the main launch file (cf the package engrais_gazebo)
 
-----
-    roslaunch engrais_gazebo rviz.launch
-----
+## work to do
 
-start the keyboard controller node
-
-----
-    rosrun engrais_control robot_keyboard_control
-----
-
-start the pearl associated node
-
-----
-    rosrun engrais_control robot_control
-----
+The physical behavior of the robot is not as expected, some parameters of the controllers (PID values for instance) should be optimized.
 
