@@ -147,6 +147,15 @@ make engrais3
 
 ### control the robot
 
+There are two ros topics (one for each wheel):
+* /engrais/leftWheel_controller/command
+* /engrais/rightWheel_controller/command
+
+To publish a command using command line:
+```
+rostopic pub /engrais/leftWheel_controller/command std_msgs/Float64 "data: 10.0"
+```
+
 ## work to do
 
 * optimize the plant model by maybe removing the joint
