@@ -195,5 +195,6 @@ sudo apt install ros-melodic-controller-manager
 sudo apt install ros-melodic-velocity-controllers
 sudo apt install ros-melodic-controller-interface
 sudo apt install ros-melodic-joint-state-controller
+sudo apt install ros-melodic-effort-controllers
 ```
 
