@@ -1,6 +1,6 @@
 <?xml version="1.6" ?>
 <launch>
-    <node pkg="engrais_control" type="sensor_capture" name="sensor_data"/>
+    <!--> <node pkg="engrais_control" type="sensor_capture" name="sensor_data"/> <-->
 	<node pkg="engrais_control" type="robot_findlines" name="find_lines"/>
     <node pkg="engrais_control" type="robot_move" name="send_command"/>
 </launch>

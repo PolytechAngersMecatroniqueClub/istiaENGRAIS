@@ -39,46 +39,46 @@ class Pearl{
         //------------------------------------------------------------------------------------------------
         void populateOutliers(const sensor_msgs::LaserScan & ); //Checked
         //------------------------------------------------------------------------------------------------
-        std::pair<Model, Model> findLines(); //Checked
+        virtual std::vector<Model> findLines(); //Checked
             
     public:
     	//------------------------------------------------------------------------------------------------
-        void removeModel(const int ); //Checked
+        virtual void removeModel(const int ); //Checked
+        //------------------------------------------------------------------------------------------------
+        virtual void removePointsInModels();
 
 		//################################################################################################
 
         //------------------------------------------------------------------------------------------------
-        std::vector<Point> randomPointsInField(const int ); //Checked
+        virtual std::vector<Point> randomPointsInField(const int ); //Checked
         //------------------------------------------------------------------------------------------------
-        void searchModels(const int ); //Checked
+        virtual void searchModels(const int ); //Checked
 
         //################################################################################################
 
         //------------------------------------------------------------------------------------------------
-        double redistributePoints(); //Checked
+        virtual double redistributePoints(); //Checked
         //------------------------------------------------------------------------------------------------
-        double removeTinyModels(const int = INITIAL_NUMBER_OF_POINTS); //Checked 
+        virtual double removeTinyModels(const int = INITIAL_NUMBER_OF_POINTS); //Checked 
         //------------------------------------------------------------------------------------------------
-        double calculateAdditionalEnergy() const; //Checked
+        virtual double calculateAdditionalEnergy() const; //Checked
         //------------------------------------------------------------------------------------------------
-        double expansionEnergy(); //Checked
+        virtual double expansionEnergy(); //Checked
 
         //################################################################################################
 
         //------------------------------------------------------------------------------------------------
-        void reEstimation(); //Checked
+        virtual void reEstimation(); //Checked
 
         //################################################################################################
 
         //------------------------------------------------------------------------------------------------
-        void eraseBadModels(const double ); //Checked
+        virtual void eraseBadModels(const double ); //Checked
 
         //################################################################################################
 
 		//------------------------------------------------------------------------------------------------
-        void fuseEqualModels(); //Checked
-        //------------------------------------------------------------------------------------------------
-        std::pair<Model, Model> findBestModels() const; //Checked
+        virtual void fuseEqualModels(); //Checked
         //------------------------------------------------------------------------------------------------
         friend std::ostream & operator << (std::ostream &, const Pearl &); //Checked
 

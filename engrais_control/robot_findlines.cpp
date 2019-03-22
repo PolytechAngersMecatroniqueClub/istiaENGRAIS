@@ -42,8 +42,8 @@ int timesExecuted = 0;
 
 
 //--------------------------------------------------------------------------------------------------------
-void preparePointsAndLines(visualization_msgs::Marker & line_list, visualization_msgs::Marker & points, const double botX, const double topX, const double botY, const double topY) { 
-        points.header.frame_id = line_list.header.frame_id = "map";
+void preparePointsAndLines(visualization_msgs::Marker & line_list, visualization_msgs::Marker & points) { 
+        points.header.frame_id = line_list.header.frame_id = "sick_front_link";
         points.header.stamp = line_list.header.stamp = ros::Time::now();
         points.ns = line_list.ns = "points_and_lines";
         points.action = line_list.action = visualization_msgs::Marker::ADD;
@@ -61,105 +61,51 @@ void preparePointsAndLines(visualization_msgs::Marker & line_list, visualization
 		points.scale.x = 0.05;
 		points.scale.y = 0.05;
 
-		// Points are blue
+		// Points are red
 		points.color.r = 1.0;
 		points.color.a = 1.0;
 
 
         // LINE_STRIP/LINE_LIST markers use only the x component of scale, for the line width
-        line_list.scale.x = 0.1;
+        line_list.scale.x = 0.03;
 
 
-        // Line list is red
+        // Line list is blue
         line_list.color.b = 1.0;
         line_list.color.a = 1.0;
-
-
-        geometry_msgs::Point p;
-
-        p.x = botX;
-        p.y = topY;
-        line_list.points.push_back(p);
-
-        p.x = botX;
-        p.y = botY;
-        line_list.points.push_back(p);
-
-        p.x = topX;
-        p.y = topY;
-        line_list.points.push_back(p);
-
-        p.x = topX;
-        p.y = botY;
-        line_list.points.push_back(p);
-
-
-
-        p.x = botX;
-        p.y = topY;
-        line_list.points.push_back(p);
-
-        p.x = topX;
-        p.y = topY;
-        line_list.points.push_back(p);
-
-        p.x = botX;
-        p.y = botY;
-        line_list.points.push_back(p);
-
-        p.x = topX;
-        p.y = botY;
-        line_list.points.push_back(p);
 }
 //--------------------------------------------------------------------------------------------------------
-void sendLine(const pair<Model, Model> & models) { 
+void sendLine(const vector<Model> & models) { 
     visualization_msgs::Marker line_list, points;
     geometry_msgs::Point p;
 
-    preparePointsAndLines(line_list, points, 0.6, -1.2, 0.8, -0.8);
+    preparePointsAndLines(line_list, points);
 
-    for(Point point : rubyGenOP.getInitialField()){
+    for(Point point : rubyGenOPPN.getInitialField()){
 		p.x = point.getX();
 		p.y = point.getY();
 		p.z = 0.1;
 
 		points.points.push_back(p);
     }
+    p.z = 0;
 
-    if(models.first.getSlope() != MAX_DBL && models.first.getIntercept() != MAX_DBL){
-	    p.x = 0;
-	    p.y = models.first.getSlope()*0 + models.first.getIntercept();
-	    p.z = 0;
+    for(int i = 0; i < models.size(); i++){
+        if(models[i].getSlope() != MAX_DBL && models[i].getIntercept() != MAX_DBL){
+    	    p.x = 0;
+    	    p.y = models[i].getSlope()*p.x + models[i].getIntercept();
 
-	    line_list.points.push_back(p);
+    	    line_list.points.push_back(p);
 
-	    p.x = 20;
-	    p.y = models.first.getSlope()*p.x + models.first.getIntercept();
+    	    p.x = 20;
+    	    p.y = models[i].getSlope()*p.x + models[i].getIntercept();
 
-	    line_list.points.push_back(p);
-	}
-
-	if(models.second.getSlope() != MAX_DBL && models.second.getIntercept() != MAX_DBL){
-	    p.x = 0;
-	    p.y = models.second.getSlope()*0 + models.second.getIntercept();
-	    p.z = 0;
-
-	    line_list.points.push_back(p);
-
-	    p.x = 20;
-	    p.y = models.second.getSlope()*p.x + models.second.getIntercept();
-
-	    line_list.points.push_back(p);
-   	}
+    	    line_list.points.push_back(p);
+    	}
+    }
 
     pubLineNode.publish(points);
     pubLineNode.publish(line_list);
-
-    /*if(fabs(models.first.getIntercept()) > 3)
-    	exit(1);
-
-    if(fabs(models.second.getIntercept()) > 3)
-    	exit(1);*/
 }
 
 
@@ -167,13 +113,9 @@ void sendLine(const pair<Model, Model> & models) {
 void OnRosMsg(const sensor_msgs::LaserScan & msg){
     auto start = std::chrono::system_clock::now();
 
-    rubyGenOPPN.populateOutliers(msg);
+    rubyGen.populateOutliers(msg);
 
-    cout << rubyGenOPPN << endl << endl;
-
-    exit(1);
-
-    /*pair <Model, Model> lines = rubyGenOPPN.findLines();
+    vector <Model> lines = rubyGen.findLines();
 
     sendLine(lines);
 
@@ -185,7 +127,7 @@ void OnRosMsg(const sensor_msgs::LaserScan & msg){
     totalExecutionTime += elapsed_seconds.count();
     timesExecuted++;
 
-    std::cout << "finished computation at " << std::ctime(&end_time) << "elapsed time: " << elapsed_seconds.count() << "s\n";*/
+    std::cout << "finished computation at " << std::ctime(&end_time) << "elapsed time: " << elapsed_seconds.count() << "s\n";
 }
 //--------------------------------------------------------------------------------------------------------
 int main(int argc, char **argv){
@@ -197,8 +139,8 @@ int main(int argc, char **argv){
 
     ros::NodeHandle node;
 
-    sub = node.subscribe("/robot_engrais/lidar_engrais/data", 10, OnRosMsg); // Subscribe to a given topic, in this case "/robot/sensor/data".
-    pubLineNode = node.advertise<visualization_msgs::Marker>("/robot_engrais/lines", 10);
+    sub = node.subscribe("/engrais/laser_front/scan", 10, OnRosMsg); // Subscribe to a given topic, in this case "/robot/sensor/data".
+    pubLineNode = node.advertise<visualization_msgs::Marker>("/robot_engrais/all_lines_found", 10);
 
     ROS_INFO("Code Running, press Control+C to end");
     ros::spin();
@@ -212,7 +154,7 @@ int main(int argc, char **argv){
 
     ROS_INFO("Code ended without errors");
 
-    Utility::printInColor("Total Execution Calculations Time: " + to_string(totalExecutionTime) + "s, running " + to_string(timesExecuted) + " times.\nMean Calculation time: " + to_string(totalExecutionTime/(double)timesExecuted), BLUE);
+    Utility::printInColor("Total Calculations Time: " + to_string(totalExecutionTime) + "s, code ran " + to_string(timesExecuted) + " times.\nMean Calculation time: " + to_string(totalExecutionTime/(double)timesExecuted) + "s", BLUE);
     
 
     return 0;

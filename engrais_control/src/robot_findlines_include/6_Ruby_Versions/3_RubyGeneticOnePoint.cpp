@@ -34,10 +34,7 @@ void RubyGeneticOnePoint::populateOutliers(const sensor_msgs::LaserScan & msg){
     initialField = outliers;
 }
 //--------------------------------------------------------------------------------------------------------
-std::pair<Model, Model> RubyGeneticOnePoint::findLines() { 
-    std::pair<Model, Model> bestPair;
-    std::pair<Model, Model> tempPair;
-
+std::vector<Model> RubyGeneticOnePoint::findLines() { 
     int numberMinOfPoints;
 
     double newEnergy = MAX_DBL, energy = MAX_DBL;
@@ -48,11 +45,11 @@ std::pair<Model, Model> RubyGeneticOnePoint::findLines() {
         std::vector<Point> bestOutliers;
 
         for (int it = 0; it < this->maxNumberOfIterations; it++) {
-            searchModels(this->numberOfModelsToSearch);
-
-            redistributePoints();
+            searchModels(this->numberOfModelsToSearch - models.size());
 
             fuseEqualModels();
+
+            redistributePoints();
 
             numberMinOfPoints = std::max((int)(meanNumbOfPoints() * this->factorToDeletePoints), 3);
 
@@ -60,21 +57,19 @@ std::pair<Model, Model> RubyGeneticOnePoint::findLines() {
 
             reEstimation();
             
-            tempPair = eraseBadModels();
+            eraseBadModels();
             
             newEnergy = calculateEnergy();
 
             if ((newEnergy >= energy)){
                 this->models = bestModels;
                 this->outliers = bestOutliers;
-                tempPair = bestPair;
 
                 energy = newEnergy;
             }
             else{
                 bestModels = this->models;
                 bestOutliers = this->outliers;
-                bestPair = tempPair;
 
                 newEnergy = energy;
             }
@@ -85,7 +80,7 @@ std::pair<Model, Model> RubyGeneticOnePoint::findLines() {
         Utility::printInColor("No data in field, please verify", RED);
     }   
 
-    return bestPair;
+    return models;
 }
 
 //########################################################################################################
@@ -138,92 +133,29 @@ double RubyGeneticOnePoint::meanNumbOfPoints(){
 //########################################################################################################
 
 //--------------------------------------------------------------------------------------------------------
-std::vector<int> RubyGeneticOnePoint::countParallelLines(){ 
-    std::vector<int> ret(models.size(), 1);
-
+void RubyGeneticOnePoint::countParallelLines(){ 
     for(int model = 0; model < models.size(); model++){
         for(int model2 = model + 1; model2 < models.size(); model2++){
-            fabs(models[model].getSlope() - models[model].getSlope());
             if(fabs(models[model].getSlope() - models[model2].getSlope()) < this->sameSlopeThreshold){
-                ret[model]++;
-                ret[model2]++;
+                models[model].incrementParallelCount();
+                models[model2].incrementParallelCount();
             }
         }
     }
-    return ret;
 }
 //--------------------------------------------------------------------------------------------------------
-std::pair<Model, Model> RubyGeneticOnePoint::eraseBadModels() { 
-    std::pair<Model, Model> ret; //first = left, second = right
+void RubyGeneticOnePoint::eraseBadModels(){  
+    countParallelLines();
     
-    double fitness;
-    double bestFitnessLeft = MAX_DBL;
-    double bestFitnessRight = MAX_DBL;
+    for(int i = 0; i < models.size(); i++)
+    	models[i].calculateFitness();
 
-    int bestLeftPos = MIN_INT;
-    int bestRightPos = MIN_INT; //MAX_INT
+    std::sort(models.begin(), models.end());
 
-    std::vector<int> parrallel = countParallelLines();
-
-    /*Utility::printInColor("Before Erase Bad Models", RED);
-    std::cout << (*this) << std::endl;*/
-    
-    for(int model = 0; model < models.size(); model++){
-        fitness = models[model].getPointsSize() != 0 ? (models[model].getIntercept()*models[model].getIntercept() + models[model].getEnergy()*10) / (double)(models[model].getPointsSize()*models[model].getPointsSize()*parrallel[model]) : MAX_DBL;
-
-        if(fitness < bestFitnessLeft && models[model].getIntercept() >= 0){
-            bestFitnessLeft = fitness;
-
-            if(bestLeftPos != MIN_INT){
-                removeModel(bestLeftPos);
-
-                if(bestRightPos > bestLeftPos)
-                    bestRightPos--;
-
-                bestLeftPos = --model;
-            }
-            else{
-                bestLeftPos = model;
-            }
-
-        }
-        else if(fitness < bestFitnessRight && models[model].getIntercept() < 0){
-            bestFitnessRight = fitness;
-
-            if(bestRightPos != MIN_INT){
-                removeModel(bestRightPos);
-
-                if(bestLeftPos > bestRightPos)
-                    bestLeftPos--;
-
-                bestRightPos = --model;
-            }
-            else{
-                bestRightPos = model;
-            }
-        }
-        else {
-            removeModel(model);
-            model--;
-        }
+    for(int i = (int)(models.size()*0.25); i < models.size(); i++){
+    	removeModel(i);
+    	i--;
     }
-
-    /*Utility::printInColor("After Erase Bad Models", RED);
-    std::cout << (*this) << std::endl;*/
-
-    if(bestLeftPos != MIN_INT){
-        ret.first = models[bestLeftPos];
-        ret.first.clearPoints();
-        ret.first.setEnergy(0);
-    }
-
-    if(bestRightPos != MIN_INT){
-        ret.second = models[bestRightPos];
-        ret.second.clearPoints();
-        ret.second.setEnergy(0);
-    }
-
-    return ret;
 }
 
 //########################################################################################################

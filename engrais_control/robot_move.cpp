@@ -11,7 +11,7 @@
 #include <ros/ros.h>
 
 #include <visualization_msgs/Marker.h>
-#include <std_msgs/Float32MultiArray.h>
+#include <std_msgs/Float64.h>
 
 
 #define MIN_DBL -1e+20
@@ -29,16 +29,43 @@
 using namespace std;
 
 ros::Subscriber sub;
-ros::Publisher pubLineNode;
+ros::Publisher pubLeftControl;
+ros::Publisher pubRightControl;
+
+ros::Publisher pubFoundLines;
+
+//--------------------------------------------------------------------------------------------------------
+void preparePointsAndLines(visualization_msgs::Marker & line_list) { 
+        line_list.header.frame_id = "sick_front_link";
+        line_list.header.stamp = ros::Time::now();
+        line_list.ns = "points_and_lines";
+        line_list.action = visualization_msgs::Marker::ADD;
+        line_list.pose.orientation.w = 1.0;
+
+        line_list.id = 0;
+        line_list.type = visualization_msgs::Marker::LINE_LIST;
 
 
+        // LINE_STRIP/LINE_LIST markers use only the x component of scale, for the line width
+        line_list.scale.x = 0.08;
+
+
+        // Line list is green
+        line_list.color.g = 1.0;
+        line_list.color.a = 0.4;
+}
 //--------------------------------------------------------------------------------------------------------
 vector<Model> getFoundLines(const visualization_msgs::Marker & msg, Model & ClosestLeftModel, Model & ClosestRightModel, int & numberOfPositiveModels){
     vector<Model> foundLines;
 
+    visualization_msgs::Marker line_list;
+
     numberOfPositiveModels = 0;
 
-    for(int i = 8; i < msg.points.size() - 1; i += 2){
+    geometry_msgs::Point leftModelPoint1, leftModelPoint2;
+    geometry_msgs::Point rightModelPoint1, rightModelPoint2;
+
+    for(int i = 0; i < msg.points.size() - 1; i += 2){
         double dx = msg.points[i].x - msg.points[i + 1].x;
         double dy = msg.points[i].y - msg.points[i + 1].y;
 
@@ -50,20 +77,48 @@ vector<Model> getFoundLines(const visualization_msgs::Marker & msg, Model & Clos
         double b = msg.points[i].y - a * msg.points[i].x;
 
         if(b >= 0){
-            if(fabs(ClosestLeftModel.getIntercept()) > fabs(b))
+
+            if(fabs(ClosestLeftModel.getIntercept()) > fabs(b)){
                 ClosestLeftModel = Model(a, b);
+
+                leftModelPoint1.x = msg.points[i].x;
+                leftModelPoint1.y = msg.points[i].y;
+
+                leftModelPoint2.x = msg.points[i+1].x;
+                leftModelPoint2.y = msg.points[i+1].y; 
+            }
 
             foundLines.insert(foundLines.begin(), 1, Model(a,b));
             numberOfPositiveModels++;
         }
         else{
-            if(fabs(ClosestRightModel.getIntercept()) > fabs(b))
+
+            if(fabs(ClosestRightModel.getIntercept()) > fabs(b)){
                 ClosestRightModel = Model(a, b);
+
+                rightModelPoint1.x = msg.points[i].x;
+                rightModelPoint1.y = msg.points[i].y;
+
+                rightModelPoint2.x = msg.points[i+1].x;
+                rightModelPoint2.y = msg.points[i+1].y; 
+            }
 
             foundLines.insert(foundLines.end(), 1, Model(a,b));
         }
         
     }
+
+    preparePointsAndLines(line_list);
+
+    leftModelPoint1.z = leftModelPoint2.z = rightModelPoint1.z = rightModelPoint2.z = 0.002;
+
+    line_list.points.push_back(leftModelPoint1);
+    line_list.points.push_back(leftModelPoint2);
+    line_list.points.push_back(rightModelPoint1);
+    line_list.points.push_back(rightModelPoint2);
+
+    pubFoundLines.publish(line_list);
+
     return foundLines;
 }
 //--------------------------------------------------------------------------------------------------------
@@ -98,38 +153,32 @@ void OnLineMsg(const visualization_msgs::Marker & msg){
 
     vector<Model> foundLines = getFoundLines(msg, ClosestLeftModel, ClosestRightModel, numberOfPositiveModels);
 
-    //cout << numberOfPositiveModels << endl;
-
-    //Utility::printVector(foundLines);
-
-    //cout << endl << ClosestLeftModel << endl << endl << ClosestRightModel << endl << endl;
-
     double controlSig = getControlSignal(ClosestLeftModel, ClosestRightModel);
 
-    //cout << controlSig << endl << endl<< endl << endl<< endl << endl;
-
-    std_msgs::Float32MultiArray wheel_cmd;
+    std_msgs::Float64 left_wheel_cmd;
+    std_msgs::Float64 right_wheel_cmd;
 
     if(controlSig > 0){
         controlSig /= 10;
         controlSig = min(controlSig, 1.0);
 
-        wheel_cmd.data.push_back(1.0*(1 - controlSig));
-        wheel_cmd.data.push_back(1);
+        left_wheel_cmd.data = 1.0 * (1 - controlSig);
+        right_wheel_cmd.data = 1.0;
     }
     else if (controlSig < 0){
         controlSig /= -10;
         controlSig = min(controlSig, 1.0);
 
-        wheel_cmd.data.push_back(1);
-        wheel_cmd.data.push_back(1.0*(1 - controlSig));
+        left_wheel_cmd.data = 1.0;
+        right_wheel_cmd.data = 1.0 * (1 - controlSig);
     }
     else{
-        wheel_cmd.data.push_back(1);
-        wheel_cmd.data.push_back(1);
+        left_wheel_cmd.data = 1.0;
+        right_wheel_cmd.data = 1.0;
     }
 
-    pubLineNode.publish(wheel_cmd);
+    pubLeftControl.publish(left_wheel_cmd);
+    pubRightControl.publish(right_wheel_cmd);
 }
 //--------------------------------------------------------------------------------------------------------
 int main(int argc, char **argv){
@@ -137,15 +186,21 @@ int main(int argc, char **argv){
 
     ros::NodeHandle node;
 
-    sub = node.subscribe("/robot_engrais/lines", 10, OnLineMsg); // Subscribe to a given topic, in this case "/robot/sensor/data".
-    pubLineNode = node.advertise<std_msgs::Float32MultiArray>("/robot_engrais/wheels/vel_cmd", 10);
+    sub = node.subscribe("/robot_engrais/all_lines_found", 10, OnLineMsg); // Subscribe to a given topic, in this case "/robot/sensor/data".
+    pubLeftControl = node.advertise<std_msgs::Float64>("/engrais/leftWheel_controller/command", 10);
+    pubRightControl = node.advertise<std_msgs::Float64>("/engrais/rightWheel_controller/command", 10);
+
+    pubFoundLines = node.advertise<visualization_msgs::Marker>("/robot_engrais/selected_lines", 10);
 
     ROS_INFO("Code Running, press Control+C to end");
     ros::spin();
     ROS_INFO("Shitting down...");
 
     sub.shutdown();
-    pubLineNode.shutdown();
+    pubLeftControl.shutdown();
+    pubRightControl.shutdown();
+
+    pubFoundLines.shutdown();
     ros::shutdown();
 
     ROS_INFO("Code ended without errors");

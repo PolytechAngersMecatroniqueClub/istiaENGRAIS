@@ -17,9 +17,7 @@ void Pearl::populateOutliers(const sensor_msgs::LaserScan & msg){ //Checked
     }
 }
 //--------------------------------------------------------------------------------------------------------
-std::pair<Model, Model> Pearl::findLines() { //Checked 
-	std::pair<Model, Model> ret;
-
+std::vector<Model> Pearl::findLines() { //Checked 
 	double energy = MAX_DBL;
 
 	if(outliers.size() != 0){
@@ -71,7 +69,7 @@ std::pair<Model, Model> Pearl::findLines() { //Checked
 	    Utility::printInColor("No data in field, please verify", RED);
 	}
 
-	return findBestModels();
+	return models;
 }
 //--------------------------------------------------------------------------------------------------------    
 void Pearl::removeModel(const int modelIndex){ //Checked 
@@ -81,6 +79,14 @@ void Pearl::removeModel(const int modelIndex){ //Checked
     outliers.insert(outliers.end(), models[modelIndex].getPointsVecBegin(), models[modelIndex].getPointsVecEnd());
     models[modelIndex].clearPoints();
     models.erase(models.begin() + modelIndex);
+}
+//--------------------------------------------------------------------------------------------------------
+void Pearl::removePointsInModels(){
+    for(int i = 0; i < models.size(); i++){
+        outliers.insert(outliers.end(), models[i].getPointsVecBegin(), models[i].getPointsVecEnd());
+        models[i].clearPoints();
+        models[i].setEnergy(0);
+    }
 }
 
 //########################################################################################################
@@ -116,11 +122,7 @@ void Pearl::searchModels(const int nbOfModels) { //Checked
 
 //--------------------------------------------------------------------------------------------------------
 double Pearl::redistributePoints() { //Checked 
-    for(int i = 0; i < models.size(); i++){
-        outliers.insert(outliers.end(), models[i].getPointsVecBegin(), models[i].getPointsVecEnd());
-        models[i].clearPoints();
-        models[i].setEnergy(0);
-    }
+    removePointsInModels();
 
     double newEnergy = 0;
 
@@ -180,7 +182,7 @@ double Pearl::calculateAdditionalEnergy() const { //Checked
 //--------------------------------------------------------------------------------------------------------
 double Pearl::expansionEnergy() { //Checked
     double newEnergy = redistributePoints();
-    newEnergy += removeTinyModels(2);
+    newEnergy += removeTinyModels(INITIAL_NUMBER_OF_POINTS);
 
     newEnergy += calculateAdditionalEnergy();
 
@@ -232,44 +234,6 @@ void Pearl::fuseEqualModels(){ //Checked
             }
         }
     }
-}
-//--------------------------------------------------------------------------------------------------------
-std::pair<Model, Model> Pearl::findBestModels() const { //Checked
-    std::pair<Model, Model> ret; //first = left, second = right
-    
-    double fitness;
-    double bestFitnessLeft = MAX_DBL;
-    double bestFitnessRight = MAX_DBL;
-
-    int bestLeftPos = MIN_INT;
-    int bestRightPos = MIN_INT; //MAX_INT
-    
-    for(int model = 0; model < models.size(); model++){
-        fitness = models[model].getPointsSize() != 0 ? (fabs(models[model].getIntercept()) + models[model].getEnergy()) / (double)(models[model].getPointsSize()) : MAX_DBL;
-
-        if(fitness < bestFitnessLeft && models[model].getIntercept() >= 0){
-            bestFitnessLeft = fitness;
-            bestLeftPos = model;
-        }
-        else if(fitness < bestFitnessRight && models[model].getIntercept() < 0){
-            bestFitnessRight = fitness;
-            bestRightPos = model;
-        }
-    }
-
-    if(bestLeftPos != MIN_INT){
-        ret.first = models[bestLeftPos];
-        ret.first.clearPoints();
-        ret.first.setEnergy(0);
-    }
-
-    if(bestRightPos != MIN_INT){
-        ret.second = models[bestRightPos];
-        ret.second.clearPoints();
-        ret.second.setEnergy(0);
-    }
-
-    return ret;
 }
 // -------------------------------------------------------------------------------------------------------
 std::ostream & operator << (std::ostream &out, const Pearl &p){ //Checked

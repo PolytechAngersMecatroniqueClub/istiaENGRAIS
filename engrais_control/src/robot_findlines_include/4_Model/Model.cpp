@@ -48,7 +48,7 @@ void Model::fuseModel(const Model & m){
 }   
 //--------------------------------------------------------------------------------------------------------
 std::ostream & operator << (std::ostream &out, const Model &m){ //Checked
-    out << "Model: [ a: " << m.a << ", b: " << m.b << ", energy: " << m.energy;
+    out << "Model: [ a: " << m.a << ", b: " << m.b << ", energy: " << m.energy << ", parallelCount: " << m.parallelCount << ", fitness: " << m.fitness;
     out << "\n\tPoints: Vector {";
     for(int i = 0; i < m.pointsInModel.size(); i++){
         out << "\n\t\t[" << i << "]: " << m.pointsInModel[i];

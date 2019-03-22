@@ -7,15 +7,9 @@ void RubyPure::populateOutliers(const sensor_msgs::LaserScan & msg){ //Checked
     double angle = msg.angle_min;
 
     outliers.clear();
-    models.clear();
 
-    if(this->savedModels.first.getSlope() != MAX_DBL && this->savedModels.first.getIntercept() != MAX_DBL && this->savedModels.first.getEnergy() == 0 && this->savedModels.first.getPointsSize() == 0){
-        models.push_back(this->savedModels.first);
-    }
-
-    if(this->savedModels.second.getSlope() != MAX_DBL && this->savedModels.second.getIntercept() != MAX_DBL && this->savedModels.second.getEnergy() == 0 && this->savedModels.second.getPointsSize() == 0){
-        models.push_back(this->savedModels.second);
-    }
+    for(int i = 0; i < models.size(); i++)
+        models[i].clearPoints();
 
     for(int i = 0; i < msg.ranges.size(); i++){
         if(!isinf(msg.ranges[i]))
@@ -23,77 +17,35 @@ void RubyPure::populateOutliers(const sensor_msgs::LaserScan & msg){ //Checked
         
         angle += msg.angle_increment;
     }
-
-    this->savedModels = std::pair<Model, Model>();
 }
 
 //########################################################################################################
 
 //--------------------------------------------------------------------------------------------------------
-std::vector<int> RubyPure::countParallelLines(){
-    std::vector<int> ret(models.size(), 1);
-
+void RubyPure::countParallelLines(){
     for(int model = 0; model < models.size(); model++){
         for(int model2 = model + 1; model2 < models.size(); model2++){
-            fabs(models[model].getSlope() - models[model].getSlope());
             if(fabs(models[model].getSlope() - models[model2].getSlope()) < this->sameSlopeThreshold){
-                ret[model]++;
-                ret[model2]++;
+                models[model].incrementParallelCount();
+                models[model2].incrementParallelCount();
             }
         }
     }
-    return ret;
 }
 //--------------------------------------------------------------------------------------------------------
 void RubyPure::eraseBadModels(const double threshRatio) {
-    std::vector<int> parrallel = countParallelLines();
+    countParallelLines();
+
+    std::vector<int> modelsToBeDeleted;
 
     for(int model = 0; model < models.size(); model++){
-        if ((models[model].getEnergy() / (double)models[model].getPointsSize() * parrallel[model]) >= threshRatio){
-            removeModel(model);
-            model--;
-        }
-    }
-}
-//--------------------------------------------------------------------------------------------------------
-std::pair<Model, Model> RubyPure::findBestModels() { 
-    std::pair<Model, Model> ret; //first = left, second = right
-    
-    double fitness;
-    double bestFitnessLeft = MAX_DBL;
-    double bestFitnessRight = MAX_DBL;
-
-    int bestLeftPos = MIN_INT;
-    int bestRightPos = MIN_INT; //MAX_INT
-
-    std::vector<int> parrallel = countParallelLines();
-    
-    for(int model = 0; model < models.size(); model++){
-        fitness = models[model].getPointsSize() != 0 ? (fabs(models[model].getIntercept()) + models[model].getEnergy()) / (double)(models[model].getPointsSize() * parrallel[model]) : MAX_DBL;
-
-        if(fitness < bestFitnessLeft && models[model].getIntercept() >= 0){
-            bestFitnessLeft = fitness;
-            bestLeftPos = model;
-        }
-        else if(fitness < bestFitnessRight && models[model].getIntercept() < 0){
-            bestFitnessRight = fitness;
-            bestRightPos = model;
+        if ((models[model].getEnergy() / (double)(models[model].getPointsSize() * models[model].getParallelCount())) >= threshRatio){
+            modelsToBeDeleted.push_back(model);
         }
     }
 
-    if(bestLeftPos != MIN_INT){
-        ret.first.clearPoints();
-        ret.first.setEnergy(0);
-    }
-
-    if(bestRightPos != MIN_INT){
-        ret.second.clearPoints();
-        ret.second.setEnergy(0);
-    }
-
-    this->savedModels = ret;
-
-    return ret;
+    for(int i = 0; i < modelsToBeDeleted.size(); i++)
+        removeModel(modelsToBeDeleted[i]);
 }
 
 //########################################################################################################

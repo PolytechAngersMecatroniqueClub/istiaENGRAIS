@@ -1,0 +1,38 @@
+<?xml version="1.0" ?>
+<sdf version="1.5" xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <!-- default simple world using population grid tag -->
+
+    <xacro:property name="nb_rows"              value="4"    /> <!-- number of rows in the field -->
+    <xacro:property name="nb_plants_row"        value="30"   /> <!-- number of plants in a row -->
+    <xacro:property name="space_between_rows"   value="3.00" /> <!-- space between the rows -->
+    <xacro:property name="space_between_plants" value="0.30" /> <!-- space between the plants in a row -->
+
+
+    <world name="default">
+        <!-- standard plane -->
+        <include>
+            <uri>model://ground_plane</uri>
+        </include>
+
+        <!-- Global light source -->
+        <include>
+            <uri>model://sun</uri>
+        </include>
+
+        <population name="vegetables">
+            <model name="plantgreen">
+                <include>
+                    <uri>model://plantgreen</uri>
+                </include>
+            </model>
+            <pose>${nb_plants_row*space_between_plants/2} ${space_between_rows*(nb_rows-1)/2-space_between_rows/2} 0 0 0 0</pose>
+            <distribution>
+                <type>grid</type>
+                <rows>${nb_rows}</rows>
+                <cols>${nb_plants_row}</cols>
+                <step>${space_between_plants} ${space_between_rows} 0</step>
+            </distribution>
+        </population>
+
+    </world>
+</sdf>

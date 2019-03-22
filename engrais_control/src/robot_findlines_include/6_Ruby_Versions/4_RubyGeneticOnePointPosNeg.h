@@ -20,7 +20,7 @@ class RubyGeneticOnePointPosNeg : public Pearl{
 
 		std::vector<int> numberOfPositivePointsInModels;
 
-		int numberOfPositivePointsInOutliers = 0;
+		int numberOfPositivePointsInOutliers;
 
 		double distanceToBeConsideredSamePoint = 0.1; 
 		double numberOfModelsToSearch = 40;
@@ -32,31 +32,39 @@ class RubyGeneticOnePointPosNeg : public Pearl{
 		//------------------------------------------------------------------------------------------------
 		void populateOutliers(const sensor_msgs::LaserScan & );
 		//------------------------------------------------------------------------------------------------
-		std::pair<Model, Model> findLines();
+		std::vector<Model> findLines();
 		//------------------------------------------------------------------------------------------------
 		std::vector<Point> getInitialField() const ;
 
 	public:
+
+		void clearPointsInModels();
 		//################################################################################################
 
 		//------------------------------------------------------------------------------------------------
-		std::vector<Point> randomPointsInField(const int) const;
+		std::vector<Point> randomPointsInField(const int , const int , const int ) const;
 		//------------------------------------------------------------------------------------------------
 		void searchModels(const int );
+		//------------------------------------------------------------------------------------------------
+		void removeModel(const int );
 
 		//################################################################################################
 
+		//------------------------------------------------------------------------------------------------
+		double redistributePoints();
 		//------------------------------------------------------------------------------------------------
 		double calculateEnergy() const;
 		//------------------------------------------------------------------------------------------------
-		double meanNumbOfPoints() const;
+		double meanNumOfPoints() const;
 
 		//################################################################################################
 		
 		//------------------------------------------------------------------------------------------------
-		std::vector<int> countParallelLines() const;
+		void countParallelLines();
 		//------------------------------------------------------------------------------------------------
-		std::pair<Model, Model> eraseBadModels();
+		void eraseBadModels();
+		//------------------------------------------------------------------------------------------------
+		void fuseEqualModels();
 
 		//################################################################################################
 		
