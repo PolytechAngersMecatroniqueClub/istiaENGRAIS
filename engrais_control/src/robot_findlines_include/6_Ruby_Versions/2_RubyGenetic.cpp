@@ -32,9 +32,9 @@ std::vector<Model> RubyGenetic::findLines() {
         for (int it = 0; it < this->maxNumberOfIterations; it++) {
             searchModels(this->numberOfModelsToSearch - models.size());
 
-            fuseEqualModels();
-
             redistributePoints();
+            
+            fuseEqualModels();
 
             numberMinOfPoints = std::max((int)(meanNumbOfPoints() * this->factorToDeletePoints), 3);
 

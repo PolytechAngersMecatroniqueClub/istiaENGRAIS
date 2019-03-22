@@ -63,18 +63,17 @@ std::vector<Model> RubyGeneticOnePointPosNeg::findLines() {
         std::vector<Model> bestModels;
         std::vector<Point> bestOutliers;
 
-        for (int it = 0; it < this->maxNumberOfIterations; it++) {
+        for (int it = 0; it < 1; it++) {
             searchModels(this->numberOfModelsToSearch - models.size());
             //cout << "search ok" << endl;
-            fuseEqualModels();
-            //cout << "fuse ok" << endl;
             redistributePoints();
+            //cout << "fuse ok" << endl;
+            fuseEqualModels();
             //cout << "redistri ok" << endl;
             numberMinOfPoints = std::max((int)(meanNumOfPoints() * this->factorToDeletePoints), 3);
 
             removeTinyModels(numberMinOfPoints);
             //cout << "remove ok" << endl;
-
             reEstimation();
             //cout << "reestim ok" << endl;
 
@@ -265,9 +264,11 @@ void RubyGeneticOnePointPosNeg::eraseBadModels(){
 
     std::sort(models.begin(), models.end());
 
-    for(int i = (int)(models.size()*0.25); i < models.size(); i++){
-    	removeModel(i);
-    	i--;
+    int initialPos = std::max((int)(models.size()*0.25), 6);
+
+    for(int i = initialPos; i < models.size(); i++){
+        removeModel(i);
+        i--;
     }
 }
 //--------------------------------------------------------------------------------------------------------

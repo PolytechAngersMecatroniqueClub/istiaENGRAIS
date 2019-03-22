@@ -47,9 +47,9 @@ std::vector<Model> RubyGeneticOnePoint::findLines() {
         for (int it = 0; it < this->maxNumberOfIterations; it++) {
             searchModels(this->numberOfModelsToSearch - models.size());
 
-            fuseEqualModels();
-
             redistributePoints();
+
+            fuseEqualModels();
 
             numberMinOfPoints = std::max((int)(meanNumbOfPoints() * this->factorToDeletePoints), 3);
 
@@ -152,9 +152,11 @@ void RubyGeneticOnePoint::eraseBadModels(){
 
     std::sort(models.begin(), models.end());
 
-    for(int i = (int)(models.size()*0.25); i < models.size(); i++){
-    	removeModel(i);
-    	i--;
+    int initialPos = std::max((int)(models.size()*0.25), 6);
+
+    for(int i = initialPos; i < models.size(); i++){
+        removeModel(i);
+        i--;
     }
 }
 

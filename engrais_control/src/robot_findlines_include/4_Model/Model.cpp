@@ -26,8 +26,11 @@ Model Model::linearFit(const std::vector<Point> & vec){ //Checked
 //--------------------------------------------------------------------------------------------------------
 void Model::findBestModel(){
     Model best = Model::linearFit(pointsInModel);
-    this->a = best.getSlope();
-    this->b = best.getIntercept();
+    if(best.getSlope() != MAX_DBL)
+        this->a = best.getSlope();
+
+    if(best.getIntercept() != MAX_DBL)
+        this->b = best.getIntercept();
 
     this->energy = 0;
     for (Point p : pointsInModel){

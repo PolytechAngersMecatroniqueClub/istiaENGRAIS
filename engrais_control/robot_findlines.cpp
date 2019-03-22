@@ -113,9 +113,11 @@ void sendLine(const vector<Model> & models) {
 void OnRosMsg(const sensor_msgs::LaserScan & msg){
     auto start = std::chrono::system_clock::now();
 
-    rubyGen.populateOutliers(msg);
+    rubyGenOPPN.populateOutliers(msg);
 
-    vector <Model> lines = rubyGen.findLines();
+    vector <Model> lines = rubyGenOPPN.findLines();
+
+    //cout << rubyGenOPPN << endl;
 
     sendLine(lines);
 
@@ -126,6 +128,8 @@ void OnRosMsg(const sensor_msgs::LaserScan & msg){
 
     totalExecutionTime += elapsed_seconds.count();
     timesExecuted++;
+
+    //exit(1);
 
     std::cout << "finished computation at " << std::ctime(&end_time) << "elapsed time: " << elapsed_seconds.count() << "s\n";
 }
