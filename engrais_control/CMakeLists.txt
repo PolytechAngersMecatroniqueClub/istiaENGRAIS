@@ -35,6 +35,7 @@ add_executable(robot_findlines robot_findlines.cpp
     src/robot_findlines_include/6_Ruby_Versions/2_RubyGenetic.cpp
     src/robot_findlines_include/6_Ruby_Versions/3_RubyGeneticOnePoint.cpp
     src/robot_findlines_include/6_Ruby_Versions/4_RubyGeneticOnePointPosNeg.cpp
+    src/robot_findlines_include/6_Ruby_Versions/5_RubyGeneticOnePointPosNegInfinite.cpp
 )
 target_link_libraries(robot_findlines ${catkin_LIBRARIES})
 

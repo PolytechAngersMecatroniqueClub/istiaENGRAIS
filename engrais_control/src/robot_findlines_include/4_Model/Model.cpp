@@ -46,7 +46,9 @@ void Model::findBestModel(const std::vector<Point> & rPointsInModel){
 }
 //--------------------------------------------------------------------------------------------------------
 void Model::fuseModel(const Model & m){
-    pointsInModel.insert(pointsInModel.end(), m.getPointsVecBegin(), m.getPointsVecEnd());
+    this->pointsInModel.insert(this->pointsInModel.begin(), m.getPointsVecBegin(), m.getPointsVecBegin() + m.getPositivePointsNum());
+    this->pointsInModel.insert(this->pointsInModel.end(), m.getPointsVecBegin() + m.getPositivePointsNum(), m.getPointsVecEnd());
+
     this->findBestModel();
 }   
 //--------------------------------------------------------------------------------------------------------

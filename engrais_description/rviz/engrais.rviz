@@ -7,7 +7,6 @@ Panels:
         - /Global Options1
         - /LaserScan2
         - /Marker1
-        - /Marker2/Status1
       Splitter Ratio: 0.5
     Tree Height: 728
   - Class: rviz/Selection
@@ -28,7 +27,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: LaserScan
+    SyncSource: ""
 Preferences:
   PromptSaveOnExit: true
 Visualization Manager:
@@ -124,17 +123,17 @@ Visualization Manager:
       Marker Topic: /robot_engrais/all_lines_found
       Name: Marker
       Namespaces:
-        points_and_lines: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /robot_engrais/selected_lines
       Name: Marker
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48

@@ -1,6 +1,6 @@
 //********************************************************************************************************
-#ifndef RUBY_GENETIC_ONE_POINT_POS_NEG
-#define RUBY_GENETIC_ONE_POINT_POS_NEG
+#ifndef RUBY_GENETIC_ONE_POINT_POS_NEG_INFINITE
+#define RUBY_GENETIC_ONE_POINT_POS_NEG_INFINITE
 
 #include <iostream>
 #include <vector>
@@ -14,11 +14,11 @@
 #include "../4_Model/Model.h"
 #include "../5_Pearl/Pearl.h"
 
-class RubyGeneticOnePointPosNeg : public Pearl{
+class RubyGeneticOnePointPosNegInfinite : public Pearl{
 	public:
-		std::vector<Point> initialField;
+		std::vector<Point> field;
 		
-		int numberOfPositivePointsInOutliers = 0;
+		int numberOfPositivePointsInField = 0;
 
 		double distanceToBeConsideredSamePoint = 0.1; 
 		double numberOfModelsToSearch = 40;
@@ -26,7 +26,7 @@ class RubyGeneticOnePointPosNeg : public Pearl{
 
 	public:
 		//------------------------------------------------------------------------------------------------
-		RubyGeneticOnePointPosNeg();
+		RubyGeneticOnePointPosNegInfinite();
 		//------------------------------------------------------------------------------------------------
 		void populateOutliers(const sensor_msgs::LaserScan & );
 		//------------------------------------------------------------------------------------------------
@@ -64,14 +64,14 @@ class RubyGeneticOnePointPosNeg : public Pearl{
 		//------------------------------------------------------------------------------------------------
 		void fuseEqualModels();
 
-		//################################################################################################
+		//################################################################################################*/
 		
-		friend std::ostream & operator << (std::ostream &out, const RubyGeneticOnePointPosNeg &r);
+		friend std::ostream & operator << (std::ostream &out, const RubyGeneticOnePointPosNegInfinite &r);
 };
 
-inline RubyGeneticOnePointPosNeg::RubyGeneticOnePointPosNeg(){}
+inline RubyGeneticOnePointPosNegInfinite::RubyGeneticOnePointPosNegInfinite(){}
 
-inline std::vector<Point> RubyGeneticOnePointPosNeg::getInitialField() const {  return initialField; }
+inline std::vector<Point> RubyGeneticOnePointPosNegInfinite::getInitialField() const {  return field; }
 
 #endif
 //********************************************************************************************************

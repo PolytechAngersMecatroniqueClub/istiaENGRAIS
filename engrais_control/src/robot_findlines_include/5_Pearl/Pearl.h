@@ -15,8 +15,8 @@
 class Pearl{ 
     public: 
         std::vector<Model> models;
-        std::vector<Point> outliers;    
-
+        std::vector<Point> outliers;   
+        std::vector<Point> initialField;
         
     public:
         int maxNumberOfIterations = 10; 
@@ -37,9 +37,11 @@ class Pearl{
         //------------------------------------------------------------------------------------------------
         Pearl(); //Checked
         //------------------------------------------------------------------------------------------------
-        void populateOutliers(const sensor_msgs::LaserScan & ); //Checked
+        virtual void populateOutliers(const sensor_msgs::LaserScan & ); //Checked
         //------------------------------------------------------------------------------------------------
         virtual std::vector<Model> findLines(); //Checked
+        //------------------------------------------------------------------------------------------------
+        virtual std::vector<Point> getInitialField() const ;
             
     public:
     	//------------------------------------------------------------------------------------------------
@@ -88,6 +90,9 @@ class Pearl{
 
 //--------------------------------------------------------------------------------------------------------
 inline Pearl::Pearl(){} //Checked
+//--------------------------------------------------------------------------------------------------------
+inline std::vector<Point> Pearl::getInitialField() const { return initialField; }
+
 
 #endif
 //********************************************************************************************************

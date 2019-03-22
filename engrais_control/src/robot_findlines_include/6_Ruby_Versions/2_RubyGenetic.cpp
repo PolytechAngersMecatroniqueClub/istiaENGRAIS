@@ -1,7 +1,7 @@
 //********************************************************************************************************
 #include "2_RubyGenetic.h"
 
-using namespace std;
+
 //--------------------------------------------------------------------------------------------------------
 void RubyGenetic::populateOutliers(const sensor_msgs::LaserScan & msg){ 
     double angle = msg.angle_min;
@@ -32,9 +32,9 @@ std::vector<Model> RubyGenetic::findLines() {
         for (int it = 0; it < this->maxNumberOfIterations; it++) {
             searchModels(this->numberOfModelsToSearch - models.size());
 
-            redistributePoints();
-            
             fuseEqualModels();
+            
+            redistributePoints();
 
             numberMinOfPoints = std::max((int)(meanNumbOfPoints() * this->factorToDeletePoints), 3);
 
@@ -97,7 +97,7 @@ void RubyGenetic::searchModels(const int nbOfModels) {
 
 //--------------------------------------------------------------------------------------------------------
 double RubyGenetic::calculateEnergy() const { 
-    double energy = 0;
+    double energy = outliers.size() * this->outlierPenalty;
 
     for(Model m : models)
         energy += m.getEnergy();
@@ -137,7 +137,7 @@ void RubyGenetic::eraseBadModels(){
 
     std::sort(models.begin(), models.end());
 
-    int initialPos = max((int)(models.size()*0.25), 6);
+    int initialPos = std::max((int)(models.size()*0.25), 6);
 
     for(int i = initialPos; i < models.size(); i++){
     	removeModel(i);

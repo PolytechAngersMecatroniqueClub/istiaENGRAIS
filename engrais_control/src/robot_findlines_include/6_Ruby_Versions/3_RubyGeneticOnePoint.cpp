@@ -46,10 +46,10 @@ std::vector<Model> RubyGeneticOnePoint::findLines() {
 
         for (int it = 0; it < this->maxNumberOfIterations; it++) {
             searchModels(this->numberOfModelsToSearch - models.size());
+            
+            fuseEqualModels();
 
             redistributePoints();
-
-            fuseEqualModels();
 
             numberMinOfPoints = std::max((int)(meanNumbOfPoints() * this->factorToDeletePoints), 3);
 
@@ -112,7 +112,7 @@ void RubyGeneticOnePoint::searchModels(const int nbOfModels) {
 
 //--------------------------------------------------------------------------------------------------------
 double RubyGeneticOnePoint::calculateEnergy(){ 
-    double energy = 0;
+    double energy = outliers.size() * this->outlierPenalty;
 
     for(Model m : models)
         energy += m.getEnergy();

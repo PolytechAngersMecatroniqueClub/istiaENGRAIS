@@ -18,6 +18,7 @@ class Model{
         int parallelCount = 1;
         double fitness = MAX_DBL;
 
+        int positivePoints = 0;
         std::vector<Point> pointsInModel;
 
     public:
@@ -41,6 +42,8 @@ class Model{
         double getIntercept() const; //Checked
         //------------------------------------------------------------------------------------------------
         double getEnergy() const; //Checked
+        //------------------------------------------------------------------------------------------------
+        int getPositivePointsNum() const;
         //------------------------------------------------------------------------------------------------
         bool isPopulated() const;
         //------------------------------------------------------------------------------------------------
@@ -66,6 +69,10 @@ class Model{
         void fuseModel(const Model & );
         //------------------------------------------------------------------------------------------------
         void setEnergy(const double ); //Checked
+        //------------------------------------------------------------------------------------------------
+        void setPositivePointsNum(const int ); //Checked
+        //------------------------------------------------------------------------------------------------
+        void incrementPositivePointsNum();
         //------------------------------------------------------------------------------------------------
         void addEnergy(const double ); //Checked
         //------------------------------------------------------------------------------------------------
@@ -98,6 +105,8 @@ inline double Model::getIntercept() const { return this->b; } //Checked
 //--------------------------------------------------------------------------------------------------------
 inline double Model::getEnergy() const { return this->energy; } //Checked
 //--------------------------------------------------------------------------------------------------------
+inline int Model::getPositivePointsNum() const { return this->positivePoints; }
+//--------------------------------------------------------------------------------------------------------
 inline bool Model::isPopulated() const { 
     if(a == MAX_DBL && b == MAX_DBL)
         return false;
@@ -124,6 +133,10 @@ inline void Model::pushPointAtBeginning(const Point & p) { pointsInModel.insert(
 //--------------------------------------------------------------------------------------------------------
 inline void Model::setEnergy(const double e) { this->energy = e; } //Checked
 //--------------------------------------------------------------------------------------------------------
+inline void Model::setPositivePointsNum(const int p) { this->positivePoints = p; }
+//--------------------------------------------------------------------------------------------------------
+inline void Model::incrementPositivePointsNum() { this->positivePoints++; }
+//--------------------------------------------------------------------------------------------------------
 inline void Model::addEnergy(const double e) { this->energy += e; } //Checked
 //--------------------------------------------------------------------------------------------------------
 inline void Model::setParallelCount(const int p) { parallelCount = p; }
@@ -132,7 +145,7 @@ inline void Model::incrementParallelCount() { parallelCount++; }
 //--------------------------------------------------------------------------------------------------------
 inline double Model::calculateFitness() { this->fitness = (this->getPointsSize() != 0 ? (pow(this->getIntercept(), 2) + this->getEnergy() * 10) / (double)(pow(this->getPointsSize(), 2) * this->parallelCount) : MAX_DBL); return this->fitness; }
 //--------------------------------------------------------------------------------------------------------
-inline void Model::clearPoints() { pointsInModel.clear(); } //Checked
+inline void Model::clearPoints() { positivePoints = 0; pointsInModel.clear(); } //Checked
 
 
 //--------------------------------------------------------------------------------------------------------

@@ -23,6 +23,7 @@
 #include "src/robot_findlines_include/6_Ruby_Versions/2_RubyGenetic.h"
 #include "src/robot_findlines_include/6_Ruby_Versions/3_RubyGeneticOnePoint.h"
 #include "src/robot_findlines_include/6_Ruby_Versions/4_RubyGeneticOnePointPosNeg.h"
+#include "src/robot_findlines_include/6_Ruby_Versions/5_RubyGeneticOnePointPosNegInfinite.h"
 
 
 using namespace std;
@@ -32,6 +33,7 @@ RubyPure rubyPure;
 RubyGenetic rubyGen;
 RubyGeneticOnePoint rubyGenOP;
 RubyGeneticOnePointPosNeg rubyGenOPPN;
+RubyGeneticOnePointPosNegInfinite rubyGenOPPNInf;
 
 ros::Subscriber sub;
 ros::Publisher pubLineNode;
@@ -75,13 +77,13 @@ void preparePointsAndLines(visualization_msgs::Marker & line_list, visualization
         line_list.color.a = 1.0;
 }
 //--------------------------------------------------------------------------------------------------------
-void sendLine(const vector<Model> & models) { 
+void sendLine(const vector<Model> & models, Pearl & pearl) { 
     visualization_msgs::Marker line_list, points;
     geometry_msgs::Point p;
 
     preparePointsAndLines(line_list, points);
 
-    for(Point point : rubyGenOPPN.getInitialField()){
+    for(Point point : pearl.getInitialField()){
 		p.x = point.getX();
 		p.y = point.getY();
 		p.z = 0.1;
@@ -113,13 +115,13 @@ void sendLine(const vector<Model> & models) {
 void OnRosMsg(const sensor_msgs::LaserScan & msg){
     auto start = std::chrono::system_clock::now();
 
-    rubyGenOPPN.populateOutliers(msg);
+    rubyGenOPPNInf.populateOutliers(msg);
 
-    vector <Model> lines = rubyGenOPPN.findLines();
+    vector <Model> lines = rubyGenOPPNInf.findLines();
 
-    //cout << rubyGenOPPN << endl;
+    sendLine(lines, rubyGenOPPNInf);
 
-    sendLine(lines);
+    //cout << rubyGenOPPNInf << endl;
 
     auto end = std::chrono::system_clock::now();
 
@@ -128,9 +130,7 @@ void OnRosMsg(const sensor_msgs::LaserScan & msg){
 
     totalExecutionTime += elapsed_seconds.count();
     timesExecuted++;
-
-    //exit(1);
-
+//exit(1);
     std::cout << "finished computation at " << std::ctime(&end_time) << "elapsed time: " << elapsed_seconds.count() << "s\n";
 }
 //--------------------------------------------------------------------------------------------------------
