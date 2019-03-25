@@ -3,13 +3,15 @@
 
 
 //--------------------------------------------------------------------------------------------------------
-void RubyGeneticOnePoint::populateOutliers(const sensor_msgs::LaserScan & msg){ 
+void RubyGeneticOnePoint::populateOutliers(const sensor_msgs::LaserScan & msg){ //Checked 
     double angle = msg.angle_min;
 
     outliers.clear();
 
-    for(int i = 0; i < models.size(); i++)
+    for(int i = 0; i < models.size(); i++){
         models[i].clearPoints();
+        models[i].resetParallelCount();
+    }
 
     WeightedPoint fusedPoint;
 
@@ -34,7 +36,7 @@ void RubyGeneticOnePoint::populateOutliers(const sensor_msgs::LaserScan & msg){
     initialField = outliers;
 }
 //--------------------------------------------------------------------------------------------------------
-std::vector<Model> RubyGeneticOnePoint::findLines() { 
+std::vector<Model> RubyGeneticOnePoint::findLines() { //Checked 
     int numberMinOfPoints;
 
     double newEnergy = MAX_DBL, energy = MAX_DBL;
@@ -86,7 +88,7 @@ std::vector<Model> RubyGeneticOnePoint::findLines() {
 //########################################################################################################
 
 //--------------------------------------------------------------------------------------------------------
-std::vector<Point> RubyGeneticOnePoint::randomPointsInField(const int num) { 
+std::vector<Point> RubyGeneticOnePoint::randomPointsInField(const int num) { //Checked 
     std::vector<Point> ret(num);
 
     std::vector<int> randomNums = Utility::randomDiffVector(0, outliers.size() - 1, num);
@@ -100,18 +102,21 @@ std::vector<Point> RubyGeneticOnePoint::randomPointsInField(const int num) {
     return ret;
 }
 //--------------------------------------------------------------------------------------------------------
-void RubyGeneticOnePoint::searchModels(const int nbOfModels) { 
+void RubyGeneticOnePoint::searchModels(const int nbOfModels) { //Checked 
     if(outliers.size() < INITIAL_NUMBER_OF_POINTS)
-            return;
+        return;
         
-    for(int modelNum = 0; modelNum < nbOfModels; modelNum++)
-        models.push_back(Model::linearFit(randomPointsInField(INITIAL_NUMBER_OF_POINTS)));
+    for(int modelNum = 0; modelNum < nbOfModels; modelNum++){
+        std::vector<Point> points = randomPointsInField(INITIAL_NUMBER_OF_POINTS);
+        if(points.size() > 0)
+            models.push_back(Model::linearFit(points));
+    }
 }
 
 //########################################################################################################
 
 //--------------------------------------------------------------------------------------------------------
-double RubyGeneticOnePoint::calculateEnergy(){ 
+double RubyGeneticOnePoint::calculateEnergy(){ //Checked 
     double energy = outliers.size() * this->outlierPenalty;
 
     for(Model m : models)
@@ -122,7 +127,7 @@ double RubyGeneticOnePoint::calculateEnergy(){
     return energy;
 }
 //--------------------------------------------------------------------------------------------------------
-double RubyGeneticOnePoint::meanNumbOfPoints(){ 
+double RubyGeneticOnePoint::meanNumbOfPoints(){ //Checked 
     double mean = 0;
     for(Model m : models)
         mean += m.getPointsSize();
@@ -133,7 +138,7 @@ double RubyGeneticOnePoint::meanNumbOfPoints(){
 //########################################################################################################
 
 //--------------------------------------------------------------------------------------------------------
-void RubyGeneticOnePoint::countParallelLines(){ 
+void RubyGeneticOnePoint::countParallelLines(){ //Checked 
     for(int model = 0; model < models.size(); model++){
         for(int model2 = model + 1; model2 < models.size(); model2++){
             if(fabs(models[model].getSlope() - models[model2].getSlope()) < this->sameSlopeThreshold){
@@ -144,7 +149,7 @@ void RubyGeneticOnePoint::countParallelLines(){
     }
 }
 //--------------------------------------------------------------------------------------------------------
-void RubyGeneticOnePoint::eraseBadModels(){  
+void RubyGeneticOnePoint::eraseBadModels(){ //Checked 
     countParallelLines();
     
     for(int i = 0; i < models.size(); i++)
@@ -162,28 +167,29 @@ void RubyGeneticOnePoint::eraseBadModels(){
 
 //########################################################################################################
 
-std::ostream & operator << (std::ostream &out, const RubyGeneticOnePoint &r){ 
-    out << "RubyGeneticOnePoint: [\n\tModels: Vector {\n";
-    for(int m = 0; m < r.models.size(); m++){
-        out << "\t\t[" << m << "]: Model [ a: " << r.models[m].getSlope() << ", b: " << r.models[m].getIntercept() << ", energy: " << r.models[m].getEnergy();
-        out << "\n\t\t\tPoints: Vector {";
+std::ostream & operator << (std::ostream &out, const RubyGeneticOnePoint &r){ //Checked 
+    out << "RubyGeneticOnePoint: [\n\t  Models: Vector {\n";
+
+    for(int i = 0; i < r.models.size(); i++){
+        out << "\t\t[" << i << "]: Model: [ a: " << r.models[i].getSlope() << ", b: " << r.models[i].getIntercept() << ", energy: " << r.models[i].getEnergy() << ", parallelCount: " << r.models[i].parallelCount << ", fitness: " << r.models[i].fitness;
+        out << "\n\t\t\t\tPositive Points: " << r.models[i].positivePoints << ", Points: Vector {";
         int pos = 0;
-        for(Point p : r.models[m].getPointsInModel()){
-            out << "\n\t\t\t\t[" << pos << "]: " << p;
+        for(Point r : r.models[i].getPointsInModel()){
+            out << "\n\t\t\t\t\t[" << pos << "]: " << r;
             pos++;
         }
-        out << "\n\t\t\t}\n\t\t]\n";
+        out << "\n\t\t\t\t}\n\t\t\t    ]\n";
     }
 
-    out << "\t}\n\n\tOutliers: Vector {";
+    out << "\t  }\n\n\t  Outliers: Vector {";
 
     for(int outP = 0; outP < r.outliers.size(); outP++){
         out << "\n\t\t[" << outP << "]: " << r.outliers[outP];
     }
 
-    out << "\n\t}";
-    out << "\n]";
-    return out; 
+    out << "\n\t  }";
+    out << "\n       ]\n";
+    return out;    
 }
 
 //********************************************************************************************************

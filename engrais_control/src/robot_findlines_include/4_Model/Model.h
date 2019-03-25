@@ -10,30 +10,28 @@
 
 
 class Model{ 
-    private: 
+    public: 
         double a;
         double b;
         double energy;
 
-        int parallelCount = 1;
-        double fitness = MAX_DBL;
+        int parallelCount;
+        double fitness;
 
-        int positivePoints = 0;
+        int positivePoints;
         std::vector<Point> pointsInModel;
 
     public:
         //------------------------------------------------------------------------------------------------
         Model(const double = MAX_DBL , const double = MAX_DBL , const double = MAX_DBL); //Checked
-        //------------------------------------------------------------------------------------------------
-        Model(const std::vector<Point> & ); //Checked
 
 
         //------------------------------------------------------------------------------------------------
         static Model linearFit(const std::vector<Point> & ); //Checked
         //------------------------------------------------------------------------------------------------
-        void findBestModel();
+        void findBestModel(); //Checked 
         //------------------------------------------------------------------------------------------------
-        void findBestModel(const std::vector<Point> & );
+        void findBestModel(const std::vector<Point> & ); //Checked 
 
 
         //------------------------------------------------------------------------------------------------
@@ -43,59 +41,46 @@ class Model{
         //------------------------------------------------------------------------------------------------
         double getEnergy() const; //Checked
         //------------------------------------------------------------------------------------------------
-        int getPositivePointsNum() const;
+        int getParallelCount() const; //Checked
         //------------------------------------------------------------------------------------------------
-        bool isPopulated() const;
+        double getFitness() const; //Checked
         //------------------------------------------------------------------------------------------------
-        double getFitness() const;
+        int getPositivePointsNum() const; //Checked
         //------------------------------------------------------------------------------------------------
         int getPointsSize() const; //Checked
-        //------------------------------------------------------------------------------------------------
-        int getParallelCount() const;
         //------------------------------------------------------------------------------------------------
         std::vector<Point> getPointsInModel() const; //Checked
         //------------------------------------------------------------------------------------------------
         std::vector<Point>::const_iterator getPointsVecBegin() const; //Checked
         //------------------------------------------------------------------------------------------------
         std::vector<Point>::const_iterator getPointsVecEnd() const; //Checked
-
+        //------------------------------------------------------------------------------------------------
+        bool isPopulated() const; //Checked
 
 
         //------------------------------------------------------------------------------------------------
         void pushPoint(const Point & ); //Checked
         //------------------------------------------------------------------------------------------------
-        void pushPointAtBeginning(const Point & );
+        void fuseModel(const Model & ); //Checked 
         //------------------------------------------------------------------------------------------------
-        void fuseModel(const Model & );
+        void incrementParallelCount(); //Checked
         //------------------------------------------------------------------------------------------------
-        void setEnergy(const double ); //Checked
+        void resetParallelCount(); //Checked
         //------------------------------------------------------------------------------------------------
-        void setPositivePointsNum(const int ); //Checked
-        //------------------------------------------------------------------------------------------------
-        void incrementPositivePointsNum();
-        //------------------------------------------------------------------------------------------------
-        void addEnergy(const double ); //Checked
-        //------------------------------------------------------------------------------------------------
-        void setParallelCount(const int );
-        //------------------------------------------------------------------------------------------------
-        void incrementParallelCount();
-        //------------------------------------------------------------------------------------------------
-        double calculateFitness();
+        double calculateFitness(); //Checked
         //------------------------------------------------------------------------------------------------
         void clearPoints(); //Checked
 
 
         //------------------------------------------------------------------------------------------------
-        bool operator < (const Model & ) const;
+        bool operator < (const Model & ) const; //Checked 
         //------------------------------------------------------------------------------------------------
-        friend std::ostream & operator << (std::ostream & , const Model & ); //Checked
+        friend std::ostream & operator << (std::ostream & , const Model & ); //Checked 
 };
 
 
 //--------------------------------------------------------------------------------------------------------
-inline Model::Model(const double aa, const double bb, const double e) : a(aa), b(bb), energy(e) {} //Checked
-//--------------------------------------------------------------------------------------------------------
-inline Model::Model(const std::vector<Point> & vec) : a(MAX_DBL), b(MAX_DBL), energy(MAX_DBL) { findBestModel(vec); } //Checked
+inline Model::Model(const double aa, const double bb, const double e) : a(aa), b(bb), energy(e), parallelCount(1), fitness(MAX_DBL), positivePoints(0) {} //Checked
 
 
 //--------------------------------------------------------------------------------------------------------
@@ -105,51 +90,39 @@ inline double Model::getIntercept() const { return this->b; } //Checked
 //--------------------------------------------------------------------------------------------------------
 inline double Model::getEnergy() const { return this->energy; } //Checked
 //--------------------------------------------------------------------------------------------------------
-inline int Model::getPositivePointsNum() const { return this->positivePoints; }
+inline int Model::getParallelCount() const { return parallelCount; } //Checked
 //--------------------------------------------------------------------------------------------------------
-inline bool Model::isPopulated() const { 
-    if(a == MAX_DBL && b == MAX_DBL)
-        return false;
-    return true;
-}
+inline double Model::getFitness() const { return fitness; } //Checked
 //--------------------------------------------------------------------------------------------------------
-inline double Model::getFitness() const { return fitness; }
+inline int Model::getPositivePointsNum() const { return this->positivePoints; } //Checked
 //--------------------------------------------------------------------------------------------------------
 inline int Model::getPointsSize() const { return pointsInModel.size(); } //Checked
-//--------------------------------------------------------------------------------------------------------
-inline int Model::getParallelCount() const { return parallelCount; }
 //--------------------------------------------------------------------------------------------------------
 inline std::vector<Point> Model::getPointsInModel() const { return this->pointsInModel; } //Checked
 //--------------------------------------------------------------------------------------------------------
 inline std::vector<Point>::const_iterator Model::getPointsVecBegin() const { return pointsInModel.begin(); } //Checked
 //--------------------------------------------------------------------------------------------------------
 inline std::vector<Point>::const_iterator Model::getPointsVecEnd() const { return pointsInModel.end(); } //Checked
+//--------------------------------------------------------------------------------------------------------
+inline bool Model::isPopulated() const { //Checked 
+    if(a == MAX_DBL && b == MAX_DBL)
+        return false;
+    return true;
+}
 
 
 //--------------------------------------------------------------------------------------------------------
-inline void Model::pushPoint(const Point & p) { pointsInModel.push_back(p); } //Checked
+inline void Model::incrementParallelCount(){ parallelCount++; } //Checked
 //--------------------------------------------------------------------------------------------------------
-inline void Model::pushPointAtBeginning(const Point & p) { pointsInModel.insert(pointsInModel.begin(), 1, p); }
+inline void Model::resetParallelCount() { parallelCount = 1; } //Checked
 //--------------------------------------------------------------------------------------------------------
-inline void Model::setEnergy(const double e) { this->energy = e; } //Checked
+inline double Model::calculateFitness() { this->fitness = (this->getPointsSize() != 0 ? (pow(this->getIntercept(), 2) + this->getEnergy() * 10) / (double)(pow(this->getPointsSize(), 2) * this->parallelCount) : MAX_DBL); return this->fitness; } //Checked
 //--------------------------------------------------------------------------------------------------------
-inline void Model::setPositivePointsNum(const int p) { this->positivePoints = p; }
-//--------------------------------------------------------------------------------------------------------
-inline void Model::incrementPositivePointsNum() { this->positivePoints++; }
-//--------------------------------------------------------------------------------------------------------
-inline void Model::addEnergy(const double e) { this->energy += e; } //Checked
-//--------------------------------------------------------------------------------------------------------
-inline void Model::setParallelCount(const int p) { parallelCount = p; }
-//--------------------------------------------------------------------------------------------------------
-inline void Model::incrementParallelCount() { parallelCount++; }
-//--------------------------------------------------------------------------------------------------------
-inline double Model::calculateFitness() { this->fitness = (this->getPointsSize() != 0 ? (pow(this->getIntercept(), 2) + this->getEnergy() * 10) / (double)(pow(this->getPointsSize(), 2) * this->parallelCount) : MAX_DBL); return this->fitness; }
-//--------------------------------------------------------------------------------------------------------
-inline void Model::clearPoints() { positivePoints = 0; pointsInModel.clear(); } //Checked
+inline void Model::clearPoints() { this->energy = MAX_DBL; this->positivePoints = 0; this->pointsInModel.clear(); } //Checked
 
 
 //--------------------------------------------------------------------------------------------------------
-inline bool Model::operator < (const Model & m) const { return (this->getFitness() < m.getFitness()); }
+inline bool Model::operator < (const Model & m) const { return (this->getFitness() < m.getFitness()); } //Checked 
 
 #endif
 //********************************************************************************************************

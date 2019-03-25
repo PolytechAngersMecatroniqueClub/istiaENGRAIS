@@ -115,11 +115,11 @@ void sendLine(const vector<Model> & models, Pearl & pearl) {
 void OnRosMsg(const sensor_msgs::LaserScan & msg){
     auto start = std::chrono::system_clock::now();
 
-    rubyGenOPPNInf.populateOutliers(msg);
+    rubyGenOPPN.populateOutliers(msg);
 
-    vector <Model> lines = rubyGenOPPNInf.findLines();
+    vector <Model> lines = rubyGenOPPN.findLines();
 
-    sendLine(lines, rubyGenOPPNInf);
+    sendLine(lines, rubyGenOPPN);
 
     //cout << rubyGenOPPNInf << endl;
 
@@ -130,12 +130,12 @@ void OnRosMsg(const sensor_msgs::LaserScan & msg){
 
     totalExecutionTime += elapsed_seconds.count();
     timesExecuted++;
-//exit(1);
+    //exit(1);
     std::cout << "finished computation at " << std::ctime(&end_time) << "elapsed time: " << elapsed_seconds.count() << "s\n";
 }
 //--------------------------------------------------------------------------------------------------------
 int main(int argc, char **argv){
-
+    
     ROS_INFO("Initializing Robot Control Ros Node");
 
     srand (time(NULL));
@@ -159,7 +159,6 @@ int main(int argc, char **argv){
     ROS_INFO("Code ended without errors");
 
     Utility::printInColor("Total Calculations Time: " + to_string(totalExecutionTime) + "s, code ran " + to_string(timesExecuted) + " times.\nMean Calculation time: " + to_string(totalExecutionTime/(double)timesExecuted) + "s", BLUE);
-    
 
     return 0;
 }

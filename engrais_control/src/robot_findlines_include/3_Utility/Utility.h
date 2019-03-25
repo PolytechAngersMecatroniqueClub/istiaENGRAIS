@@ -18,15 +18,15 @@
 class Utility{
     public:
         //------------------------------------------------------------------------------------------------
-        static double calcSumDist(const std::vector<Point> & , const double , const double ); //Checked
-        //------------------------------------------------------------------------------------------------
         static int randomInt(const int min, const int max); //Checked
+        //------------------------------------------------------------------------------------------------
+        static double calcSumDist(const std::vector<Point> & , const double , const double ); //Checked
         //------------------------------------------------------------------------------------------------
         static void printInColor(const std::string , const int ); //Checked
         //------------------------------------------------------------------------------------------------
-        static std::vector<int> randomDiffVector(const int min, const int max, const int size);
+        static std::vector<int> randomDiffVector(const int min, const int max, const int size); //Checked
         //------------------------------------------------------------------------------------------------
-        template < class T> static void printVector(const std::vector<T> & vec){ //Checked
+        template < class T> static void printVector(const std::vector<T> & vec){ //Checked 
         	std::cout << std::endl << "Vector {" << std::endl;
 		    for(int i = 0; i < vec.size(); i++){
 		        std::cout << "\t" << i << ": [" << vec[i] << "]" << std::endl; 
@@ -34,7 +34,7 @@ class Utility{
 		    std::cout << "}" << std::endl;
 	    }
         //------------------------------------------------------------------------------------------------
-        template < typename T> static int findIndex(const std::vector<T> & vec, const T element){
+        template < typename T> static int findIndex(const std::vector<T> & vec, const T element){ //Checked 
             int index = MIN_INT;
             auto it = std::find(vec.begin(), vec.end(), element);
             if (it != vec.end())
@@ -43,6 +43,7 @@ class Utility{
             return index;
         }
 };
+
 
 //--------------------------------------------------------------------------------------------------------
 inline int Utility::randomInt(const int min, const int max){ return (rand() % (max - min + 1)) + min; } //Checked

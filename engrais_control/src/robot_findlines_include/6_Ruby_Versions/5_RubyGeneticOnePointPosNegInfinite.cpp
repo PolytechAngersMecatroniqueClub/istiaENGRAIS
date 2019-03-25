@@ -1,9 +1,9 @@
 //********************************************************************************************************
 #include "5_RubyGeneticOnePointPosNegInfinite.h"
 
-using namespace std;
+
 //--------------------------------------------------------------------------------------------------------
-void RubyGeneticOnePointPosNegInfinite::populateOutliers(const sensor_msgs::LaserScan & msg){ 
+void RubyGeneticOnePointPosNegInfinite::populateOutliers(const sensor_msgs::LaserScan & msg){ //Checked
     double angle = msg.angle_min;
 
     this->numberOfPositivePointsInField = 0;
@@ -11,6 +11,7 @@ void RubyGeneticOnePointPosNegInfinite::populateOutliers(const sensor_msgs::Lase
 
     for(int i = 0; i < models.size(); i++){
         this->models[i].clearPoints();
+        this->models[i].resetParallelCount();
     }
 
     WeightedPoint fusedPoint;
@@ -26,7 +27,7 @@ void RubyGeneticOnePointPosNegInfinite::populateOutliers(const sensor_msgs::Lase
                         this->numberOfPositivePointsInField++;
                     }
                     else
-                        this->field.insert(this->field.end(), 1, fusedPoint);
+                        this->field.push_back(fusedPoint);
 
                     fusedPoint = p;
                 }
@@ -48,7 +49,7 @@ void RubyGeneticOnePointPosNegInfinite::populateOutliers(const sensor_msgs::Lase
     }
 }
 //--------------------------------------------------------------------------------------------------------
-std::vector<Model> RubyGeneticOnePointPosNegInfinite::findLines() { 
+std::vector<Model> RubyGeneticOnePointPosNegInfinite::findLines() { //Checked 
     int numberMinOfPoints;
 
     double newEnergy = MAX_DBL, energy = MAX_DBL;
@@ -57,7 +58,7 @@ std::vector<Model> RubyGeneticOnePointPosNegInfinite::findLines() {
 
         std::vector<Model> bestModels;
 
-        for (int it = 0; it < 1; it++) {
+        for (int it = 0; it < this->maxNumberOfIterations; it++) {
             clearPointsInModels();
 
             searchModels(this->numberOfModelsToSearch - models.size());
@@ -95,7 +96,7 @@ std::vector<Model> RubyGeneticOnePointPosNegInfinite::findLines() {
     return this->models;
 }
 //--------------------------------------------------------------------------------------------------------
-void RubyGeneticOnePointPosNegInfinite::removeModel(const int modelIndex){
+void RubyGeneticOnePointPosNegInfinite::removeModel(const int modelIndex){ //Checked 
 	if (!(0 <= modelIndex && modelIndex < models.size())){
 		Utility::printInColor("Model index does not exist", RED); 
 		return;
@@ -105,17 +106,17 @@ void RubyGeneticOnePointPosNegInfinite::removeModel(const int modelIndex){
     models.erase(models.begin() + modelIndex);
 }
 //--------------------------------------------------------------------------------------------------------
-void RubyGeneticOnePointPosNegInfinite::clearPointsInModels(){
+void RubyGeneticOnePointPosNegInfinite::clearPointsInModels(){ //Checked 
     for(int i = 0; i < models.size(); i++){       
         models[i].clearPoints();
-        models[i].setEnergy(0);
+        this->models[i].resetParallelCount();
     }
 }
 
 //########################################################################################################
 
 //--------------------------------------------------------------------------------------------------------
-std::vector<Point> RubyGeneticOnePointPosNegInfinite::randomPointsInField(const int minNum, const int maxNum, const int num) const { 
+std::vector<Point> RubyGeneticOnePointPosNegInfinite::randomPointsInField(const int minNum, const int maxNum, const int num) const { //Checked 
     std::vector<Point> ret(num);
 
     std::vector<int> randomNums = Utility::randomDiffVector(minNum, maxNum, num);
@@ -129,29 +130,36 @@ std::vector<Point> RubyGeneticOnePointPosNegInfinite::randomPointsInField(const 
     return ret;
 }
 //--------------------------------------------------------------------------------------------------------
-void RubyGeneticOnePointPosNegInfinite::searchModels(const int nbOfModels) { 
+void RubyGeneticOnePointPosNegInfinite::searchModels(const int nbOfModels) { //Checked 
     int numberOfPositiveModels = (int)(nbOfModels/2);
     int numberOfNegativeModels = nbOfModels - numberOfPositiveModels;
+
+    if(field.size() < INITIAL_NUMBER_OF_POINTS)
+        return;
 
     if(numberOfPositivePointsInField < INITIAL_NUMBER_OF_POINTS)
         numberOfPositiveModels = 0;
 
     if(field.size() - numberOfPositivePointsInField < INITIAL_NUMBER_OF_POINTS)
-    	numberOfNegativeModels = 0;
+        numberOfNegativeModels = 0;
         
     for(int modelPosNum = 0; modelPosNum < numberOfPositiveModels; modelPosNum++){
-        models.push_back(Model::linearFit(randomPointsInField(0, numberOfPositivePointsInField - 1, INITIAL_NUMBER_OF_POINTS)));
+        std::vector<Point> positivePoints = randomPointsInField(0, numberOfPositivePointsInField - 1, INITIAL_NUMBER_OF_POINTS);
+        if(positivePoints.size() > 0)
+            models.push_back(Model::linearFit(positivePoints));
     }
 
     for(int modelNegNum = 0; modelNegNum < numberOfNegativeModels; modelNegNum++){
-        models.push_back(Model::linearFit(randomPointsInField(numberOfPositivePointsInField, field.size() - 1, INITIAL_NUMBER_OF_POINTS)));
+        std::vector<Point> negativePoints = randomPointsInField(numberOfPositivePointsInField, field.size() - 1, INITIAL_NUMBER_OF_POINTS);
+        if(negativePoints.size() > 0)
+            models.push_back(Model::linearFit(negativePoints));
     }
 }
 
 //########################################################################################################
 
 //--------------------------------------------------------------------------------------------------------
-double RubyGeneticOnePointPosNegInfinite::calculateEnergy() const { 
+double RubyGeneticOnePointPosNegInfinite::calculateEnergy() const { //Checked 
     double energy = 0;
 
     for(Model m : models)
@@ -162,7 +170,7 @@ double RubyGeneticOnePointPosNegInfinite::calculateEnergy() const {
     return energy;
 }
 //--------------------------------------------------------------------------------------------------------
-double RubyGeneticOnePointPosNegInfinite::meanNumOfPoints() const { 
+double RubyGeneticOnePointPosNegInfinite::meanNumOfPoints() const { //Checked 
     double mean = 0;
     for(Model m : models)
         mean += m.getPointsSize();
@@ -170,7 +178,7 @@ double RubyGeneticOnePointPosNegInfinite::meanNumOfPoints() const {
     return mean/(double)models.size();
 }
 //--------------------------------------------------------------------------------------------------------
-double RubyGeneticOnePointPosNegInfinite::redistributePoints() {
+double RubyGeneticOnePointPosNegInfinite::redistributePoints() { //Checked
     double newEnergy = 0;
 
     for(int p = 0; p < field.size(); p++){
@@ -179,7 +187,6 @@ double RubyGeneticOnePointPosNegInfinite::redistributePoints() {
             double distAt = fabs(models[model].getSlope() * field[p].getX() - field[p].getY() + models[model].getIntercept()) / sqrt(pow(models[model].getSlope(), 2) + 1.0);
             
             if (distAt < this->distanceForOutlier){
-                models[model].addEnergy(distAt);
                 models[model].pushPoint(field[p]);
             }
         }
@@ -191,7 +198,7 @@ double RubyGeneticOnePointPosNegInfinite::redistributePoints() {
 //########################################################################################################
 
 //--------------------------------------------------------------------------------------------------------
-void RubyGeneticOnePointPosNegInfinite::countParallelLines() { 
+void RubyGeneticOnePointPosNegInfinite::countParallelLines() { //Checked 
     for(int model = 0; model < models.size(); model++){
         for(int model2 = model + 1; model2 < models.size(); model2++){
             if(fabs(models[model].getSlope() - models[model2].getSlope()) < this->sameSlopeThreshold){
@@ -202,7 +209,7 @@ void RubyGeneticOnePointPosNegInfinite::countParallelLines() {
     }
 }
 //--------------------------------------------------------------------------------------------------------
-void RubyGeneticOnePointPosNegInfinite::eraseBadModels(){  
+void RubyGeneticOnePointPosNegInfinite::eraseBadModels(){ //Checked  
     countParallelLines();
     
     for(int i = 0; i < models.size(); i++)
@@ -229,18 +236,12 @@ void RubyGeneticOnePointPosNegInfinite::fuseEqualModels(){ //Checked
                 int model2Size = models[model2].getPointsSize();
 
                 if(model1Size >= model2Size){
-                	models[model].fuseModel(models[model2]);
-
-                    models[model].setPositivePointsNum(models[model].getPositivePointsNum() + models[model2].getPositivePointsNum());
-                	
+                	models[model].fuseModel(models[model2]);                	
                 	models.erase(models.begin() + model2);
                 	model2--;
                 }
                 else{
-                	models[model2].fuseModel(models[model]);
-
-                    models[model2].setPositivePointsNum(models[model].getPositivePointsNum() + models[model2].getPositivePointsNum());
-                    
+                	models[model2].fuseModel(models[model]);                    
                 	models.erase(models.begin() + model);
                 	model--;
                 }
@@ -251,28 +252,28 @@ void RubyGeneticOnePointPosNegInfinite::fuseEqualModels(){ //Checked
 
 //########################################################################################################
 
-std::ostream & operator << (std::ostream &out, const RubyGeneticOnePointPosNegInfinite &r){ 
-    out << "RubyGeneticOnePointPosNegInfinite: [ Positive Points In Field : " << r.numberOfPositivePointsInField << "\n\tModels: Vector {\n";
-    for(int m = 0; m < r.models.size(); m++){
-        out << "\t\t[" << m << "]: Model [ a: " << r.models[m].getSlope() << ", b: " << r.models[m].getIntercept() << ", energy: " << r.models[m].getEnergy() << ", NumberOfPositivePoints " << r.models[m].getPositivePointsNum();
-        out << "\n\t\t\tPoints: Vector {";
+std::ostream & operator << (std::ostream &out, const RubyGeneticOnePointPosNegInfinite &r){ //Checked 
+    out << "RubyGeneticOnePointPosNegInfinite: [\n\t  Models: Vector {\n";
+
+    for(int i = 0; i < r.models.size(); i++){
+        out << "\t\t[" << i << "]: Model: [ a: " << r.models[i].getSlope() << ", b: " << r.models[i].getIntercept() << ", energy: " << r.models[i].getEnergy() << ", parallelCount: " << r.models[i].parallelCount << ", fitness: " << r.models[i].fitness;
+        out << "\n\t\t\t\tPositive Points: " << r.models[i].positivePoints << ", Points: Vector {";
         int pos = 0;
-        for(Point p : r.models[m].getPointsInModel()){
-            out << "\n\t\t\t\t[" << pos << "]: " << p;
+        for(Point r : r.models[i].getPointsInModel()){
+            out << "\n\t\t\t\t\t[" << pos << "]: " << r;
             pos++;
         }
-        out << "\n\t\t\t}\n\t\t]\n";
+        out << "\n\t\t\t\t}\n\t\t\t    ]\n";
     }
 
-    out << "\t}\n\n\tField: Vector {";
+    out << "\t  }\n\n\t  Field: Vector {";
 
     for(int outP = 0; outP < r.field.size(); outP++){
         out << "\n\t\t[" << outP << "]: " << r.field[outP];
     }
 
-    out << "\n\t}";
-    out << "\n]";
-
+    out << "\n\t  }";
+    out << "\n       ]\n";
     return out; 
 }
 

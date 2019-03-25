@@ -15,23 +15,23 @@
 class RubyPure : public Pearl{
 	public:
 		//------------------------------------------------------------------------------------------------
-		RubyPure();
+		RubyPure(); //Checked
 		//------------------------------------------------------------------------------------------------
-		void populateOutliers(const sensor_msgs::LaserScan & );
+		void populateOutliers(const sensor_msgs::LaserScan & ); //Checked
 
 	public:
 		//################################################################################################
 		
 		//------------------------------------------------------------------------------------------------
-		void countParallelLines();
+		void countParallelLines(); //Checked
 		//------------------------------------------------------------------------------------------------
-		void eraseBadModels(const double );
+		void eraseBadModels(const double ); //Checked
 		//################################################################################################
 		
-		friend std::ostream & operator << (std::ostream &out, const RubyPure &r);
+		friend std::ostream & operator << (std::ostream &out, const RubyPure &r); //Checked
 };
 
-inline RubyPure::RubyPure(){}
+inline RubyPure::RubyPure(){} //Checked
 
 #endif
 //********************************************************************************************************

@@ -22,7 +22,7 @@ void RubyPure::populateOutliers(const sensor_msgs::LaserScan & msg){ //Checked
 //########################################################################################################
 
 //--------------------------------------------------------------------------------------------------------
-void RubyPure::countParallelLines(){
+void RubyPure::countParallelLines(){ //Checked
     for(int model = 0; model < models.size(); model++){
         for(int model2 = model + 1; model2 < models.size(); model2++){
             if(fabs(models[model].getSlope() - models[model2].getSlope()) < this->sameSlopeThreshold){
@@ -33,7 +33,7 @@ void RubyPure::countParallelLines(){
     }
 }
 //--------------------------------------------------------------------------------------------------------
-void RubyPure::eraseBadModels(const double threshRatio) {
+void RubyPure::eraseBadModels(const double threshRatio) { //Checked
     countParallelLines();
 
     std::vector<int> modelsToBeDeleted;
@@ -50,28 +50,29 @@ void RubyPure::eraseBadModels(const double threshRatio) {
 
 //########################################################################################################
 
-std::ostream & operator << (std::ostream &out, const RubyPure &r){ 
-    out << "RubyPure: [\n\tModels: Vector {\n";
-    for(int m = 0; m < r.models.size(); m++){
-        out << "\t\t[" << m << "]: Model [ a: " << r.models[m].getSlope() << ", b: " << r.models[m].getIntercept() << ", energy: " << r.models[m].getEnergy();
-        out << "\n\t\t\tPoints: Vector {";
+std::ostream & operator << (std::ostream &out, const RubyPure &r){ //Checked
+    out << "RubyPure: [\n\t  Models: Vector {\n";
+
+    for(int i = 0; i < r.models.size(); i++){
+        out << "\t\t[" << i << "]: Model: [ a: " << r.models[i].getSlope() << ", b: " << r.models[i].getIntercept() << ", energy: " << r.models[i].getEnergy() << ", parallelCount: " << r.models[i].parallelCount << ", fitness: " << r.models[i].fitness;
+        out << "\n\t\t\t\tPositive Points: " << r.models[i].positivePoints << ", Points: Vector {";
         int pos = 0;
-        for(Point p : r.models[m].getPointsInModel()){
-            out << "\n\t\t\t\t[" << pos << "]: " << p;
+        for(Point r : r.models[i].getPointsInModel()){
+            out << "\n\t\t\t\t\t[" << pos << "]: " << r;
             pos++;
         }
-        out << "\n\t\t\t}\n\t\t]\n";
+        out << "\n\t\t\t\t}\n\t\t\t    ]\n";
     }
 
-    out << "\t}\n\n\tOutliers: Vector {";
+    out << "\t  }\n\n\t  Outliers: Vector {";
 
     for(int outP = 0; outP < r.outliers.size(); outP++){
         out << "\n\t\t[" << outP << "]: " << r.outliers[outP];
     }
 
-    out << "\n\t}";
-    out << "\n]";
-    return out; 
+    out << "\n\t  }";
+    out << "\n       ]\n";
+    return out;  
 }
 
 //********************************************************************************************************

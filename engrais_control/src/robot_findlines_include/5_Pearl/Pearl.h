@@ -41,13 +41,13 @@ class Pearl{
         //------------------------------------------------------------------------------------------------
         virtual std::vector<Model> findLines(); //Checked
         //------------------------------------------------------------------------------------------------
-        virtual std::vector<Point> getInitialField() const ;
+        virtual std::vector<Point> getInitialField() const; //Checked
             
     public:
     	//------------------------------------------------------------------------------------------------
         virtual void removeModel(const int ); //Checked
         //------------------------------------------------------------------------------------------------
-        virtual void removePointsInModels();
+        virtual void removePointsInModels(); //Checked
 
 		//################################################################################################
 
@@ -61,7 +61,7 @@ class Pearl{
         //------------------------------------------------------------------------------------------------
         virtual double redistributePoints(); //Checked
         //------------------------------------------------------------------------------------------------
-        virtual double removeTinyModels(const int = INITIAL_NUMBER_OF_POINTS); //Checked 
+        virtual double removeTinyModels(const int = INITIAL_NUMBER_OF_POINTS); //Checked
         //------------------------------------------------------------------------------------------------
         virtual double calculateAdditionalEnergy() const; //Checked
         //------------------------------------------------------------------------------------------------
@@ -91,7 +91,7 @@ class Pearl{
 //--------------------------------------------------------------------------------------------------------
 inline Pearl::Pearl(){} //Checked
 //--------------------------------------------------------------------------------------------------------
-inline std::vector<Point> Pearl::getInitialField() const { return initialField; }
+inline std::vector<Point> Pearl::getInitialField() const { return initialField; } //Checked
 
 
 #endif

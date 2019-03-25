@@ -73,19 +73,20 @@ std::vector<Model> Pearl::findLines() { //Checked
 }
 //--------------------------------------------------------------------------------------------------------    
 void Pearl::removeModel(const int modelIndex){ //Checked 
-	if (!(0 <= modelIndex && modelIndex < models.size()))
+	if (!(0 <= modelIndex && modelIndex < models.size())){
+        Utility::printInColor("Wrong index for removing model", RED);
 		return;
+    }
 
     outliers.insert(outliers.end(), models[modelIndex].getPointsVecBegin(), models[modelIndex].getPointsVecEnd());
     models[modelIndex].clearPoints();
     models.erase(models.begin() + modelIndex);
 }
 //--------------------------------------------------------------------------------------------------------
-void Pearl::removePointsInModels(){
+void Pearl::removePointsInModels(){ //Checked 
     for(int i = 0; i < models.size(); i++){
         outliers.insert(outliers.end(), models[i].getPointsVecBegin(), models[i].getPointsVecEnd());
         models[i].clearPoints();
-        models[i].setEnergy(0);
     }
 }
 
@@ -93,17 +94,21 @@ void Pearl::removePointsInModels(){
 
 //--------------------------------------------------------------------------------------------------------
 std::vector<Point> Pearl::randomPointsInField(const int num) { //Checked 
-    std::vector<Point> ret(num);
+    std::vector<Point> ret;
 
     if(outliers.size() < num){
         Utility::printInColor("Not enough outliers, please verify", RED);
-        return ret;
+        return std::vector<Point>();
     }
 
     for(int i = 0; i < num; i++){
         int randomNum = Utility::randomInt(0, outliers.size() - 1);
 
-        ret[i] = outliers[randomNum];
+        if(outliers[randomNum].getY() >= 0)
+            ret.insert(ret.begin(), 1, outliers[randomNum]);
+        else
+            ret.push_back(outliers[randomNum]);
+
         outliers.erase(outliers.begin() + randomNum);
     }
 
@@ -113,8 +118,12 @@ std::vector<Point> Pearl::randomPointsInField(const int num) { //Checked
 void Pearl::searchModels(const int nbOfModels) { //Checked 
     Model model;
     for(int modelNum = 0; modelNum < nbOfModels; modelNum++){
-        model.findBestModel(randomPointsInField(INITIAL_NUMBER_OF_POINTS));
-        models.push_back(model);
+        std::vector<Point> points = randomPointsInField(INITIAL_NUMBER_OF_POINTS);
+        if(points.size() != 0){
+            model.findBestModel(points);
+
+            models.push_back(model);
+        }
     }
 }
 
@@ -146,7 +155,6 @@ double Pearl::redistributePoints() { //Checked
 	        if (minDist < this->distanceForOutlier){
 	            newEnergy += minDist - this->outlierPenalty;
 
-	            models[dominantModelPos].addEnergy(minDist);
 	            models[dominantModelPos].pushPoint(outliers[p]);
 	            outliers.erase(outliers.begin() + p);
 	            p--;               
@@ -180,7 +188,7 @@ double Pearl::calculateAdditionalEnergy() const { //Checked
     return addEnergy;                           
 }
 //--------------------------------------------------------------------------------------------------------
-double Pearl::expansionEnergy() { //Checked
+double Pearl::expansionEnergy() { //Checked 
     double newEnergy = redistributePoints();
     newEnergy += removeTinyModels(INITIAL_NUMBER_OF_POINTS);
 
@@ -200,7 +208,7 @@ void Pearl::reEstimation() { //Checked
 
 //########################################################################################################
 
-void Pearl::eraseBadModels(const double threshRatio) { //Checked
+void Pearl::eraseBadModels(const double threshRatio) { //Checked 
     for(int model = 0; model < models.size(); model++){
         if ((models[model].getEnergy() / (double)models[model].getPointsSize()) >= threshRatio){
             removeModel(model);
@@ -236,27 +244,28 @@ void Pearl::fuseEqualModels(){ //Checked
     }
 }
 // -------------------------------------------------------------------------------------------------------
-std::ostream & operator << (std::ostream &out, const Pearl &p){ //Checked
-    out << "Pearl: [\n\tModels: Vector {\n";
-    for(Model m : p.models){
-        out << "\t\tModel: [ a: " << m.getSlope() << ", b: " << m.getIntercept() << ", energy: " << m.getEnergy();
-        out << "\n\t\t\tPoints: Vector {";
+std::ostream & operator << (std::ostream &out, const Pearl &p){ //Checked 
+    out << "Pearl: [\n\t  Models: Vector {\n";
+
+    for(int i = 0; i < p.models.size(); i++){
+        out << "\t\t[" << i << "]: Model: [ a: " << p.models[i].getSlope() << ", b: " << p.models[i].getIntercept() << ", energy: " << p.models[i].getEnergy() << ", parallelCount: " << p.models[i].parallelCount << ", fitness: " << p.models[i].fitness;
+        out << "\n\t\t\t\tPositive Points: " << p.models[i].positivePoints << ", Points: Vector {";
         int pos = 0;
-        for(Point p : m.getPointsInModel()){
-            out << "\n\t\t\t\t[" << pos << "]: " << p;
+        for(Point p : p.models[i].getPointsInModel()){
+            out << "\n\t\t\t\t\t[" << pos << "]: " << p;
             pos++;
         }
-        out << "\n\t\t\t}\n\t\t]\n";
+        out << "\n\t\t\t\t}\n\t\t\t    ]\n";
     }
 
-    out << "\t}\n\n\tOutliers: Vector {";
+    out << "\t  }\n\n\t  Outliers: Vector {";
 
     for(int outP = 0; outP < p.outliers.size(); outP++){
         out << "\n\t\t[" << outP << "]: " << p.outliers[outP];
     }
 
-    out << "\n\t}";
-    out << "\n]";
+    out << "\n\t  }";
+    out << "\n       ]\n";
     return out; 
 }
 
