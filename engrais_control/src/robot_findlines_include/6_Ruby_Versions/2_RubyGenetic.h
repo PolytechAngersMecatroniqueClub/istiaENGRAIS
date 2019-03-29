@@ -27,6 +27,7 @@ class RubyGenetic : public Pearl{
 		//------------------------------------------------------------------------------------------------
 		std::vector<Model> findLines();
 
+
 	public:
 		//################################################################################################
 
@@ -54,6 +55,8 @@ class RubyGenetic : public Pearl{
 		friend std::ostream & operator << (std::ostream &out, const RubyGenetic &r);
 };
 
+
+//--------------------------------------------------------------------------------------------------------
 inline RubyGenetic::RubyGenetic(){}
 
 #endif

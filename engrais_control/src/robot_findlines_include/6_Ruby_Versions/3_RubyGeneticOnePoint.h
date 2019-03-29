@@ -32,6 +32,7 @@ class RubyGeneticOnePoint : public Pearl{
 		//------------------------------------------------------------------------------------------------
 		std::vector<Point> getInitialField() const ;
 
+
 	public:
 		//################################################################################################
 
@@ -59,9 +60,12 @@ class RubyGeneticOnePoint : public Pearl{
 		friend std::ostream & operator << (std::ostream &out, const RubyGeneticOnePoint &r);
 };
 
-inline RubyGeneticOnePoint::RubyGeneticOnePoint(){}
 
+//--------------------------------------------------------------------------------------------------------
+inline RubyGeneticOnePoint::RubyGeneticOnePoint(){}
+//--------------------------------------------------------------------------------------------------------
 inline std::vector<Point> RubyGeneticOnePoint::getInitialField() const { return initialField; }
+
 
 #endif
 //********************************************************************************************************

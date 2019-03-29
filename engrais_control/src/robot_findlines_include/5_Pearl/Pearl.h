@@ -43,6 +43,7 @@ class Pearl{
         //------------------------------------------------------------------------------------------------
         virtual std::vector<Point> getInitialField() const; //Checked
             
+            
     public:
     	//------------------------------------------------------------------------------------------------
         virtual void removeModel(const int ); //Checked

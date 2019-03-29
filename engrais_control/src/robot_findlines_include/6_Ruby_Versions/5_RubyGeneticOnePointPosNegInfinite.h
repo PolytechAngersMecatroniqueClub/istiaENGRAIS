@@ -23,6 +23,7 @@ class RubyGeneticOnePointPosNegInfinite : public Pearl{
 		double distanceToBeConsideredSamePoint = 0.1; 
 		double numberOfModelsToSearch = 40;
 		double factorToDeletePoints = 0.8;
+		
 
 	public:
 		//------------------------------------------------------------------------------------------------
@@ -32,7 +33,8 @@ class RubyGeneticOnePointPosNegInfinite : public Pearl{
 		//------------------------------------------------------------------------------------------------
 		std::vector<Model> findLines();
 		//------------------------------------------------------------------------------------------------
-		std::vector<Point> getInitialField() const ;
+		std::vector<Point> getInitialField() const;
+
 
 	public:
 
@@ -69,8 +71,10 @@ class RubyGeneticOnePointPosNegInfinite : public Pearl{
 		friend std::ostream & operator << (std::ostream &out, const RubyGeneticOnePointPosNegInfinite &r);
 };
 
-inline RubyGeneticOnePointPosNegInfinite::RubyGeneticOnePointPosNegInfinite(){}
 
+//--------------------------------------------------------------------------------------------------------
+inline RubyGeneticOnePointPosNegInfinite::RubyGeneticOnePointPosNegInfinite(){}
+//--------------------------------------------------------------------------------------------------------
 inline std::vector<Point> RubyGeneticOnePointPosNegInfinite::getInitialField() const {  return field; }
 
 #endif

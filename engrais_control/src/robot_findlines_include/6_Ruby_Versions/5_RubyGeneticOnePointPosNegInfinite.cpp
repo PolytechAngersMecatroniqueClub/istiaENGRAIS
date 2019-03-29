@@ -50,6 +50,7 @@ void RubyGeneticOnePointPosNegInfinite::populateOutliers(const sensor_msgs::Lase
 }
 //--------------------------------------------------------------------------------------------------------
 std::vector<Model> RubyGeneticOnePointPosNegInfinite::findLines() { //Checked 
+    //std::cout << "RubyGeneticOnePointPosNegInfinite" << std::endl;
     int numberMinOfPoints;
 
     double newEnergy = MAX_DBL, energy = MAX_DBL;
@@ -256,8 +257,8 @@ std::ostream & operator << (std::ostream &out, const RubyGeneticOnePointPosNegIn
     out << "RubyGeneticOnePointPosNegInfinite: [\n\t  Models: Vector {\n";
 
     for(int i = 0; i < r.models.size(); i++){
-        out << "\t\t[" << i << "]: Model: [ a: " << r.models[i].getSlope() << ", b: " << r.models[i].getIntercept() << ", energy: " << r.models[i].getEnergy() << ", parallelCount: " << r.models[i].parallelCount << ", fitness: " << r.models[i].fitness;
-        out << "\n\t\t\t\tPositive Points: " << r.models[i].positivePoints << ", Points: Vector {";
+        out << "\t\t[" << i << "]: Model: [ a: " << r.models[i].getSlope() << ", b: " << r.models[i].getIntercept() << ", energy: " << r.models[i].getEnergy() << ", parallelCount: " << r.models[i].getParallelCount() << ", fitness: " << r.models[i].getFitness();
+        out << "\n\t\t\t\tPositive Points: " << r.models[i].getPositivePointsNum() << ", Points: Vector {";
         int pos = 0;
         for(Point r : r.models[i].getPointsInModel()){
             out << "\n\t\t\t\t\t[" << pos << "]: " << r;

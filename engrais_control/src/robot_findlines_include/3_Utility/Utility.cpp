@@ -21,7 +21,8 @@ void Utility::printInColor(const std::string msg, const int color){ //Checked
 
     if(color == RED || color == BLUE)
         std::cout << std::endl;
-    std::cout << std::endl << "\033[1;" << color << "m" << msgType << " " << msg << "\033[0m";
+    
+    std::cout << "\033[1;" << color << "m" << msgType << " " << msg << "\033[0m" << std::endl ;
 
     if(color == RED || color == BLUE)
         std::cout << std::endl;

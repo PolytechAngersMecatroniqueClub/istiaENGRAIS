@@ -26,6 +26,14 @@ class Utility{
         //------------------------------------------------------------------------------------------------
         static std::vector<int> randomDiffVector(const int min, const int max, const int size); //Checked
         //------------------------------------------------------------------------------------------------
+        template < class T> static std::string getClassName(T classElement){
+            std::string type = typeid(classElement).name();
+            while('0' <= type[0] && type[0] <= '9')
+                type.erase(0, 1);
+                
+            return type;
+        }
+        //------------------------------------------------------------------------------------------------
         template < class T> static void printVector(const std::vector<T> & vec){ //Checked 
         	std::cout << std::endl << "Vector {" << std::endl;
 		    for(int i = 0; i < vec.size(); i++){

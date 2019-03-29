@@ -34,6 +34,7 @@ class RubyGeneticOnePointPosNeg : public Pearl{
 		//------------------------------------------------------------------------------------------------
 		std::vector<Point> getInitialField() const ;
 
+
 	public:
 
 		void clearPointsInModels();
@@ -69,9 +70,12 @@ class RubyGeneticOnePointPosNeg : public Pearl{
 		friend std::ostream & operator << (std::ostream &out, const RubyGeneticOnePointPosNeg &r);
 };
 
-inline RubyGeneticOnePointPosNeg::RubyGeneticOnePointPosNeg(){}
 
+//--------------------------------------------------------------------------------------------------------
+inline RubyGeneticOnePointPosNeg::RubyGeneticOnePointPosNeg(){}
+//--------------------------------------------------------------------------------------------------------
 inline std::vector<Point> RubyGeneticOnePointPosNeg::getInitialField() const {  return initialField; }
+
 
 #endif
 //********************************************************************************************************

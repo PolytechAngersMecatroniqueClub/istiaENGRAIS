@@ -52,6 +52,7 @@ void RubyGeneticOnePointPosNeg::populateOutliers(const sensor_msgs::LaserScan & 
 }
 //--------------------------------------------------------------------------------------------------------
 std::vector<Model> RubyGeneticOnePointPosNeg::findLines() { //Checked 
+    //std::cout << "RubyGeneticOnePointPosNeg" << std::endl;
     int numberMinOfPoints;
 
     double newEnergy = MAX_DBL, energy = MAX_DBL;
@@ -68,7 +69,7 @@ std::vector<Model> RubyGeneticOnePointPosNeg::findLines() { //Checked
 
             redistributePoints();
 
-            numberMinOfPoints = std::max((int)(meanNumOfPoints() * this->factorToDeletePoints), 3);
+            numberMinOfPoints = std::max((int)(meanNumOfPoints() * this->factorToDeletePoints), 2);
             removeTinyModels(numberMinOfPoints);
 
             reEstimation();
@@ -293,8 +294,8 @@ std::ostream & operator << (std::ostream &out, const RubyGeneticOnePointPosNeg &
     out << "RubyGeneticOnePointPosNeg: [\n\t  Models: Vector {\n";
 
     for(int i = 0; i < r.models.size(); i++){
-        out << "\t\t[" << i << "]: Model: [ a: " << r.models[i].getSlope() << ", b: " << r.models[i].getIntercept() << ", energy: " << r.models[i].getEnergy() << ", parallelCount: " << r.models[i].parallelCount << ", fitness: " << r.models[i].fitness;
-        out << "\n\t\t\t\tPositive Points: " << r.models[i].positivePoints << ", Points: Vector {";
+        out << "\t\t[" << i << "]: Model: [ a: " << r.models[i].getSlope() << ", b: " << r.models[i].getIntercept() << ", energy: " << r.models[i].getEnergy() << ", parallelCount: " << r.models[i].getParallelCount() << ", fitness: " << r.models[i].getFitness();
+        out << "\n\t\t\t\tPositive Points: " << r.models[i].getPositivePointsNum() << ", Points: Vector {";
         int pos = 0;
         for(Point r : r.models[i].getPointsInModel()){
             out << "\n\t\t\t\t\t[" << pos << "]: " << r;

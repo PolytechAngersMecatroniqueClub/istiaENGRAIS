@@ -1,0 +1,16 @@
+MethodResult: [ Method: Pearl, executionCount: 5000, totalExecutionTime: 28.5186, correctLeftModelInsideVector: 5000, correctRightModelInsideVector: 5000, correctLeftModelSelected: 4998, correctRightModelSelected: 4998 ]
+
+MethodResult: [ Method: RubyPure, executionCount: 5000, totalExecutionTime: 29.9442, correctLeftModelInsideVector: 5000, correctRightModelInsideVector: 5000, correctLeftModelSelected: 4998, correctRightModelSelected: 4994 ]
+
+MethodResult: [ Method: RubyGenetic, executionCount: 5000, totalExecutionTime: 31.8947, correctLeftModelInsideVector: 5000, correctRightModelInsideVector: 5000, correctLeftModelSelected: 4997, correctRightModelSelected: 4998 ]
+
+MethodResult: [ Method: RubyGeneticOnePoint, executionCount: 5000, totalExecutionTime: 3.23704, correctLeftModelInsideVector: 5000, correctRightModelInsideVector: 5000, correctLeftModelSelected: 5000, correctRightModelSelected: 5000 ]
+
+MethodResult: [ Method: RubyGeneticOnePointPosNeg, executionCount: 5000, totalExecutionTime: 2.6862, correctLeftModelInsideVector: 5000, correctRightModelInsideVector: 5000, correctLeftModelSelected: 5000, correctRightModelSelected: 5000 ]
+
+MethodResult: [ Method: RubyGeneticOnePointPosNegInfinite, executionCount: 5000, totalExecutionTime: 9.49455, correctLeftModelInsideVector: 5000, correctRightModelInsideVector: 5000, correctLeftModelSelected: 5000, correctRightModelSelected: 5000 ]
+
+
+
+
+---------------------------------------------------------

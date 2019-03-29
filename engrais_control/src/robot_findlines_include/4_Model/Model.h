@@ -10,7 +10,7 @@
 
 
 class Model{ 
-    public: 
+    private: 
         double a;
         double b;
         double energy;

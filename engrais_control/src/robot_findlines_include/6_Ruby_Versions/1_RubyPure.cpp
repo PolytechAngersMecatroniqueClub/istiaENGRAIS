@@ -4,6 +4,7 @@
 
 //--------------------------------------------------------------------------------------------------------
 void RubyPure::populateOutliers(const sensor_msgs::LaserScan & msg){ //Checked 
+    //std::cout << "RubyPure" << std::endl;
     double angle = msg.angle_min;
 
     outliers.clear();
@@ -44,8 +45,12 @@ void RubyPure::eraseBadModels(const double threshRatio) { //Checked
         }
     }
 
-    for(int i = 0; i < modelsToBeDeleted.size(); i++)
+    for(int i = 0; i < modelsToBeDeleted.size(); i++){
         removeModel(modelsToBeDeleted[i]);
+        for(int j = i + 1; j < modelsToBeDeleted.size(); j++){
+            modelsToBeDeleted[j]--;
+        }
+    }
 }
 
 //########################################################################################################
@@ -54,8 +59,8 @@ std::ostream & operator << (std::ostream &out, const RubyPure &r){ //Checked
     out << "RubyPure: [\n\t  Models: Vector {\n";
 
     for(int i = 0; i < r.models.size(); i++){
-        out << "\t\t[" << i << "]: Model: [ a: " << r.models[i].getSlope() << ", b: " << r.models[i].getIntercept() << ", energy: " << r.models[i].getEnergy() << ", parallelCount: " << r.models[i].parallelCount << ", fitness: " << r.models[i].fitness;
-        out << "\n\t\t\t\tPositive Points: " << r.models[i].positivePoints << ", Points: Vector {";
+        out << "\t\t[" << i << "]: Model: [ a: " << r.models[i].getSlope() << ", b: " << r.models[i].getIntercept() << ", energy: " << r.models[i].getEnergy() << ", parallelCount: " << r.models[i].getParallelCount() << ", fitness: " << r.models[i].getFitness();
+        out << "\n\t\t\t\tPositive Points: " << r.models[i].getPositivePointsNum() << ", Points: Vector {";
         int pos = 0;
         for(Point r : r.models[i].getPointsInModel()){
             out << "\n\t\t\t\t\t[" << pos << "]: " << r;

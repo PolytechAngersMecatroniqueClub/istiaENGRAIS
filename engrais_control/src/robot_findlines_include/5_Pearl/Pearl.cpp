@@ -4,6 +4,7 @@
 
 //--------------------------------------------------------------------------------------------------------
 void Pearl::populateOutliers(const sensor_msgs::LaserScan & msg){ //Checked 
+    //std::cout << "Pearl" << std::endl;
     double angle = msg.angle_min;
 
     outliers.clear();
@@ -75,7 +76,7 @@ std::vector<Model> Pearl::findLines() { //Checked
 void Pearl::removeModel(const int modelIndex){ //Checked 
 	if (!(0 <= modelIndex && modelIndex < models.size())){
         Utility::printInColor("Wrong index for removing model", RED);
-		return;
+		exit(1);
     }
 
     outliers.insert(outliers.end(), models[modelIndex].getPointsVecBegin(), models[modelIndex].getPointsVecEnd());
@@ -248,8 +249,8 @@ std::ostream & operator << (std::ostream &out, const Pearl &p){ //Checked
     out << "Pearl: [\n\t  Models: Vector {\n";
 
     for(int i = 0; i < p.models.size(); i++){
-        out << "\t\t[" << i << "]: Model: [ a: " << p.models[i].getSlope() << ", b: " << p.models[i].getIntercept() << ", energy: " << p.models[i].getEnergy() << ", parallelCount: " << p.models[i].parallelCount << ", fitness: " << p.models[i].fitness;
-        out << "\n\t\t\t\tPositive Points: " << p.models[i].positivePoints << ", Points: Vector {";
+        out << "\t\t[" << i << "]: Model: [ a: " << p.models[i].getSlope() << ", b: " << p.models[i].getIntercept() << ", energy: " << p.models[i].getEnergy() << ", parallelCount: " << p.models[i].getParallelCount() << ", fitness: " << p.models[i].getFitness();
+        out << "\n\t\t\t\tPositive Points: " << p.models[i].getPositivePointsNum() << ", Points: Vector {";
         int pos = 0;
         for(Point p : p.models[i].getPointsInModel()){
             out << "\n\t\t\t\t\t[" << pos << "]: " << p;

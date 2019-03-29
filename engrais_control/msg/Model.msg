@@ -1,0 +1,2 @@
+float64 slope
+float64 intercept

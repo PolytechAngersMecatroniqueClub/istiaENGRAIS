@@ -180,6 +180,35 @@ void OnLineMsg(const visualization_msgs::Marker & msg){
     pubLeftControl.publish(left_wheel_cmd);
     pubRightControl.publish(right_wheel_cmd);
 }
+void stop(ros::Rate & loop_rate){
+    while(ros::ok()){
+        std_msgs::Float64 stop;
+        stop.data = 0;
+        pubLeftControl.publish(stop);
+        pubRightControl.publish(stop);
+        loop_rate.sleep();
+    }
+}
+void left(ros::Rate & loop_rate){
+    while(ros::ok()){
+        std_msgs::Float64 left, right;
+        left.data = 2;
+        right.data = -2;
+        pubLeftControl.publish(left);
+        pubRightControl.publish(right);
+        loop_rate.sleep();
+    }
+}
+void right(ros::Rate & loop_rate){
+    while(ros::ok()){
+        std_msgs::Float64 left, right;
+        left.data = -2;
+        right.data = 2;
+        pubLeftControl.publish(left);
+        pubRightControl.publish(right);
+        loop_rate.sleep();
+    }
+}
 //--------------------------------------------------------------------------------------------------------
 int main(int argc, char **argv){
     ros::init(argc, argv, "robot_move_node"); // Initiate a new ROS node named "robot_control_node"
@@ -192,9 +221,15 @@ int main(int argc, char **argv){
 
     pubFoundLines = node.advertise<visualization_msgs::Marker>("/robot_engrais/selected_lines", 10);
 
-    ROS_INFO("Code Running, press Control+C to end");
+    ros::Rate loop_rate(5);
+
+    Utility::printInColor("Code Running, press Control+C to end", CYAN);
     ros::spin();
-    ROS_INFO("Shitting down...");
+    Utility::printInColor("Shitting down...", CYAN);
+
+    //stop(loop_rate);
+    //left(loop_rate);
+    //right(loop_rate);
 
     sub.shutdown();
     pubLeftControl.shutdown();
@@ -203,7 +238,7 @@ int main(int argc, char **argv){
     pubFoundLines.shutdown();
     ros::shutdown();
 
-    ROS_INFO("Code ended without errors");
+    Utility::printInColor("Code ended without errors", BLUE);
 }
 
 //********************************************************************************************************
