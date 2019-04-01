@@ -4,9 +4,9 @@
 #include <stdlib.h>   
 #include <iostream>
 
-#include "src/robot_findlines_include/1_Point/Point.h"
-#include "src/robot_findlines_include/3_Utility/Utility.h"
-#include "src/robot_findlines_include/4_Model/Model.h"
+#include "src/include/1_Point/Point.h"
+#include "src/include/3_Utility/Utility.h"
+#include "src/include/4_Model/Model.h"
 
 #include <ros/ros.h>
 
@@ -21,10 +21,7 @@
 #define MAX_INT 10000000
 
 #define KP 1
-#define DISTANCE_REFERENCE 2.0
-
-#define LEFT 0
-#define RIGHT 1
+#define DISTANCE_REFERENCE 1.5
 
 using namespace std;
 
@@ -122,7 +119,7 @@ vector<Model> getFoundLines(const visualization_msgs::Marker & msg, Model & Clos
     return foundLines;
 }
 //--------------------------------------------------------------------------------------------------------
-double getControlSignal(Model & ClosestLeftModel, Model & ClosestRightModel){
+double getControlSignal(const Model & ClosestLeftModel, const Model & ClosestRightModel){
     double aErr = 0, bErr = 0;
 
     if(ClosestRightModel.isPopulated() && !ClosestLeftModel.isPopulated()){
@@ -180,35 +177,6 @@ void OnLineMsg(const visualization_msgs::Marker & msg){
     pubLeftControl.publish(left_wheel_cmd);
     pubRightControl.publish(right_wheel_cmd);
 }
-void stop(ros::Rate & loop_rate){
-    while(ros::ok()){
-        std_msgs::Float64 stop;
-        stop.data = 0;
-        pubLeftControl.publish(stop);
-        pubRightControl.publish(stop);
-        loop_rate.sleep();
-    }
-}
-void left(ros::Rate & loop_rate){
-    while(ros::ok()){
-        std_msgs::Float64 left, right;
-        left.data = 2;
-        right.data = -2;
-        pubLeftControl.publish(left);
-        pubRightControl.publish(right);
-        loop_rate.sleep();
-    }
-}
-void right(ros::Rate & loop_rate){
-    while(ros::ok()){
-        std_msgs::Float64 left, right;
-        left.data = -2;
-        right.data = 2;
-        pubLeftControl.publish(left);
-        pubRightControl.publish(right);
-        loop_rate.sleep();
-    }
-}
 //--------------------------------------------------------------------------------------------------------
 int main(int argc, char **argv){
     ros::init(argc, argv, "robot_move_node"); // Initiate a new ROS node named "robot_control_node"
@@ -221,15 +189,9 @@ int main(int argc, char **argv){
 
     pubFoundLines = node.advertise<visualization_msgs::Marker>("/robot_engrais/selected_lines", 10);
 
-    ros::Rate loop_rate(5);
-
     Utility::printInColor("Code Running, press Control+C to end", CYAN);
     ros::spin();
     Utility::printInColor("Shitting down...", CYAN);
-
-    //stop(loop_rate);
-    //left(loop_rate);
-    //right(loop_rate);
 
     sub.shutdown();
     pubLeftControl.shutdown();

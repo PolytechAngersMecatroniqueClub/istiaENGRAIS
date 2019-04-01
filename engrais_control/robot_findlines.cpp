@@ -15,17 +15,17 @@
 #include <engrais_control/Model.h>
 #include <engrais_control/Results.h>
 
-#include "src/robot_findlines_include/1_Point/Point.h"
-#include "src/robot_findlines_include/2_WeightedPoint/WeightedPoint.h"
-#include "src/robot_findlines_include/3_Utility/Utility.h"
-#include "src/robot_findlines_include/4_Model/Model.h"
+#include "src/include/1_Point/Point.h"
+#include "src/include/2_WeightedPoint/WeightedPoint.h"
+#include "src/include/3_Utility/Utility.h"
+#include "src/include/4_Model/Model.h"
 
-#include "src/robot_findlines_include/5_Pearl/Pearl.h"
-#include "src/robot_findlines_include/6_Ruby_Versions/1_RubyPure.h"
-#include "src/robot_findlines_include/6_Ruby_Versions/2_RubyGenetic.h"
-#include "src/robot_findlines_include/6_Ruby_Versions/3_RubyGeneticOnePoint.h"
-#include "src/robot_findlines_include/6_Ruby_Versions/4_RubyGeneticOnePointPosNeg.h"
-#include "src/robot_findlines_include/6_Ruby_Versions/5_RubyGeneticOnePointPosNegInfinite.h"
+#include "src/robot_findlines_include/1_Pearl/Pearl.h"
+#include "src/robot_findlines_include/2_Ruby_Versions/1_RubyPure.h"
+#include "src/robot_findlines_include/2_Ruby_Versions/2_RubyGenetic.h"
+#include "src/robot_findlines_include/2_Ruby_Versions/3_RubyGeneticOnePoint.h"
+#include "src/robot_findlines_include/2_Ruby_Versions/4_RubyGeneticOnePointPosNeg.h"
+#include "src/robot_findlines_include/2_Ruby_Versions/5_RubyGeneticOnePointPosNegInfinite.h"
 
 using namespace std;
 	
@@ -164,8 +164,6 @@ void sendExecutionResults(const sensor_msgs::LaserScan & msg, Pearl & method, co
 
     totalExecutionTime += elapsed_seconds.count();
 
-    //printResults(results);
-
     resultsPubNode.publish(results);
 }
 //--------------------------------------------------------------------------------------------------------
@@ -196,11 +194,11 @@ int main(int argc, char **argv){
     Utility::printInColor("Initializing Robot Control Ros Node", CYAN);
 
     srand (time(NULL));
-    ros::init(argc, argv, "robot_control_node"); // Initiate a new ROS node named "robot_control_node"
+    ros::init(argc, argv, "robot_control_node");
 
     ros::NodeHandle node;
 
-    sub = node.subscribe("/engrais/laser_front/scan", 10, OnRosMsg); // Subscribe to a given topic, in this case "/robot/sensor/data".
+    sub = node.subscribe("/engrais/laser_front/scan", 10, OnRosMsg);
     pubLineNode = node.advertise<visualization_msgs::Marker>("/robot_engrais/all_lines_found", 10);
 
     resultsPubNode = node.advertise<engrais_control::Results>("/testing/robot_engrais/results", 10);
@@ -220,56 +218,8 @@ int main(int argc, char **argv){
 
     Utility::printInColor("Code ended without errors", CYAN);
 
-    Utility::printInColor("Total Calculations Time: " + to_string(totalExecutionTime) + "s, code ran " + to_string(timesExecuted) + " times.\nMean Calculation time: " + to_string(totalExecutionTime/(double)timesExecuted) + "s", BLUE);
-    
-
-    /*ros::init(argc, argv, "robot_control_node"); // Initiate a new ROS node named "robot_control_node"
-
-    ros::NodeHandle node;
-
-    resultsPubNode = node.advertise<engrais_control::Results>("/testing/robot_engrais/results", 10);
-
-    sleep(1);
-
-    vector<Model> lines;
-
-    lines.push_back(Model(1,3));
-    lines.push_back(Model(5,2));
-    lines.push_back(Model(1,-2));
-    lines.push_back(Model(-1,-6));
-    lines.push_back(Model(0.03,-1.002));
-
-    while(ros::ok()){
-
-        engrais_control::Results results;
-        results.foundModels.clear();
-
-        for(int i = 0; i < lines.size(); i++){
-            engrais_control::Model model;
-            if(lines[i].getSlope() != MAX_DBL && lines[i].getIntercept() != MAX_DBL){
-                model.slope = lines[i].getSlope();
-                model.intercept = lines[i].getIntercept();
-
-                results.foundModels.push_back(model);
-            }
-        }
-        
-        results.runTime = 1.2;
-        results.method = "Pearl";
-
-        printResults(results);
-
-        resultsPubNode.publish(results);
-
-        results.runTime = 1.3;
-        results.method = "Ruby";
-
-        printResults(results);
-
-        resultsPubNode.publish(results);
-        
-        sleep(1);
-    }*/
+    Utility::printInColor("Total Calculations Time: " + to_string(totalExecutionTime) + "s, code ran " + to_string(timesExecuted)
+                          + " times.\nMean Calculation time: " + to_string(totalExecutionTime/(double)timesExecuted) + "s", BLUE);
 
     return 0;
 }

@@ -1,6 +1,6 @@
 //********************************************************************************************************
-#ifndef RUBY_GENETIC_ONE_POINT_POS_NEG
-#define RUBY_GENETIC_ONE_POINT_POS_NEG
+#ifndef RUBY_GENETIC_ONE_POINT_POS_NEG_INFINITE
+#define RUBY_GENETIC_ONE_POINT_POS_NEG_INFINITE
 
 #include <iostream>
 #include <vector>
@@ -8,31 +8,32 @@
 #include <sensor_msgs/LaserScan.h>
 
 
-#include "../1_Point/Point.h"
-#include "../2_WeightedPoint/WeightedPoint.h"
-#include "../3_Utility/Utility.h"
-#include "../4_Model/Model.h"
-#include "../5_Pearl/Pearl.h"
+#include "../../include/1_Point/Point.h"
+#include "../../include/2_WeightedPoint/WeightedPoint.h"
+#include "../../include/3_Utility/Utility.h"
+#include "../../include/4_Model/Model.h"
+#include "../1_Pearl/Pearl.h"
 
-class RubyGeneticOnePointPosNeg : public Pearl{
+class RubyGeneticOnePointPosNegInfinite : public Pearl{
 	public:
-		std::vector<Point> initialField;
+		std::vector<Point> field;
 		
-		int numberOfPositivePointsInOutliers = 0;
+		int numberOfPositivePointsInField = 0;
 
 		double distanceToBeConsideredSamePoint = 0.1; 
 		double numberOfModelsToSearch = 40;
 		double factorToDeletePoints = 0.8;
+		
 
 	public:
 		//------------------------------------------------------------------------------------------------
-		RubyGeneticOnePointPosNeg();
+		RubyGeneticOnePointPosNegInfinite();
 		//------------------------------------------------------------------------------------------------
 		void populateOutliers(const sensor_msgs::LaserScan & );
 		//------------------------------------------------------------------------------------------------
 		std::vector<Model> findLines();
 		//------------------------------------------------------------------------------------------------
-		std::vector<Point> getInitialField() const ;
+		std::vector<Point> getInitialField() const;
 
 
 	public:
@@ -65,17 +66,16 @@ class RubyGeneticOnePointPosNeg : public Pearl{
 		//------------------------------------------------------------------------------------------------
 		void fuseEqualModels();
 
-		//################################################################################################
+		//################################################################################################*/
 		
-		friend std::ostream & operator << (std::ostream &out, const RubyGeneticOnePointPosNeg &r);
+		friend std::ostream & operator << (std::ostream &out, const RubyGeneticOnePointPosNegInfinite &r);
 };
 
 
 //--------------------------------------------------------------------------------------------------------
-inline RubyGeneticOnePointPosNeg::RubyGeneticOnePointPosNeg(){}
+inline RubyGeneticOnePointPosNegInfinite::RubyGeneticOnePointPosNegInfinite(){}
 //--------------------------------------------------------------------------------------------------------
-inline std::vector<Point> RubyGeneticOnePointPosNeg::getInitialField() const {  return initialField; }
-
+inline std::vector<Point> RubyGeneticOnePointPosNegInfinite::getInitialField() const {  return field; }
 
 #endif
 //********************************************************************************************************

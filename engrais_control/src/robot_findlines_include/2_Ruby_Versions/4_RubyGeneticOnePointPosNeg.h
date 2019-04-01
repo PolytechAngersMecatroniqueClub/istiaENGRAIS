@@ -1,6 +1,6 @@
 //********************************************************************************************************
-#ifndef RUBY_GENETIC
-#define RUBY_GENETIC
+#ifndef RUBY_GENETIC_ONE_POINT_POS_NEG
+#define RUBY_GENETIC_ONE_POINT_POS_NEG
 
 #include <iostream>
 #include <vector>
@@ -8,40 +8,53 @@
 #include <sensor_msgs/LaserScan.h>
 
 
-#include "../1_Point/Point.h"
-#include "../3_Utility/Utility.h"
-#include "../4_Model/Model.h"
-#include "../5_Pearl/Pearl.h"
+#include "../../include/1_Point/Point.h"
+#include "../../include/2_WeightedPoint/WeightedPoint.h"
+#include "../../include/3_Utility/Utility.h"
+#include "../../include/4_Model/Model.h"
+#include "../1_Pearl/Pearl.h"
 
-class RubyGenetic : public Pearl{
+class RubyGeneticOnePointPosNeg : public Pearl{
 	public:
+		std::vector<Point> initialField;
+		
+		int numberOfPositivePointsInOutliers = 0;
 
+		double distanceToBeConsideredSamePoint = 0.1; 
 		double numberOfModelsToSearch = 40;
 		double factorToDeletePoints = 0.8;
 
 	public:
 		//------------------------------------------------------------------------------------------------
-		RubyGenetic();
+		RubyGeneticOnePointPosNeg();
 		//------------------------------------------------------------------------------------------------
 		void populateOutliers(const sensor_msgs::LaserScan & );
 		//------------------------------------------------------------------------------------------------
 		std::vector<Model> findLines();
+		//------------------------------------------------------------------------------------------------
+		std::vector<Point> getInitialField() const ;
 
 
 	public:
+
+		void clearPointsInModels();
 		//################################################################################################
 
 		//------------------------------------------------------------------------------------------------
-		std::vector<Point> randomPointsInField(const int) const;
+		std::vector<Point> randomPointsInField(const int , const int , const int ) const;
 		//------------------------------------------------------------------------------------------------
 		void searchModels(const int );
+		//------------------------------------------------------------------------------------------------
+		void removeModel(const int );
 
 		//################################################################################################
 
+		//------------------------------------------------------------------------------------------------
+		double redistributePoints();
 		//------------------------------------------------------------------------------------------------
 		double calculateEnergy() const;
 		//------------------------------------------------------------------------------------------------
-		double meanNumbOfPoints() const;
+		double meanNumOfPoints() const;
 
 		//################################################################################################
 		
@@ -49,15 +62,20 @@ class RubyGenetic : public Pearl{
 		void countParallelLines();
 		//------------------------------------------------------------------------------------------------
 		void eraseBadModels();
+		//------------------------------------------------------------------------------------------------
+		void fuseEqualModels();
 
 		//################################################################################################
 		
-		friend std::ostream & operator << (std::ostream &out, const RubyGenetic &r);
+		friend std::ostream & operator << (std::ostream &out, const RubyGeneticOnePointPosNeg &r);
 };
 
 
 //--------------------------------------------------------------------------------------------------------
-inline RubyGenetic::RubyGenetic(){}
+inline RubyGeneticOnePointPosNeg::RubyGeneticOnePointPosNeg(){}
+//--------------------------------------------------------------------------------------------------------
+inline std::vector<Point> RubyGeneticOnePointPosNeg::getInitialField() const {  return initialField; }
+
 
 #endif
 //********************************************************************************************************
