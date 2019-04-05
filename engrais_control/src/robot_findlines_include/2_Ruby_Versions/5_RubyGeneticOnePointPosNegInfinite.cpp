@@ -44,7 +44,7 @@ void RubyGeneticOnePointPosNegInfinite::populateOutliers(const sensor_msgs::Lase
         this->field.insert(this->field.begin(), 1, fusedPoint);
         this->numberOfPositivePointsInField++;
     }
-    else{
+    else if(fusedPoint.getX() != MIN_DBL && fusedPoint.getY() != MIN_DBL){
         this->field.push_back(fusedPoint);
     }
 }
@@ -68,8 +68,9 @@ std::vector<Model> RubyGeneticOnePointPosNegInfinite::findLines() { //Checked
 
             redistributePoints();
 
-            numberMinOfPoints = std::max((int)(meanNumOfPoints() * this->factorToDeletePoints), 3);
-            removeTinyModels(numberMinOfPoints);
+            numberMinOfPoints = std::max((int)(meanNumOfPoints() * this->factorToDeletePoints), 2);
+
+            removeTinyModels(3);
 
             reEstimation();
 
@@ -89,10 +90,6 @@ std::vector<Model> RubyGeneticOnePointPosNegInfinite::findLines() { //Checked
             }
         }
     }
-
-    else{
-        Utility::printInColor("No data in field, please verify", RED);
-    }   
     
     return this->models;
 }

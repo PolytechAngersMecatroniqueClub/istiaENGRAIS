@@ -2,5 +2,5 @@
 <launch>
 	<include file="$(find engrais_gazebo)/launch/engrais_world.launch" />
 	<include file="$(find engrais_description)/launch/rviz.launch" />
-	<include file="$(find engrais_control)/launch/control.launch" />
+	<include file="$(find engrais_control)/launch/findlines.launch" />
 </launch>

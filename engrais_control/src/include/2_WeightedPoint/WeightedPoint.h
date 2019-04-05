@@ -50,10 +50,7 @@ inline bool WeightedPoint::operator != (const WeightedPoint & wp) const { return
 
 
 //--------------------------------------------------------------------------------------------------------
-inline std::ostream & operator << (std::ostream &out, const WeightedPoint &p){ //Checked
-    out << "WeightedPoint: [ x: " << p.getX() << ", y: " << p.getY() << ", Weight: " << p.pointWeight << " ]";  
-    return out; 
-}
+inline std::ostream & operator << (std::ostream &out, const WeightedPoint &p){ return (out << "WeightedPoint: [ x: " << p.getX() << ", y: " << p.getY() << ", Weight: " << p.pointWeight << " ]"); }
 
 #endif
 //********************************************************************************************************

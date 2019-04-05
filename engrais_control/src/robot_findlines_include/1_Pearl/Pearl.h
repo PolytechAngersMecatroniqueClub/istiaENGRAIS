@@ -12,6 +12,8 @@
 
 #define INITIAL_NUMBER_OF_POINTS 3
 
+
+
 class Pearl{ 
     public: 
         std::vector<Model> models;
@@ -28,8 +30,8 @@ class Pearl{
         double additionalEnergyLambda = 4;
         double additionalEnergyCsi = 3;
 
-        double sameSlopeThreshold = 0.2;
-        double sameInterceptThreshold = 0.5;
+        double sameSlopeThreshold = 0.1;
+        double sameInterceptThreshold = 0.3;
 
         double worstEnergySizeRatioAllowed = 0.7;
 
@@ -37,7 +39,7 @@ class Pearl{
         //------------------------------------------------------------------------------------------------
         Pearl(); //Checked
         //------------------------------------------------------------------------------------------------
-        virtual void populateOutliers(const sensor_msgs::LaserScan & ); //Checked
+        virtual void populateOutliers(const sensor_msgs::LaserScan &); //Checked
         //------------------------------------------------------------------------------------------------
         virtual std::vector<Model> findLines(); //Checked
         //------------------------------------------------------------------------------------------------

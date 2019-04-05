@@ -66,10 +66,6 @@ std::vector<Model> Pearl::findLines() { //Checked
 	    }
 	}
 
-	else{
-	    Utility::printInColor("No data in field, please verify", RED);
-	}
-
 	return models;
 }
 //--------------------------------------------------------------------------------------------------------    

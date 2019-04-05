@@ -63,11 +63,7 @@ std::vector<Model> RubyGenetic::findLines() { //Checked
                 newEnergy = energy;
             }
         }
-    }
-
-    else{
-        Utility::printInColor("No data in field, please verify", RED);
-    }   
+    }  
 
     return models;
 }

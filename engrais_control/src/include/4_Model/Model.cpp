@@ -51,6 +51,20 @@ void Model::findBestModel(const std::vector<Point> & rPointsInModel){ //Checked
     findBestModel();    
 }
 //--------------------------------------------------------------------------------------------------------
+std::pair<Point, Point> Model::getFirstAndLastPoint() const{
+    std::pair<Point, Point> ret;
+    ret.first = ret.second = this->pointsInModel[0];
+
+    for(Point p : this->pointsInModel){
+        if(p.distanceToOrigin() < ret.first.distanceToOrigin())
+            ret.first = p;
+        if(p.distanceToOrigin() > ret.second.distanceToOrigin())
+            ret.second = p;
+    }
+
+    return ret;
+}
+//--------------------------------------------------------------------------------------------------------
 void Model::pushPoint(const Point & p) { 
     if(this->pointsInModel.size() == 0)
         this->energy = 0;

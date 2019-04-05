@@ -8,7 +8,8 @@
 #include <time.h>  
 #include <algorithm>
 
-#include "ros/ros.h"
+#include <ros/ros.h>
+#include <ros/console.h>
 #include "sensor_msgs/LaserScan.h"
 #include "visualization_msgs/Marker.h"
 
@@ -29,17 +30,16 @@
 
 using namespace std;
 	
-Pearl pearl;
-RubyPure rubyPure;
-RubyGenetic rubyGen;
-RubyGeneticOnePoint rubyGenOP;
+//Pearl pearl;
+//RubyPure rubyPure;
+//RubyGenetic rubyGen;
+//RubyGeneticOnePoint rubyGenOP;
 RubyGeneticOnePointPosNeg rubyGenOPPN;
-RubyGeneticOnePointPosNegInfinite rubyGenOPPNInf;
+//RubyGeneticOnePointPosNegInfinite rubyGenOPPNInf;
 
-ros::Subscriber sub;
+string mapName;
+
 ros::Publisher pubLineNode;
-
-
 ros::Publisher resultsPubNode;
 
 
@@ -52,19 +52,8 @@ int timesExecuted = 0;
 
 
 //--------------------------------------------------------------------------------------------------------
-void printResults(const engrais_control::Results & results){ 
-
-    cout << "Method: "<< results.method << ", Run Time: " << results.runTime << endl;
-
-    cout << "Models: Vector {" << endl;
-    for(int i = 0; i < results.foundModels.size(); i++){
-        cout << "\t[" << i << "]: Slope: " << results.foundModels[i].slope << ", Intercept: " << results.foundModels[i].intercept << endl;
-    }
-    cout << "}" << endl << endl;
-}
-//--------------------------------------------------------------------------------------------------------
-void preparePointsAndLines(visualization_msgs::Marker & line_list, visualization_msgs::Marker & points) { 
-        points.header.frame_id = line_list.header.frame_id = "sick_front_link";
+void preparePointsAndLines(visualization_msgs::Marker & line_list, visualization_msgs::Marker & points){ 
+        points.header.frame_id = line_list.header.frame_id = mapName;
         points.header.stamp = line_list.header.stamp = ros::Time::now();
         points.ns = line_list.ns = "points_and_lines";
         points.action = line_list.action = visualization_msgs::Marker::ADD;
@@ -78,25 +67,20 @@ void preparePointsAndLines(visualization_msgs::Marker & line_list, visualization
         points.type = visualization_msgs::Marker::POINTS;
         line_list.type = visualization_msgs::Marker::LINE_LIST;
 
-		// POINTS markers use x and y scale for width/height respectively
 		points.scale.x = 0.05;
 		points.scale.y = 0.05;
 
-		// Points are red
 		points.color.r = 1.0;
 		points.color.a = 1.0;
 
-
-        // LINE_STRIP/LINE_LIST markers use only the x component of scale, for the line width
         line_list.scale.x = 0.03;
 
 
-        // Line list is blue
         line_list.color.b = 1.0;
         line_list.color.a = 1.0;
 }
 //--------------------------------------------------------------------------------------------------------
-void sendLine(const vector<Model> & models, const Pearl & pearl) { 
+void sendLine(const vector<Model> & models, const Pearl & pearl){ 
     visualization_msgs::Marker line_list, points;
     geometry_msgs::Point p;
 
@@ -113,12 +97,13 @@ void sendLine(const vector<Model> & models, const Pearl & pearl) {
 
     for(int i = 0; i < models.size(); i++){
         if(models[i].getSlope() != MAX_DBL && models[i].getIntercept() != MAX_DBL){
-    	    p.x = 0;
+            pair<Point, Point> points = models[i].getFirstAndLastPoint();
+    	    p.x = points.first.getX();
     	    p.y = models[i].getSlope()*p.x + models[i].getIntercept();
 
     	    line_list.points.push_back(p);
 
-    	    p.x = 20;
+    	    p.x = points.second.getX();
     	    p.y = models[i].getSlope()*p.x + models[i].getIntercept();
 
     	    line_list.points.push_back(p);
@@ -128,8 +113,6 @@ void sendLine(const vector<Model> & models, const Pearl & pearl) {
     pubLineNode.publish(points);
     pubLineNode.publish(line_list);
 }
-
-
 //--------------------------------------------------------------------------------------------------------
 void sendExecutionResults(const sensor_msgs::LaserScan & msg, Pearl & method, const string methodType){
     auto start = std::chrono::system_clock::now();
@@ -164,62 +147,55 @@ void sendExecutionResults(const sensor_msgs::LaserScan & msg, Pearl & method, co
 
     totalExecutionTime += elapsed_seconds.count();
 
-    resultsPubNode.publish(results);
+    //resultsPubNode.publish(results);
 }
+
+
 //--------------------------------------------------------------------------------------------------------
 void OnRosMsg(const sensor_msgs::LaserScan & msg){
-    /*sendExecutionResults(msg, pearl, Utility::getClassName(pearl));
-    sendExecutionResults(msg, rubyPure, Utility::getClassName(rubyPure));
-    sendExecutionResults(msg, rubyGen, Utility::getClassName(rubyGen));
-    sendExecutionResults(msg, rubyGenOP, Utility::getClassName(rubyGenOP));*/
+    //sendExecutionResults(msg, pearl, Utility::getClassName(pearl));
+    //sendExecutionResults(msg, rubyPure, Utility::getClassName(rubyPure));
+    //sendExecutionResults(msg, rubyGen, Utility::getClassName(rubyGen));
+    //sendExecutionResults(msg, rubyGenOP, Utility::getClassName(rubyGenOP));
     sendExecutionResults(msg, rubyGenOPPN, Utility::getClassName(rubyGenOPPN));
     //sendExecutionResults(msg, rubyGenOPPNInf, Utility::getClassName(rubyGenOPPNInf));
 
-    /*cout << pearl << endl;
-    cout << rubyPure << endl;
-    cout << rubyGen << endl;
-    cout << rubyGenOP << endl;
-    cout << rubyGenOPPN << endl;
-    cout << rubyGenOPPNInf << endl;
-
-    exit(1);*/
-
-    timesExecuted++;
-
-    std::cout << "finished computation at " << std::ctime(&end_time) << "elapsed time: " << elapsed_seconds.count() << "s\n";
+    //cout << pearl << endl << endl;
+    //cout << rubyPure << endl << endl;
+    //cout << rubyGen << endl << endl;
+    //cout << rubyGenOP << endl << endl;
+    //cout << rubyGenOPPN << endl << endl;
+    //cout << rubyGenOPPNInf << endl << endl;
 }
 //--------------------------------------------------------------------------------------------------------
 int main(int argc, char **argv){
-    
-    Utility::printInColor("Initializing Robot Control Ros Node", CYAN);
 
     srand (time(NULL));
-    ros::init(argc, argv, "robot_control_node");
-
+    ros::init(argc, argv, "engrais_findlines");
     ros::NodeHandle node;
 
-    sub = node.subscribe("/engrais/laser_front/scan", 10, OnRosMsg);
-    pubLineNode = node.advertise<visualization_msgs::Marker>("/robot_engrais/all_lines_found", 10);
+    string sub_topic, pub_topic, node_name = ros::this_node::getName();
 
-    resultsPubNode = node.advertise<engrais_control::Results>("/testing/robot_engrais/results", 10);
+    Utility::printInColor("Initializing Robot Control Ros Node", CYAN);
+
+    if(!node.getParam(node_name + "/subscribe_topic", sub_topic) || !node.getParam(node_name + "/publish_topic", pub_topic)){
+        ROS_ERROR_STREAM("Argument missing in node " << node_name << ", expected 'subscribe_topic', 'publish_topic' and [optional: 'rviz map name']\n\n");
+        return -1;
+    }
+
+    node.param<string>(node_name + "/rviz_topic", mapName, "world");
+
+    ros::Subscriber sub = node.subscribe(sub_topic, 10, OnRosMsg); // /engrais/laser_front/scan or /engrais/laser_back/scan
+    pubLineNode = node.advertise<visualization_msgs::Marker>(pub_topic, 10);// /engrais/laser_front/lines or /engrais/laser_back/lines
 
     Utility::printInColor("Code Running, press Control+C to end", CYAN);
     ros::spin();
     Utility::printInColor("Shitting down...", CYAN);
 
-
     sub.shutdown();
     pubLineNode.shutdown();
-
-
     resultsPubNode.shutdown();
     ros::shutdown();
-
-
-    Utility::printInColor("Code ended without errors", CYAN);
-
-    Utility::printInColor("Total Calculations Time: " + to_string(totalExecutionTime) + "s, code ran " + to_string(timesExecuted)
-                          + " times.\nMean Calculation time: " + to_string(totalExecutionTime/(double)timesExecuted) + "s", BLUE);
 
     return 0;
 }

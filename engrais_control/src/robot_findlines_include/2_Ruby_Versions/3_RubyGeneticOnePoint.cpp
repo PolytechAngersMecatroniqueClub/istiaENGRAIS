@@ -31,8 +31,10 @@ void RubyGeneticOnePoint::populateOutliers(const sensor_msgs::LaserScan & msg){ 
         }
         angle += msg.angle_increment;
     }
+    
+    if(fusedPoint.getX() != MIN_DBL && fusedPoint.getY() != MIN_DBL)
+        outliers.push_back(fusedPoint);
 
-    outliers.push_back(fusedPoint);
     initialField = outliers;
 }
 //--------------------------------------------------------------------------------------------------------
@@ -55,9 +57,9 @@ std::vector<Model> RubyGeneticOnePoint::findLines() { //Checked
 
             redistributePoints();
 
-            numberMinOfPoints = std::max((int)(meanNumbOfPoints() * this->factorToDeletePoints), 2);
+            numberMinOfPoints = std::max((int)(meanNumOfPoints() * this->factorToDeletePoints), 2);
 
-            removeTinyModels(numberMinOfPoints);
+            removeTinyModels(3);
 
             reEstimation();
             
@@ -78,11 +80,7 @@ std::vector<Model> RubyGeneticOnePoint::findLines() { //Checked
                 newEnergy = energy;
             }
         }
-    }
-
-    else{
-        Utility::printInColor("No data in field, please verify", RED);
-    }   
+    } 
 
     return models;
 }
@@ -129,7 +127,7 @@ double RubyGeneticOnePoint::calculateEnergy(){ //Checked
     return energy;
 }
 //--------------------------------------------------------------------------------------------------------
-double RubyGeneticOnePoint::meanNumbOfPoints(){ //Checked 
+double RubyGeneticOnePoint::meanNumOfPoints(){ //Checked 
     double mean = 0;
     for(Model m : models)
         mean += m.getPointsSize();
