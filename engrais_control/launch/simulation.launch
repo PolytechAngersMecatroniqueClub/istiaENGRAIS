@@ -1,6 +1,9 @@
 <?xml version="1.6" ?>
 <launch>
+
 	<include file="$(find engrais_gazebo)/launch/engrais_world.launch" />
 	<include file="$(find engrais_description)/launch/rviz.launch" />
 	<include file="$(find engrais_control)/launch/findlines.launch" />
+	<include file="$(find engrais_control)/launch/move.launch" />
+
 </launch>

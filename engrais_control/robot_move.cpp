@@ -92,16 +92,28 @@ class WeightedModel{
 
         Model toModel(){
             Model ret(a,b);
-            ret.pushPoint(negativePoints.second);
-            ret.pushPoint(positivePoints.second);
+
+            if(negativePoints.second.getX() != MIN_DBL && negativePoints.second.getY() != MIN_DBL)
+                ret.pushPoint(negativePoints.second);
+            else if(positivePoints.first.getX() != MIN_DBL && positivePoints.first.getY() != MIN_DBL)
+                ret.pushPoint(positivePoints.first);
+                
+
+            if(positivePoints.second.getX() != MIN_DBL && positivePoints.second.getY() != MIN_DBL)
+                ret.pushPoint(positivePoints.second);
+            else if(negativePoints.first.getX() != MIN_DBL && negativePoints.first.getY() != MIN_DBL)
+                ret.pushPoint(negativePoints.first);
+
 
             return ret;
         }
 
         friend std::ostream & operator << (std::ostream & out, const WeightedModel & wm){
-            out << "WeightedModel: [ a: " << wm.a << ", b: " << wm.b << ", cont: " << wm.cont;
+            out << "WeightedModel: [ a: " << wm.a << ", b: " << wm.b << ", cont: " << wm.cont << endl;
 
-            out << wm.positivePoints.first << "    " << wm.positivePoints.second << "]";
+            out << wm.positivePoints.first << "    " << wm.positivePoints.second << "]" << endl;
+            out << wm.negativePoints.first << "    " << wm.negativePoints.second << "]" << endl;
+
             return out;
         }
 };
@@ -163,19 +175,19 @@ class Control{
             }
         }     
 
-        pair<Model, Model> selectModels(){
-            pair<Model, Model> ret;
+        vector<Model> selectModels(){
+            vector<Model> ret(2);
             int bestCounterLeft = 0, bestCounterRight = 0;
 
             for(int i = 0; i < models.size(); i++){
                 if(models[i].getIntercept() >= 0 && models[i].getCounter() > bestCounterLeft){
                     bestCounterLeft = models[i].getCounter();
-                    ret.first = models[i].toModel();
+                    ret[0] = models[i].toModel();
                 }
 
                 if(models[i].getIntercept() < 0 && models[i].getCounter() > bestCounterRight){
                     bestCounterRight = models[i].getCounter();
-                    ret.second = models[i].toModel();
+                    ret[1] = models[i].toModel();
                 }
             }
 
@@ -294,7 +306,11 @@ class Control{
 Control control;
 
 
-void preparePointsAndLines(visualization_msgs::Marker & line_list){ 
+//--------------------------------------------------------------------------------------------------------
+void sendLine(const vector<Model> & models){ 
+    visualization_msgs::Marker line_list;
+    geometry_msgs::Point p;
+
     line_list.header.frame_id = mapName;
     line_list.header.stamp = ros::Time::now();
     line_list.ns = "points_and_lines";
@@ -304,46 +320,24 @@ void preparePointsAndLines(visualization_msgs::Marker & line_list){
     line_list.id = 0;
     line_list.type = visualization_msgs::Marker::LINE_LIST;
 
-
-    // LINE_STRIP/LINE_LIST markers use only the x component of scale, for the line width
     line_list.scale.x = 0.08;
 
-
-    // Line list is green
     line_list.color.g = 1.0;
     line_list.color.a = 0.4;
-}
-//--------------------------------------------------------------------------------------------------------
-void sendLine(const pair<Model, Model> & models){ 
-    visualization_msgs::Marker line_list;
-    geometry_msgs::Point p;
 
-    preparePointsAndLines(line_list);
-    
-    if(models.first.isPopulated()){
-        pair<Point, Point> points = models.first.getFirstAndLastPoint();
-        p.x = points.first.getX();
-        p.y = models.first.getSlope()*p.x + models.first.getIntercept();
+    for(Model m : models){
+        if(m.isPopulated()){
+            pair<Point, Point> points = m.getFirstAndLastPoint();
+            p.x = points.first.getX();
+            p.y = m.getSlope()*p.x + m.getIntercept();
 
-        line_list.points.push_back(p);
+            line_list.points.push_back(p);
 
-        p.x = points.second.getX();
-        p.y = models.first.getSlope()*p.x + models.first.getIntercept();
+            p.x = points.second.getX();
+            p.y = m.getSlope()*p.x + m.getIntercept();
 
-        line_list.points.push_back(p);
-    }
-
-    if(models.second.isPopulated()){
-        pair<Point, Point> points = models.second.getFirstAndLastPoint();
-        p.x = points.first.getX();
-        p.y = models.second.getSlope()*p.x + models.second.getIntercept();
-
-        line_list.points.push_back(p);
-
-        p.x = points.second.getX();
-        p.y = models.second.getSlope()*p.x + models.second.getIntercept();
-
-        line_list.points.push_back(p);
+            line_list.points.push_back(p);
+        }
     }
     
     pubSelectedLines.publish(line_list);
@@ -376,20 +370,15 @@ void controlThread(){
         control.clearModels();
         critSec.unlock();
 
-        usleep(1000 * TO_MILLISECOND);
-
-        cout << control << endl << endl;
+        usleep(500 * TO_MILLISECOND);
 
         critSec.lock();
-        pair<Model, Model> selectModels = control.selectModels();
 
+        vector<Model> selectModels = control.selectModels();
         sendLine(selectModels);
+        control.getControlSignal(selectModels[0], selectModels[1]);
 
-        control.getControlSignal(selectModels.first, selectModels.second);
         critSec.unlock();
-
-        cout << selectModels.first << endl;
-        cout << selectModels.second << endl<< endl<< endl;
     }
 }
 //--------------------------------------------------------------------------------------------------------
@@ -399,8 +388,11 @@ int main(int argc, char **argv){
     ros::NodeHandle node;
 
     string subTopicFront, subTopicBack, pubTopicLeft, pubTopicRight, pubTopicSelected, node_name = ros::this_node::getName();
-    if(!node.getParam(node_name + "/subscribe_topic_front", subTopicFront) || !node.getParam(node_name + "/subscribe_topic_back", subTopicBack) || !node.getParam(node_name + "/publish_topic_left", pubTopicLeft) || !node.getParam(node_name + "/publish_topic_right", pubTopicRight)){
-        ROS_ERROR_STREAM("Argument missing in node " << node_name << ", expected 'subscribe_topic_front', 'subscribe_topic_back', 'publish_topic_left', 'publish_topic_right' and [optional: 'rviz_topic' and 'rviz_frame']\n\n");
+    if(!node.getParam(node_name + "/subscribe_topic_front", subTopicFront) || !node.getParam(node_name + "/subscribe_topic_back", subTopicBack) || 
+       !node.getParam(node_name + "/publish_topic_left", pubTopicLeft) || !node.getParam(node_name + "/publish_topic_right", pubTopicRight)){
+
+        ROS_ERROR_STREAM("Argument missing in node " << node_name << ", expected 'subscribe_topic_front', 'subscribe_topic_back', " <<
+                         "'publish_topic_left', 'publish_topic_right' and [optional: 'rviz_topic' and 'rviz_frame']\n\n");
         return -1;
     }
 
@@ -409,7 +401,6 @@ int main(int argc, char **argv){
 
     ros::Subscriber subFront = node.subscribe(subTopicFront, 10, FrontLinesMsg);
     ros::Subscriber subBack = node.subscribe(subTopicBack, 10, BackLinesMsg);
-
 
     pubLeftControl = node.advertise<std_msgs::Float64>(pubTopicLeft, 10);
     pubRightControl = node.advertise<std_msgs::Float64>(pubTopicRight, 10);

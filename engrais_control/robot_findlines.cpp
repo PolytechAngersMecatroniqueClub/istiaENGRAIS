@@ -137,6 +137,8 @@ int main(int argc, char **argv){
 
     node.param<string>(node_name + "/rviz_frame", mapName, "world");
 
+    Utility::printInColor("sub_topic: " + sub_topic + ", pub_topic: " + pub_topic + ", node_name: " + node_name, RED);
+
     ros::Subscriber sub = node.subscribe(sub_topic, 10, OnRosMsg); // /engrais/laser_front/scan or /engrais/laser_back/scan
     pubLineNode = node.advertise<visualization_msgs::Marker>(pub_topic, 10);// /engrais/laser_front/lines or /engrais/laser_back/lines
 
