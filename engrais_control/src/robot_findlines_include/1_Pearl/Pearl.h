@@ -15,12 +15,12 @@
 
 
 class Pearl{ 
-    public: 
+    protected: 
         std::vector<Model> models;
         std::vector<Point> outliers;   
         std::vector<Point> initialField;
         
-    public:
+    protected:
         int maxNumberOfIterations = 10; 
         int divideFactor = 2*INITIAL_NUMBER_OF_POINTS;     
 
@@ -46,7 +46,7 @@ class Pearl{
         virtual std::vector<Point> getInitialField() const; //Checked
             
             
-    public:
+    protected:
     	//------------------------------------------------------------------------------------------------
         virtual void removeModel(const int ); //Checked
         //------------------------------------------------------------------------------------------------

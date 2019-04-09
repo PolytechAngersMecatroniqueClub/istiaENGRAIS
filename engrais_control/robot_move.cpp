@@ -9,127 +9,183 @@
 #include "src/include/3_Utility/Utility.h"
 #include "src/include/4_Model/Model.h"
 
-//#include "src/robot_move_include/1_Control/Control.h"
-
 #include <ros/ros.h>
-
 #include <visualization_msgs/Marker.h>
 #include <std_msgs/Float64.h>
 
 #define KP 1
 #define DISTANCE_REFERENCE 1.5
 #define TO_MILLISECOND 1000
+#define PI 3.141592
+#define BODY_SIZE 2
 
 using namespace std;
 
 bool endProgram = false;
+string mapName;
 
 ros::Publisher pubLeftControl;
 ros::Publisher pubRightControl;
 ros::Publisher pubSelectedLines;
 
+mutex critSec;
 
-class Control{
+class WeightedModel{
     public:
+        int cont = 1;
+
+        double a = MAX_DBL;
+        double b = MAX_DBL;
+
         double sameSlopeThreshold = 0.1;
         double sameInterceptThreshold = 0.3;
 
+        pair<Point, Point> positivePoints;
+        pair<Point, Point> negativePoints;
+
 
     public:
-        std::vector<Model> backModels;
-        std::vector<Model> frontModels;
+        WeightedModel() {}
+
+        WeightedModel(const Model & m) : a(m.getSlope()), b(m.getIntercept()) {
+            assignPoints(m);
+            //
+        }
+
+        WeightedModel(const double aa, const double bb) : a(aa), b(bb) {}
+
+        double getSlope() { return a; }
+
+        double getIntercept() { return b; }
+
+        int getCounter() { return cont; }
+
+        void assignPoints(const Model & m){
+            pair<Point, Point> points = m.getFirstAndLastPoint();
+
+            if(points.first.getX() >= 0){
+                this->positivePoints.first = points.first;
+                this->positivePoints.second = points.second;
+            }
+            else{
+                this->negativePoints.first = points.first;
+                this->negativePoints.second = points.second;
+            }
+        }
+
+        bool checkIfSameModel(const Model & m){
+            if(fabs(this->getSlope() - m.getSlope()) < sameSlopeThreshold && fabs(this->getIntercept() - m.getIntercept()) < sameInterceptThreshold){
+                return true;
+            }
+
+            return false;
+        }
+
+        void fuseModels(const Model & m){
+            this->a = (this->getSlope() * cont + m.getSlope()) / (cont + 1);
+            this->b = (this->getIntercept() * cont + m.getIntercept()) / (cont + 1);
+
+            this->assignPoints(m);
+
+            this->cont++;
+        }
+
+        Model toModel(){
+            Model ret(a,b);
+            ret.pushPoint(negativePoints.second);
+            ret.pushPoint(positivePoints.second);
+
+            return ret;
+        }
+
+        friend std::ostream & operator << (std::ostream & out, const WeightedModel & wm){
+            out << "WeightedModel: [ a: " << wm.a << ", b: " << wm.b << ", cont: " << wm.cont;
+
+            out << wm.positivePoints.first << "    " << wm.positivePoints.second << "]";
+            return out;
+        }
+};
+
+
+class Control{
+    public:
+        std::vector<WeightedModel> models;
 
 
     public:
         Control(){}
 
-        void frontMessage(const visualization_msgs::Marker & msg){
-            if(msg.type != 5)
-                return;
+        void clearModels(){
+            models.clear();
+            //
+        }
 
-            this->frontModels = this->getFoundLines(msg);
+        void frontMessage(const visualization_msgs::Marker & msg){
+            const visualization_msgs::Marker finalMsg = this->translateAxis(msg, -BODY_SIZE/2.0, 0);
+
+            vector<Model> modelsInMsg = this->getFoundLines(finalMsg);
+
+            for(int i = 0; i < modelsInMsg.size(); i++){
+                bool existsInModels = false;
+
+                for(int j = 0; j < models.size(); j++){
+                    if(models[j].checkIfSameModel(modelsInMsg[i])){
+                        models[j].fuseModels(modelsInMsg[i]);
+                        existsInModels = true;
+                    }
+                }
+
+                if(!existsInModels){
+                    models.push_back(WeightedModel(modelsInMsg[i]));
+                }
+            }
         }
 
         void backMessage(const visualization_msgs::Marker & msg){
-            if(msg.type != 5)
-                return;
+            const visualization_msgs::Marker movedMsg = this->rotateAxis(msg, PI);
+            const visualization_msgs::Marker finalMsg = this->translateAxis(movedMsg, BODY_SIZE/2.0, 0);
 
-            this->backModels = this->getFoundLines(msg);
+            vector<Model> modelsInMsg = this->getFoundLines(finalMsg);
+
+            for(int i = 0; i < modelsInMsg.size(); i++){
+                bool existsInModels = false;
+
+                for(int j = 0; j < models.size(); j++){
+                    if(models[j].checkIfSameModel(modelsInMsg[i])){
+                        models[j].fuseModels(modelsInMsg[i]);
+                        existsInModels = true;
+                    }
+                }
+
+                if(!existsInModels){
+                    models.push_back(WeightedModel(modelsInMsg[i]));
+                }
+            }
+        }     
+
+        pair<Model, Model> selectModels(){
+            pair<Model, Model> ret;
+            int bestCounterLeft = 0, bestCounterRight = 0;
+
+            for(int i = 0; i < models.size(); i++){
+                if(models[i].getIntercept() >= 0 && models[i].getCounter() > bestCounterLeft){
+                    bestCounterLeft = models[i].getCounter();
+                    ret.first = models[i].toModel();
+                }
+
+                if(models[i].getIntercept() < 0 && models[i].getCounter() > bestCounterRight){
+                    bestCounterRight = models[i].getCounter();
+                    ret.second = models[i].toModel();
+                }
+            }
+
+            return ret;
         }
 
-        pair<std_msgs::Float64, std_msgs::Float64> getControlSignal(){
-
+        pair<std_msgs::Float64, std_msgs::Float64> getControlSignal(const Model & LeftModel, const Model & RightModel){
             pair<std_msgs::Float64, std_msgs::Float64> cmd;
 
-            pair<Model, Model> selectedModels;
-
-            if(frontModels.size() >= backModels.size())
-                selectedModels = selectModels(frontModels, backModels);
-            else
-                selectedModels = selectModels(backModels, frontModels);
-
-
-            double controlSig = calculateControlSig(selectedModels.first, selectedModels.second);
-
-            if(controlSig >= 0){
-                controlSig /= 10;
-                controlSig = min(controlSig, 1.0);
-
-                cmd.first.data = 1.0 * (1 - controlSig);
-                cmd.second.data = 1.0;
-            }
-            else if (controlSig < 0){
-                controlSig /= -10;
-                controlSig = min(controlSig, 1.0);
-
-                cmd.first.data = 1.0;
-                cmd.second.data = 1.0 * (1 - controlSig);
-            }
-
-            return cmd;
-        }        
-
-        pair<std_msgs::Float64, std_msgs::Float64> getControlSignal(ros::Publisher & publisher){
-
-            pair<std_msgs::Float64, std_msgs::Float64> cmd;
-
-            pair<Model, Model> selectedModels;
-
-            if(frontModels.size() >= backModels.size())
-                selectedModels = selectModels(frontModels, backModels);
-            else
-                selectedModels = selectModels(backModels, frontModels);
-
-
-            visualization_msgs::Marker line_list;
-            geometry_msgs::Point leftModelPoint1, leftModelPoint2;
-            geometry_msgs::Point rightModelPoint1, rightModelPoint2;
-
-            preparePointsAndLines(line_list);
-
-            leftModelPoint1.z = leftModelPoint2.z = rightModelPoint1.z = rightModelPoint2.z = 0.002;
-
-            leftModelPoint1.x = -20;
-            leftModelPoint1.y = selectedModels.first.getSlope() * leftModelPoint1.x + selectedModels.first.getIntercept();
-
-            leftModelPoint2.x = 20;
-            leftModelPoint2.y = selectedModels.first.getSlope() * leftModelPoint2.x + selectedModels.first.getIntercept();
-
-
-            rightModelPoint1.x = -20;
-            rightModelPoint1.y = selectedModels.first.getSlope() * rightModelPoint1.x + selectedModels.first.getIntercept();
-
-            rightModelPoint2.x = 20;
-            rightModelPoint2.y = selectedModels.first.getSlope() * rightModelPoint2.x + selectedModels.first.getIntercept();
-
-            line_list.points.push_back(leftModelPoint1);
-            line_list.points.push_back(leftModelPoint2);
-            line_list.points.push_back(rightModelPoint1);
-            line_list.points.push_back(rightModelPoint2);
-
-            pubSelectedLines.publish(line_list);
-
-            double controlSig = calculateControlSig(selectedModels.first, selectedModels.second);
+            double controlSig = calculateControlSig(LeftModel, RightModel);
 
             if(controlSig >= 0){
                 controlSig /= 10;
@@ -151,10 +207,40 @@ class Control{
 
 
     public:
+        visualization_msgs::Marker translateAxis(const visualization_msgs::Marker & msg, const double newOX, const double newOY){
+            visualization_msgs::Marker ret;
+            geometry_msgs::Point p;
+
+            for(int i = 0; i < msg.points.size(); i++){
+                p.x = msg.points[i].x - newOX;
+                p.y = msg.points[i].y - newOY;
+
+                ret.points.push_back(p);
+            }
+
+            return ret;
+        }
+
+        visualization_msgs::Marker rotateAxis(const visualization_msgs::Marker & msg, const double angleRot){
+            double xMatrix[2][2] = { {cos(angleRot), -sin(angleRot)}, {sin(angleRot), cos(angleRot)} };
+
+            visualization_msgs::Marker ret;
+            geometry_msgs::Point p;
+
+            for(int i = 0; i < msg.points.size(); i++){
+                p.x = xMatrix[0][0] * msg.points[i].x + xMatrix[0][1] * msg.points[i].y;
+                p.y = xMatrix[1][0] * msg.points[i].x + xMatrix[1][1] * msg.points[i].y;
+
+                ret.points.push_back(p);
+            }
+
+            return ret;
+        }
+
         vector<Model> getFoundLines(const visualization_msgs::Marker & msg){ 
             vector<Model> foundLines;
 
-            for(int i = 0; i < msg.points.size() - 1; i += 2){
+            for(int i = 0; i < msg.points.size(); i += 2){
                 double dx = msg.points[i].x - msg.points[i + 1].x;
                 double dy = msg.points[i].y - msg.points[i + 1].y;
 
@@ -165,53 +251,15 @@ class Control{
 
                 double b = msg.points[i].y - a * msg.points[i].x;
                 
-                foundLines.push_back(Model(a,b));                
+                Model model(a,b);
+
+                model.pushPoint(Point(msg.points[i].x, msg.points[i].y));
+                model.pushPoint(Point(msg.points[i+1].x, msg.points[i+1].y));
+
+                foundLines.push_back(model);                
             }
 
             return foundLines;
-        }
-
-        pair<Model, Model> selectModels(const vector<Model> & largerModelVec, const vector<Model> & smallerModelVec){
-            pair<Model, Model> selectedModels;
-
-            for(int i = 0; i < largerModelVec.size(); i++){
-
-                if(largerModelVec[i].getSlope() >= 0){
-
-                    if(!selectedModels.first.isPopulated()){
-                        selectedModels.first = largerModelVec[i];
-                    }
-
-                    else{
-
-                        for(int j = 0; j < smallerModelVec.size(); j++){
-                            if(fabs(largerModelVec[i].getSlope() - smallerModelVec[j].getSlope()) < this->sameSlopeThreshold){
-                                selectedModels.first = largerModelVec[i];
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                else{
-
-                    if(!selectedModels.second.isPopulated()){
-                        selectedModels.second = largerModelVec[i];
-                    }
-
-                    else{
-
-                        for(int j = 0; j < smallerModelVec.size(); j++){
-                            if(fabs(largerModelVec[i].getSlope() - smallerModelVec[j].getSlope()) < this->sameSlopeThreshold){
-                                selectedModels.second = largerModelVec[i];
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-
-            return selectedModels;
         }
 
         double calculateControlSig(const Model & selectedLeftModel, const Model & selectedRightModel){
@@ -235,168 +283,113 @@ class Control{
             return KP * (aErr + bErr);
         }
 
-        void preparePointsAndLines(visualization_msgs::Marker & line_list){ 
-            line_list.header.frame_id = "sick_front_link";
-            line_list.header.stamp = ros::Time::now();
-            line_list.ns = "points_and_lines";
-            line_list.action = visualization_msgs::Marker::ADD;
-            line_list.pose.orientation.w = 1.0;
+        friend std::ostream & operator << (std::ostream & out, const Control & c){
+            Utility::printVector(c.models);
 
-            line_list.id = 0;
-            line_list.type = visualization_msgs::Marker::LINE_LIST;
-
-
-            // LINE_STRIP/LINE_LIST markers use only the x component of scale, for the line width
-            line_list.scale.x = 0.08;
-
-
-            // Line list is green
-            line_list.color.g = 1.0;
-            line_list.color.a = 0.4;
+            return out;
         }
+ 
 };
 
 Control control;
 
 
+void preparePointsAndLines(visualization_msgs::Marker & line_list){ 
+    line_list.header.frame_id = mapName;
+    line_list.header.stamp = ros::Time::now();
+    line_list.ns = "points_and_lines";
+    line_list.action = visualization_msgs::Marker::ADD;
+    line_list.pose.orientation.w = 1.0;
+
+    line_list.id = 0;
+    line_list.type = visualization_msgs::Marker::LINE_LIST;
+
+
+    // LINE_STRIP/LINE_LIST markers use only the x component of scale, for the line width
+    line_list.scale.x = 0.08;
+
+
+    // Line list is green
+    line_list.color.g = 1.0;
+    line_list.color.a = 0.4;
+}
 //--------------------------------------------------------------------------------------------------------
-/*vector<Model> getFoundLines(const visualization_msgs::Marker & msg, Model & ClosestLeftModel, Model & ClosestRightModel, int & numberOfPositiveModels){ 
-    vector<Model> foundLines;
-
+void sendLine(const pair<Model, Model> & models){ 
     visualization_msgs::Marker line_list;
-
-    numberOfPositiveModels = 0;
-
-    geometry_msgs::Point leftModelPoint1, leftModelPoint2;
-    geometry_msgs::Point rightModelPoint1, rightModelPoint2;
-
-    for(int i = 0; i < msg.points.size() - 1; i += 2){
-        double dx = msg.points[i].x - msg.points[i + 1].x;
-        double dy = msg.points[i].y - msg.points[i + 1].y;
-
-        double a = MAX_DBL;
-        
-        if(dx != 0)
-            a = dy / dx;
-
-        double b = msg.points[i].y - a * msg.points[i].x;
-
-        if(b >= 0){
-
-            if(fabs(ClosestLeftModel.getIntercept()) > fabs(b)){
-                ClosestLeftModel = Model(a, b);
-
-                leftModelPoint1.x = msg.points[i].x;
-                leftModelPoint1.y = msg.points[i].y;
-
-                leftModelPoint2.x = msg.points[i+1].x;
-                leftModelPoint2.y = msg.points[i+1].y; 
-            }
-
-            foundLines.insert(foundLines.begin(), 1, Model(a,b));
-            numberOfPositiveModels++;
-        }
-        else{
-
-            if(fabs(ClosestRightModel.getIntercept()) > fabs(b)){
-                ClosestRightModel = Model(a, b);
-
-                rightModelPoint1.x = msg.points[i].x;
-                rightModelPoint1.y = msg.points[i].y;
-
-                rightModelPoint2.x = msg.points[i+1].x;
-                rightModelPoint2.y = msg.points[i+1].y; 
-            }
-
-            foundLines.push_back(Model(a,b));
-        }
-        
-    }
+    geometry_msgs::Point p;
 
     preparePointsAndLines(line_list);
+    
+    if(models.first.isPopulated()){
+        pair<Point, Point> points = models.first.getFirstAndLastPoint();
+        p.x = points.first.getX();
+        p.y = models.first.getSlope()*p.x + models.first.getIntercept();
 
-    leftModelPoint1.z = leftModelPoint2.z = rightModelPoint1.z = rightModelPoint2.z = 0.002;
+        line_list.points.push_back(p);
 
-    line_list.points.push_back(leftModelPoint1);
-    line_list.points.push_back(leftModelPoint2);
-    line_list.points.push_back(rightModelPoint1);
-    line_list.points.push_back(rightModelPoint2);
+        p.x = points.second.getX();
+        p.y = models.first.getSlope()*p.x + models.first.getIntercept();
 
+        line_list.points.push_back(p);
+    }
+
+    if(models.second.isPopulated()){
+        pair<Point, Point> points = models.second.getFirstAndLastPoint();
+        p.x = points.first.getX();
+        p.y = models.second.getSlope()*p.x + models.second.getIntercept();
+
+        line_list.points.push_back(p);
+
+        p.x = points.second.getX();
+        p.y = models.second.getSlope()*p.x + models.second.getIntercept();
+
+        line_list.points.push_back(p);
+    }
+    
     pubSelectedLines.publish(line_list);
-
-    return foundLines;
 }
-//--------------------------------------------------------------------------------------------------------
-double getControlSignal(const Model & ClosestLeftModel, const Model & ClosestRightModel){ 
-    double aErr = 0, bErr = 0;
-
-    if(ClosestRightModel.isPopulated() && !ClosestLeftModel.isPopulated()){
-        aErr = ClosestRightModel.getSlope();
-        bErr = DISTANCE_REFERENCE - fabs(ClosestRightModel.getIntercept());
-    }
-    else if(ClosestLeftModel.isPopulated() && !ClosestRightModel.isPopulated()){
-        aErr = ClosestLeftModel.getSlope();
-        bErr = fabs(ClosestLeftModel.getIntercept()) - DISTANCE_REFERENCE;
-    }
-    else {
-        aErr = (ClosestLeftModel.getSlope() + ClosestRightModel.getSlope()) / 2.0;
-        bErr = ClosestLeftModel.getIntercept() + ClosestRightModel.getIntercept();
-    }
-
-    return KP * (aErr + bErr);
-}
-//--------------------------------------------------------------------------------------------------------
-void OnRosMsg(const visualization_msgs::Marker & msg){ 
-
-    vector<Model> foundLines = getFoundLines(msg, ClosestLeftModel, ClosestRightModel, numberOfPositiveModels);
-
-    double controlSig = getControlSignal(ClosestLeftModel, ClosestRightModel);
-
-    std_msgs::Float64 left_wheel_cmd;
-    std_msgs::Float64 right_wheel_cmd;
-
-    if(controlSig > 0){
-        controlSig /= 10;
-        controlSig = min(controlSig, 1.0);
-
-        left_wheel_cmd.data = 1.0 * (1 - controlSig);
-        right_wheel_cmd.data = 1.0;
-    }
-    else if (controlSig < 0){
-        controlSig /= -10;
-        controlSig = min(controlSig, 1.0);
-
-        left_wheel_cmd.data = 1.0;
-        right_wheel_cmd.data = 1.0 * (1 - controlSig);
-    }
-    else{
-        left_wheel_cmd.data = 1.0;
-        right_wheel_cmd.data = 1.0;
-    }
-
-    pubLeftControl.publish(left_wheel_cmd);
-    pubRightControl.publish(right_wheel_cmd);
-}*/
 
 
 //--------------------------------------------------------------------------------------------------------
 void FrontLinesMsg(const visualization_msgs::Marker & msg){
+    if(msg.type != 5)
+        return;
+    
+    critSec.lock();
     control.frontMessage(msg);
-    //
+    critSec.unlock();
 }
 //--------------------------------------------------------------------------------------------------------
 void BackLinesMsg(const visualization_msgs::Marker & msg){
+    if(msg.type != 5)
+        return;
+
+    critSec.lock();
     control.backMessage(msg);
-    //
+    critSec.unlock();
 }
-
-
 //--------------------------------------------------------------------------------------------------------
 void controlThread(){
     while(!endProgram){
-        usleep(100 * TO_MILLISECOND);
 
-        control.getControlSignal(pubSelectedLines);
+        critSec.lock();
+        control.clearModels();
+        critSec.unlock();
+
+        usleep(1000 * TO_MILLISECOND);
+
+        cout << control << endl << endl;
+
+        critSec.lock();
+        pair<Model, Model> selectModels = control.selectModels();
+
+        sendLine(selectModels);
+
+        control.getControlSignal(selectModels.first, selectModels.second);
+        critSec.unlock();
+
+        cout << selectModels.first << endl;
+        cout << selectModels.second << endl<< endl<< endl;
     }
 }
 //--------------------------------------------------------------------------------------------------------
@@ -405,19 +398,33 @@ int main(int argc, char **argv){
 
     ros::NodeHandle node;
 
-    ros::Subscriber subFront = node.subscribe("/engrais/laser_front/lines", 10, FrontLinesMsg);
-    ros::Subscriber subBack = node.subscribe("/engrais/laser_back/lines", 10, BackLinesMsg);
+    string subTopicFront, subTopicBack, pubTopicLeft, pubTopicRight, pubTopicSelected, node_name = ros::this_node::getName();
+    if(!node.getParam(node_name + "/subscribe_topic_front", subTopicFront) || !node.getParam(node_name + "/subscribe_topic_back", subTopicBack) || !node.getParam(node_name + "/publish_topic_left", pubTopicLeft) || !node.getParam(node_name + "/publish_topic_right", pubTopicRight)){
+        ROS_ERROR_STREAM("Argument missing in node " << node_name << ", expected 'subscribe_topic_front', 'subscribe_topic_back', 'publish_topic_left', 'publish_topic_right' and [optional: 'rviz_topic' and 'rviz_frame']\n\n");
+        return -1;
+    }
+
+    node.param<string>(node_name + "/rviz_frame", mapName, "world");
+    node.param<string>(node_name + "/rviz_topic", pubTopicSelected, "/engrais/robot_move/selected_lines");
+
+    ros::Subscriber subFront = node.subscribe(subTopicFront, 10, FrontLinesMsg);
+    ros::Subscriber subBack = node.subscribe(subTopicBack, 10, BackLinesMsg);
 
 
-    pubLeftControl = node.advertise<std_msgs::Float64>("/engrais/leftWheel_controller/command", 10);
-    pubRightControl = node.advertise<std_msgs::Float64>("/engrais/rightWheel_controller/command", 10);
+    pubLeftControl = node.advertise<std_msgs::Float64>(pubTopicLeft, 10);
+    pubRightControl = node.advertise<std_msgs::Float64>(pubTopicRight, 10);
 
 
-    pubSelectedLines = node.advertise<visualization_msgs::Marker>("/engrais/robot_move/selected_lines", 10);
+    pubSelectedLines = node.advertise<visualization_msgs::Marker>(pubTopicSelected, 10);
+
+    thread control_t(controlThread);
 
     Utility::printInColor("Code Running, press Control+C to end", CYAN);
     ros::spin();
     Utility::printInColor("Shitting down...", CYAN);
+
+    endProgram = true;
+    control_t.join();
 
     subFront.shutdown();
     subBack.shutdown();

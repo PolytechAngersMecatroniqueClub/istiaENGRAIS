@@ -1,0 +1,11 @@
+<?xml version="1.6" ?>
+<launch>
+
+	<node name="engrais_move" pkg="engrais_control" type="robot_move" output="screen">
+		<param name="subscribe_topic_front" type="string" value="/engrais/laser_front/lines"/>
+		<param name="subscribe_topic_back" type="string" value="/engrais/laser_back/lines"/>
+		<param name="publish_topic_left" type="string" value="/engrais/leftWheel_controller/command"/>
+		<param name="publish_topic_right" type="string" value="/engrais/rightWheel_controller/command"/>
+	</node>
+
+</launch>

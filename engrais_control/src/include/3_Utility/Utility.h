@@ -20,6 +20,8 @@ class Utility{
         //------------------------------------------------------------------------------------------------
         static int randomInt(const int min, const int max); //Checked
         //------------------------------------------------------------------------------------------------
+        static double distPoints(const Point & , const Point & );
+        //------------------------------------------------------------------------------------------------
         static double calcSumDist(const std::vector<Point> & , const double , const double ); //Checked
         //------------------------------------------------------------------------------------------------
         static void printInColor(const std::string , const int ); //Checked
@@ -55,6 +57,8 @@ class Utility{
 
 //--------------------------------------------------------------------------------------------------------
 inline int Utility::randomInt(const int min, const int max){ return (rand() % (max - min + 1)) + min; } //Checked
+//--------------------------------------------------------------------------------------------------------
+inline double Utility::distPoints(const Point & P1, const Point & P2) { return sqrt( pow(P1.getX() - P2.getX(), 2) + pow(P1.getY() - P2.getY(), 2) ); }
 
 #endif
 //********************************************************************************************************

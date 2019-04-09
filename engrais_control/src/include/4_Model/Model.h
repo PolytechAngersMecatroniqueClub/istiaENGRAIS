@@ -15,10 +15,10 @@ class Model{
         double b;
         double energy;
 
-        int parallelCount;
-        double fitness;
+        int parallelCount = 1;
+        double fitness = MAX_DBL;
 
-        int positivePoints;
+        int positivePoints = 0;
         std::vector<Point> pointsInModel;
 
     public:
@@ -82,7 +82,7 @@ class Model{
 
 
 //--------------------------------------------------------------------------------------------------------
-inline Model::Model(const double aa, const double bb, const double e) : a(aa), b(bb), energy(e), parallelCount(1), fitness(MAX_DBL), positivePoints(0) {} //Checked
+inline Model::Model(const double aa, const double bb, const double e) : a(aa), b(bb), energy(e) {} //Checked
 
 
 //--------------------------------------------------------------------------------------------------------

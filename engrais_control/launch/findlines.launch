@@ -4,13 +4,13 @@
 	<node name="engrais_findlines_front" pkg="engrais_control" type="robot_findlines">
 		<param name="subscribe_topic" type="string" value="/engrais/laser_front/scan"/>
 		<param name="publish_topic" type="string" value="/engrais/laser_front/lines"/>
-		<param name="rviz_topic" type="string" value="sick_front_link"/>
+		<param name="rviz_frame" type="string" value="sick_front_link"/>
 	</node>
-
-	<node name="engrais_findlines_back" pkg="engrais_control" type="robot_findlines" output="screen">
+	
+	<node name="engrais_findlines_back" pkg="engrais_control" type="robot_findlines">
 		<param name="subscribe_topic" type="string" value="/engrais/laser_back/scan"/>
 		<param name="publish_topic" type="string" value="/engrais/laser_back/lines"/>
-		<param name="rviz_topic" type="string" value="sick_back_link"/>
+		<param name="rviz_frame" type="string" value="sick_back_link"/>
 	</node>
 
 </launch>

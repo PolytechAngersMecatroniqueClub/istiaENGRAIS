@@ -15,7 +15,7 @@
 #include "../1_Pearl/Pearl.h"
 
 class RubyGeneticOnePointPosNegInfinite : public Pearl{
-	public:
+	private:
 		std::vector<Point> field;
 		
 		int numberOfPositivePointsInField = 0;
@@ -36,7 +36,7 @@ class RubyGeneticOnePointPosNegInfinite : public Pearl{
 		std::vector<Point> getInitialField() const;
 
 
-	public:
+	private:
 
 		void clearPointsInModels();
 		//################################################################################################

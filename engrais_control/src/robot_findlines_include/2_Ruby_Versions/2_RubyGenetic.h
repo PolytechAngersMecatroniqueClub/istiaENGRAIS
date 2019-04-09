@@ -14,7 +14,7 @@
 #include "../1_Pearl/Pearl.h"
 
 class RubyGenetic : public Pearl{
-	public:
+	private:
 
 		double numberOfModelsToSearch = 40;
 		double factorToDeletePoints = 0.8;
@@ -28,7 +28,7 @@ class RubyGenetic : public Pearl{
 		std::vector<Model> findLines();
 
 
-	public:
+	private:
 		//################################################################################################
 
 		//------------------------------------------------------------------------------------------------

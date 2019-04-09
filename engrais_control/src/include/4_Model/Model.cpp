@@ -3,6 +3,7 @@
 #include "Model.h"
 
 
+//--------------------------------------------------------------------------------------------------------
 Model Model::linearFit(const std::vector<Point> & vec){ //Checked 
     double xsum = 0, ysum = 0, xysum = 0, xxsum = 0;
 
@@ -53,7 +54,8 @@ void Model::findBestModel(const std::vector<Point> & rPointsInModel){ //Checked
 //--------------------------------------------------------------------------------------------------------
 std::pair<Point, Point> Model::getFirstAndLastPoint() const{
     std::pair<Point, Point> ret;
-    ret.first = ret.second = this->pointsInModel[0];
+
+    ret.second = Point(0,0);
 
     for(Point p : this->pointsInModel){
         if(p.distanceToOrigin() < ret.first.distanceToOrigin())

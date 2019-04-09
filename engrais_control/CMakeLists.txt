@@ -214,8 +214,6 @@ add_executable(robot_move robot_move.cpp
     src/include/1_Point/Point.cpp
     src/include/3_Utility/Utility.cpp
     src/include/4_Model/Model.cpp
-
-    src/robot_move_include/1_Control/Control.cpp
 )
 target_link_libraries(robot_move ${catkin_LIBRARIES})
 add_dependencies(robot_move engrais_control_gencpp)

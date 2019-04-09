@@ -15,7 +15,7 @@
 #include "../1_Pearl/Pearl.h"
 
 class RubyGeneticOnePoint : public Pearl{
-	public:
+	private:
 		std::vector<Point> initialField;
 
 		double distanceToBeConsideredSamePoint = 0.1; 
@@ -33,7 +33,7 @@ class RubyGeneticOnePoint : public Pearl{
 		std::vector<Point> getInitialField() const ;
 
 
-	public:
+	private:
 		//################################################################################################
 
 		//------------------------------------------------------------------------------------------------

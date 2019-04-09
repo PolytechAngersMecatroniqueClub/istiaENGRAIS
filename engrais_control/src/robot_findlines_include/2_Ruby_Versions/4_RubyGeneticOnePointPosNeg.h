@@ -15,7 +15,7 @@
 #include "../1_Pearl/Pearl.h"
 
 class RubyGeneticOnePointPosNeg : public Pearl{
-	public:
+	private:
 		std::vector<Point> initialField;
 		
 		int numberOfPositivePointsInOutliers = 0;
@@ -35,7 +35,7 @@ class RubyGeneticOnePointPosNeg : public Pearl{
 		std::vector<Point> getInitialField() const ;
 
 
-	public:
+	private:
 
 		void clearPointsInModels();
 		//################################################################################################

@@ -5,7 +5,7 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
-        - /LaserScan1
+        - /Marker3
       Splitter Ratio: 0.5
     Tree Height: 875
   - Class: rviz/Selection
@@ -29,6 +29,8 @@ Panels:
     SyncSource: LaserScan
 Preferences:
   PromptSaveOnExit: true
+Toolbars:
+  toolButtonStyle: 2
 Visualization Manager:
   Class: ""
   Displays:
@@ -135,7 +137,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /robot_engrais/selected_lines
+      Marker Topic: /engrais/robot_move/selected_lines
       Name: Marker
       Namespaces:
         {}
@@ -156,7 +158,10 @@ Visualization Manager:
     - Class: rviz/FocusCamera
     - Class: rviz/Measure
     - Class: rviz/SetInitialPose
+      Theta std deviation: 0.2617993950843811
       Topic: /initialpose
+      X std deviation: 0.5
+      Y std deviation: 0.5
     - Class: rviz/SetGoal
       Topic: /move_base_simple/goal
     - Class: rviz/PublishPoint
@@ -166,25 +171,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 11.46121883392334
+      Distance: 14.894824981689453
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.19622136652469635
-        Y: -1.1829378604888916
-        Z: 1.0355727672576904
+        X: -0.2372933328151703
+        Y: -0.38535481691360474
+        Z: 1.2193738222122192
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.2897975444793701
+      Pitch: 0.5897982120513916
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.0953826904296875
+      Yaw: 3.7753846645355225
     Saved: ~
 Window Geometry:
   Displays:
