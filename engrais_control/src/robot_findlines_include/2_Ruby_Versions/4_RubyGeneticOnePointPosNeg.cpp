@@ -71,7 +71,7 @@ std::vector<Model> RubyGeneticOnePointPosNeg::findLines() { //Checked
 
             numberMinOfPoints = std::max((int)(meanNumOfPoints() * this->factorToDeletePoints), 2);
 
-            removeTinyModels(3);
+            removeTinyModels(2);
 
             reEstimation();
 

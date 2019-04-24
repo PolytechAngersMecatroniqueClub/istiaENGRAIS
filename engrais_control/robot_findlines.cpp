@@ -13,8 +13,8 @@
 #include "sensor_msgs/LaserScan.h"
 #include "visualization_msgs/Marker.h"
 
-#include <engrais_control/Model.h>
-#include <engrais_control/Results.h>
+//#include <engrais_control/Model.h>
+//#include <engrais_control/Results.h>
 
 #include "src/include/1_Point/Point.h"
 #include "src/include/2_WeightedPoint/WeightedPoint.h"
@@ -67,9 +67,9 @@ void sendLine(const vector<Model> & models, const Pearl & pearl){
 
     line_list.scale.x = 0.03;
 
-
     line_list.color.b = 1.0;
     line_list.color.a = 1.0;
+
 
     for(Point point : pearl.getInitialField()){
 		p.x = point.getX();
@@ -105,11 +105,14 @@ void sendLine(const vector<Model> & models, const Pearl & pearl){
 void OnRosMsg(const sensor_msgs::LaserScan & msg){
     auto start = std::chrono::system_clock::now();
 
-    rubyGenOPPN.populateOutliers(msg);
+    for(int i = 0; i < 10; i++){
 
-    vector <Model> lines = rubyGenOPPN.findLines();
+        rubyGenOPPN.populateOutliers(msg);
 
-    sendLine(lines, rubyGenOPPN);
+        vector <Model> lines = rubyGenOPPN.findLines();
+
+        sendLine(lines, rubyGenOPPN);
+    }
 
     auto end = std::chrono::system_clock::now();
     std::chrono::duration<double> elapsed_seconds = end - start;

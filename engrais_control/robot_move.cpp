@@ -21,14 +21,14 @@
 
 using namespace std;
 
-bool endProgram = false;
+mutex critSec;
+
 string mapName;
+bool endProgram = false;
 
 ros::Publisher pubLeftControl;
 ros::Publisher pubRightControl;
 ros::Publisher pubSelectedLines;
-
-mutex critSec;
 
 class WeightedModel{
     public:
@@ -118,7 +118,6 @@ class WeightedModel{
         }
 };
 
-
 class Control{
     public:
         std::vector<WeightedModel> models;
@@ -194,28 +193,6 @@ class Control{
             return ret;
         }
 
-        pair<std_msgs::Float64, std_msgs::Float64> getControlSignal(const Model & LeftModel, const Model & RightModel){
-            pair<std_msgs::Float64, std_msgs::Float64> cmd;
-
-            double controlSig = calculateControlSig(LeftModel, RightModel);
-
-            if(controlSig >= 0){
-                controlSig /= 10;
-                controlSig = min(controlSig, 1.0);
-
-                cmd.first.data = 1.0 * (1 - controlSig);
-                cmd.second.data = 1.0;
-            }
-            else if (controlSig < 0){
-                controlSig /= -10;
-                controlSig = min(controlSig, 1.0);
-
-                cmd.first.data = 1.0;
-                cmd.second.data = 1.0 * (1 - controlSig);
-            }
-
-            return cmd;
-        }
 
 
     public:
@@ -234,7 +211,7 @@ class Control{
         }
 
         visualization_msgs::Marker rotateAxis(const visualization_msgs::Marker & msg, const double angleRot){
-            double xMatrix[2][2] = { {cos(angleRot), -sin(angleRot)}, {sin(angleRot), cos(angleRot)} };
+            const double xMatrix[2][2] = { {cos(angleRot), -sin(angleRot)}, {sin(angleRot), cos(angleRot)} };
 
             visualization_msgs::Marker ret;
             geometry_msgs::Point p;
@@ -274,33 +251,11 @@ class Control{
             return foundLines;
         }
 
-        double calculateControlSig(const Model & selectedLeftModel, const Model & selectedRightModel){
-            double aErr = 0, bErr = 0;
-
-            if(selectedRightModel.isPopulated() && !selectedLeftModel.isPopulated()){
-                aErr = selectedRightModel.getSlope();
-                bErr = DISTANCE_REFERENCE - fabs(selectedRightModel.getIntercept());
-            }
-
-            else if(selectedLeftModel.isPopulated() && !selectedRightModel.isPopulated()){
-                aErr = selectedLeftModel.getSlope();
-                bErr = fabs(selectedLeftModel.getIntercept()) - DISTANCE_REFERENCE;
-            }
-
-            else{
-                aErr = (selectedLeftModel.getSlope() + selectedRightModel.getSlope()) / 2.0;
-                bErr = selectedLeftModel.getIntercept() + selectedRightModel.getIntercept();
-            }
-
-            return KP * (aErr + bErr);
-        }
-
         friend std::ostream & operator << (std::ostream & out, const Control & c){
             Utility::printVector(c.models);
 
             return out;
         }
- 
 };
 
 Control control;
@@ -327,7 +282,9 @@ void sendLine(const vector<Model> & models){
 
     for(Model m : models){
         if(m.isPopulated()){
+
             pair<Point, Point> points = m.getFirstAndLastPoint();
+
             p.x = points.first.getX();
             p.y = m.getSlope()*p.x + m.getIntercept();
 
@@ -345,13 +302,22 @@ void sendLine(const vector<Model> & models){
 
 
 //--------------------------------------------------------------------------------------------------------
-void FrontLinesMsg(const visualization_msgs::Marker & msg){
-    if(msg.type != 5)
-        return;
-    
-    critSec.lock();
-    control.frontMessage(msg);
-    critSec.unlock();
+void controlThread(){
+    while(!endProgram){
+
+        critSec.lock();
+        control.clearModels();
+        critSec.unlock();
+
+        usleep(250 * TO_MILLISECOND);
+
+        critSec.lock();
+
+        vector<Model> selectModels = control.selectModels();
+        sendLine(selectModels);
+
+        critSec.unlock();
+    }
 }
 //--------------------------------------------------------------------------------------------------------
 void BackLinesMsg(const visualization_msgs::Marker & msg){
@@ -363,31 +329,22 @@ void BackLinesMsg(const visualization_msgs::Marker & msg){
     critSec.unlock();
 }
 //--------------------------------------------------------------------------------------------------------
-void controlThread(){
-    while(!endProgram){
-
-        critSec.lock();
-        control.clearModels();
-        critSec.unlock();
-
-        usleep(500 * TO_MILLISECOND);
-
-        critSec.lock();
-
-        vector<Model> selectModels = control.selectModels();
-        sendLine(selectModels);
-        control.getControlSignal(selectModels[0], selectModels[1]);
-
-        critSec.unlock();
-    }
+void FrontLinesMsg(const visualization_msgs::Marker & msg){
+    if(msg.type != 5)
+        return;
+    
+    critSec.lock();
+    control.frontMessage(msg);
+    critSec.unlock();
 }
 //--------------------------------------------------------------------------------------------------------
 int main(int argc, char **argv){
-    ros::init(argc, argv, "robot_move_node");
 
+    ros::init(argc, argv, "robot_move_node");
     ros::NodeHandle node;
 
     string subTopicFront, subTopicBack, pubTopicLeft, pubTopicRight, pubTopicSelected, node_name = ros::this_node::getName();
+
     if(!node.getParam(node_name + "/subscribe_topic_front", subTopicFront) || !node.getParam(node_name + "/subscribe_topic_back", subTopicBack) || 
        !node.getParam(node_name + "/publish_topic_left", pubTopicLeft) || !node.getParam(node_name + "/publish_topic_right", pubTopicRight)){
 

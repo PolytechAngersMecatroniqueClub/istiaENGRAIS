@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(engrais_control)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-# add_compile_options(-std=c++11)
+add_compile_options(-std=c++11)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -11,7 +11,6 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
-  message_generation
 )
 
 ## System dependencies are found with CMake's conventions
@@ -46,19 +45,6 @@ find_package(catkin REQUIRED COMPONENTS
 ##     and list every .msg/.srv/.action file to be processed
 ##   * uncomment the generate_messages entry below
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
-
-# Generate messages in the 'msg' folder
-add_message_files(
-  FILES
-  Model.msg
-  Results.msg
-)
-
-# Generate added messages and services with any dependencies listed here
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -199,14 +185,14 @@ add_executable(robot_findlines robot_findlines.cpp
     src/robot_findlines_include/2_Ruby_Versions/5_RubyGeneticOnePointPosNegInfinite.cpp
 )
 target_link_libraries(robot_findlines ${catkin_LIBRARIES})
-add_dependencies(robot_findlines engrais_control_gencpp)
+#add_dependencies(robot_findlines engrais_control_gencpp)
 
 
 
 add_executable(robot_keyboard_move robot_keyboard_move.cpp
 )
 target_link_libraries(robot_keyboard_move ${catkin_LIBRARIES})
-add_dependencies(robot_keyboard_move engrais_control_gencpp)
+#add_dependencies(robot_keyboard_move engrais_control_gencpp)
 
 
 
@@ -215,5 +201,10 @@ add_executable(robot_move robot_move.cpp
     src/include/3_Utility/Utility.cpp
     src/include/4_Model/Model.cpp
 )
-target_link_libraries(robot_move ${catkin_LIBRARIES})
-add_dependencies(robot_move engrais_control_gencpp)
+
+target_link_libraries(robot_move 
+	${catkin_LIBRARIES} 
+	fuzzylite
+)
+
+#add_dependencies(robot_move engrais_control_gencpp)

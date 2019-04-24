@@ -5,7 +5,6 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
-        - /Marker3
       Splitter Ratio: 0.5
     Tree Height: 875
   - Class: rviz/Selection
@@ -140,7 +139,7 @@ Visualization Manager:
       Marker Topic: /engrais/robot_move/selected_lines
       Name: Marker
       Namespaces:
-        {}
+        points_and_lines: true
       Queue Size: 100
       Value: true
   Enabled: true
@@ -171,25 +170,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 14.894824981689453
+      Distance: 9.896425247192383
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.2372933328151703
-        Y: -0.38535481691360474
-        Z: 1.2193738222122192
+        X: -0.42298606038093567
+        Y: -0.29659533500671387
+        Z: 1.065123200416565
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.5897982120513916
+      Pitch: 0.859798014163971
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.7753846645355225
+      Yaw: 4.365416526794434
     Saved: ~
 Window Geometry:
   Displays:
