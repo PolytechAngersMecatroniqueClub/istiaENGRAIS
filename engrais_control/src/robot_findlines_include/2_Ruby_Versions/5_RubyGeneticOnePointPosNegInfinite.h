@@ -8,11 +8,11 @@
 #include <sensor_msgs/LaserScan.h>
 
 
-#include "../../include/1_Point/Point.h"
-#include "../../include/2_WeightedPoint/WeightedPoint.h"
-#include "../../include/3_Utility/Utility.h"
-#include "../../include/4_Model/Model.h"
-#include "../1_Pearl/Pearl.h"
+#include <Point.h>
+#include <WeightedPoint.h>
+#include <Utility.h>
+#include <Model.h>
+#include <Pearl.h>
 
 class RubyGeneticOnePointPosNegInfinite : public Pearl{
 	private:
@@ -75,7 +75,7 @@ class RubyGeneticOnePointPosNegInfinite : public Pearl{
 //--------------------------------------------------------------------------------------------------------
 inline RubyGeneticOnePointPosNegInfinite::RubyGeneticOnePointPosNegInfinite(){}
 //--------------------------------------------------------------------------------------------------------
-inline std::vector<Point> RubyGeneticOnePointPosNegInfinite::getInitialField() const {  return field; }
+inline std::vector<Point> RubyGeneticOnePointPosNegInfinite::getInitialField() const {  return this->field; }
 
 #endif
 //********************************************************************************************************

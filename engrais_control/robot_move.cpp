@@ -5,9 +5,11 @@
 #include <thread>
 #include <mutex>
 
-#include "src/include/1_Point/Point.h"
-#include "src/include/3_Utility/Utility.h"
-#include "src/include/4_Model/Model.h"
+#include <Point.h>
+#include <Model.h>
+#include <Utility.h>
+
+#include <FuzzyController.h>
 
 #include <ros/ros.h>
 #include <visualization_msgs/Marker.h>
@@ -29,6 +31,7 @@ bool endProgram = false;
 ros::Publisher pubLeftControl;
 ros::Publisher pubRightControl;
 ros::Publisher pubSelectedLines;
+
 
 class WeightedModel{
     public:
@@ -120,6 +123,7 @@ class WeightedModel{
 
 class Control{
     public:
+        FuzzyController fuzzy;
         std::vector<WeightedModel> models;
 
 
@@ -302,7 +306,7 @@ void sendLine(const vector<Model> & models){
 
 
 //--------------------------------------------------------------------------------------------------------
-void controlThread(){
+void controlThread(){ 
     while(!endProgram){
 
         critSec.lock();
@@ -320,7 +324,7 @@ void controlThread(){
     }
 }
 //--------------------------------------------------------------------------------------------------------
-void BackLinesMsg(const visualization_msgs::Marker & msg){
+void BackLinesMsg(const visualization_msgs::Marker & msg){ 
     if(msg.type != 5)
         return;
 
@@ -329,7 +333,7 @@ void BackLinesMsg(const visualization_msgs::Marker & msg){
     critSec.unlock();
 }
 //--------------------------------------------------------------------------------------------------------
-void FrontLinesMsg(const visualization_msgs::Marker & msg){
+void FrontLinesMsg(const visualization_msgs::Marker & msg){ 
     if(msg.type != 5)
         return;
     

@@ -1,32 +1,28 @@
 //********************************************************************************************************
-#include <stdio.h> 
-#include <stdlib.h>   
-#include <iostream>
-
 #include <cmath>
 #include <chrono>
 #include <time.h>  
+#include <stdio.h> 
+#include <stdlib.h>   
+#include <iostream>
 #include <algorithm>
 
 #include <ros/ros.h>
 #include <ros/console.h>
-#include "sensor_msgs/LaserScan.h"
-#include "visualization_msgs/Marker.h"
+#include <sensor_msgs/LaserScan.h>
+#include <visualization_msgs/Marker.h>
 
-//#include <engrais_control/Model.h>
-//#include <engrais_control/Results.h>
+#include <Point.h>
+#include <Model.h>
+#include <Utility.h>
+#include <WeightedPoint.h>
 
-#include "src/include/1_Point/Point.h"
-#include "src/include/2_WeightedPoint/WeightedPoint.h"
-#include "src/include/3_Utility/Utility.h"
-#include "src/include/4_Model/Model.h"
-
-#include "src/robot_findlines_include/1_Pearl/Pearl.h"
-#include "src/robot_findlines_include/2_Ruby_Versions/1_RubyPure.h"
-#include "src/robot_findlines_include/2_Ruby_Versions/2_RubyGenetic.h"
-#include "src/robot_findlines_include/2_Ruby_Versions/3_RubyGeneticOnePoint.h"
-#include "src/robot_findlines_include/2_Ruby_Versions/4_RubyGeneticOnePointPosNeg.h"
-#include "src/robot_findlines_include/2_Ruby_Versions/5_RubyGeneticOnePointPosNegInfinite.h"
+#include <Pearl.h>
+#include <1_RubyPure.h>
+#include <2_RubyGenetic.h>
+#include <3_RubyGeneticOnePoint.h>
+#include <4_RubyGeneticOnePointPosNeg.h>
+#include <5_RubyGeneticOnePointPosNegInfinite.h>
 
 using namespace std;
 	

@@ -5,8 +5,8 @@
 #include <iostream>
 #include <vector>
 
-#include "../1_Point/Point.h"
-#include "../3_Utility/Utility.h"
+#include <Point.h>
+#include <Utility.h>
 
 
 class Model{ 
@@ -92,31 +92,31 @@ inline double Model::getIntercept() const { return this->b; } //Checked
 //--------------------------------------------------------------------------------------------------------
 inline double Model::getEnergy() const { return this->energy; } //Checked
 //--------------------------------------------------------------------------------------------------------
-inline int Model::getParallelCount() const { return parallelCount; } //Checked
+inline int Model::getParallelCount() const { return this->parallelCount; } //Checked
 //--------------------------------------------------------------------------------------------------------
-inline double Model::getFitness() const { return fitness; } //Checked
+inline double Model::getFitness() const { return this->fitness; } //Checked
 //--------------------------------------------------------------------------------------------------------
 inline int Model::getPositivePointsNum() const { return this->positivePoints; } //Checked
 //--------------------------------------------------------------------------------------------------------
-inline int Model::getPointsSize() const { return pointsInModel.size(); } //Checked
+inline int Model::getPointsSize() const { return this->pointsInModel.size(); } //Checked
 //--------------------------------------------------------------------------------------------------------
 inline std::vector<Point> Model::getPointsInModel() const { return this->pointsInModel; } //Checked
 //--------------------------------------------------------------------------------------------------------
-inline std::vector<Point>::const_iterator Model::getPointsVecBegin() const { return pointsInModel.begin(); } //Checked
+inline std::vector<Point>::const_iterator Model::getPointsVecBegin() const { return this->pointsInModel.begin(); } //Checked
 //--------------------------------------------------------------------------------------------------------
-inline std::vector<Point>::const_iterator Model::getPointsVecEnd() const { return pointsInModel.end(); } //Checked
+inline std::vector<Point>::const_iterator Model::getPointsVecEnd() const { return this->pointsInModel.end(); } //Checked
 //--------------------------------------------------------------------------------------------------------
 inline bool Model::isPopulated() const { //Checked 
-    if(a == MAX_DBL && b == MAX_DBL)
+    if(this->a == MAX_DBL && this->b == MAX_DBL)
         return false;
     return true;
 }
 
 
 //--------------------------------------------------------------------------------------------------------
-inline void Model::incrementParallelCount(){ parallelCount++; } //Checked
+inline void Model::incrementParallelCount(){ this->parallelCount++; } //Checked
 //--------------------------------------------------------------------------------------------------------
-inline void Model::resetParallelCount() { parallelCount = 1; } //Checked
+inline void Model::resetParallelCount() { this->parallelCount = 1; } //Checked
 //--------------------------------------------------------------------------------------------------------
 inline double Model::calculateFitness() { this->fitness = (this->getPointsSize() != 0 ? (pow(this->getIntercept(), 2) + this->getEnergy() * 10) / (double)(pow(this->getPointsSize(), 2) * this->parallelCount) : MAX_DBL); return this->fitness; } //Checked
 //--------------------------------------------------------------------------------------------------------

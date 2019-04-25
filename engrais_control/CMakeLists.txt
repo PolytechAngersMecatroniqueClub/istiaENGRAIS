@@ -89,7 +89,18 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-	include ${catkin_INCLUDE_DIRS}
+    include ${catkin_INCLUDE_DIRS}
+
+    include src/include/1_Point/
+    include src/include/2_WeightedPoint/
+    include src/include/3_Utility/
+    include src/include/4_Model/
+
+    include src/robot_findlines_include/1_Pearl/
+    include src/robot_findlines_include/2_Ruby_Versions/
+
+    include src/robot_move_include/.fuzzylite-6.0/
+    include src/robot_move_include/FuzzyController
 )
 
 ## Declare a C++ library
@@ -200,11 +211,13 @@ add_executable(robot_move robot_move.cpp
     src/include/1_Point/Point.cpp
     src/include/3_Utility/Utility.cpp
     src/include/4_Model/Model.cpp
+
+    src/robot_move_include/FuzzyController/FuzzyController.cpp
 )
 
 target_link_libraries(robot_move 
 	${catkin_LIBRARIES} 
-	fuzzylite
+	fuzzylite-static
 )
 
 #add_dependencies(robot_move engrais_control_gencpp)

@@ -34,7 +34,7 @@ void Model::findBestModel(){ //Checked
         this->b = best.getIntercept();
 
     this->energy = 0;
-    for (Point p : pointsInModel){
+    for (Point p : this->pointsInModel){
         this->energy += fabs(this->a * p.getX() - p.getY() + this->b) / sqrt(pow(this->a, 2) + 1.0);
     }
 }
@@ -76,12 +76,12 @@ void Model::pushPoint(const Point & p) {
     }
 
     if(p.getY() >= 0){
-        pointsInModel.insert(pointsInModel.begin(), 1, p);
-        positivePoints++;
+        this->pointsInModel.insert(pointsInModel.begin(), 1, p);
+        this->positivePoints++;
     }
 
     else
-        pointsInModel.push_back(p);
+        this->pointsInModel.push_back(p);
 }
 //--------------------------------------------------------------------------------------------------------
 void Model::fuseModel(const Model & m){ //Checked 

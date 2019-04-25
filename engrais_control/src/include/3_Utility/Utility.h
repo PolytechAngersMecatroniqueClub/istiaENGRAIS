@@ -8,8 +8,7 @@
 #include <string>
 #include <cmath>
 
-#include "../1_Point/Point.h" 
-
+#include <Point.h>
 
 #define BLUE 34
 #define RED 31

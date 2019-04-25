@@ -6,12 +6,11 @@
 #include <vector>
 #include <sensor_msgs/LaserScan.h>
 
-#include "../../include/1_Point/Point.h"
-#include "../../include/3_Utility/Utility.h"
-#include "../../include/4_Model/Model.h"
+#include <Point.h>
+#include <Model.h>
+#include <Utility.h>
 
 #define INITIAL_NUMBER_OF_POINTS 3
-
 
 
 class Pearl{ 
@@ -94,7 +93,7 @@ class Pearl{
 //--------------------------------------------------------------------------------------------------------
 inline Pearl::Pearl(){} //Checked
 //--------------------------------------------------------------------------------------------------------
-inline std::vector<Point> Pearl::getInitialField() const { return initialField; } //Checked
+inline std::vector<Point> Pearl::getInitialField() const { return this->initialField; } //Checked
 
 
 #endif

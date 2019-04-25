@@ -1,0 +1,102 @@
+Engine: EngraisMotorControl
+InputVariable: distanceToCenter
+  enabled: true
+  range: -2.000 2.000
+  lock-range: false
+
+  term: veryLeft Ramp -0.75 -1.5
+
+  term: left   Triangle -1.500 -0.750  0.000
+  term: center Triangle -0.750  0.000  0.750
+  term: right  Triangle  0.000  0.750  1.500
+
+  term: veryRight Ramp 0.75 1.5
+
+InputVariable: angle
+  enabled: true
+  range: -45.000 45.000
+  lock-range: false
+
+  term: veryLeft Ramp -15.000 -30.000
+
+  term: left   Triangle -30.000 -15.000  0.000
+  term: center Triangle -15.000  0.000  15.000
+  term: right  Triangle  0.000  15.000  30.000
+
+  term: veryRight Ramp 15.000 30.000
+
+OutputVariable: leftWheel
+  enabled: true
+  range: -1 1
+  lock-range: false
+  aggregation: Maximum
+  defuzzifier: Centroid 100
+  default: nan
+  lock-previous: false
+
+  term: normalBackward Ramp -0.666 -1.000
+
+  term: middleBackward   Triangle -1.000 -0.666 -0.333
+  term: slowBackward Triangle -0.666 -0.333 0.000
+  term: stop  Triangle -0.333 0.000 0.333
+  term: slowForward Triangle 0.000 0.333 0.666
+  term: middleForward  Triangle 0.333 0.666 1.000
+
+  term: normalForward Ramp 0.666 1.000
+
+OutputVariable: rightWheel
+  enabled: true
+  range: -1 1
+  lock-range: false
+  aggregation: Maximum
+  defuzzifier: Centroid 100
+  default: nan
+  lock-previous: false
+
+  term: normalBackward Ramp -0.666 -1.000
+
+  term: middleBackward   Triangle -1.000 -0.666 -0.333
+  term: slowBackward Triangle -0.666 -0.333 0.000
+  term: stop  Triangle -0.333 0.000 0.333
+  term: slowForward Triangle 0.000 0.333 0.666
+  term: middleForward  Triangle 0.333 0.666 1.000
+
+  term: normalForward Ramp 0.666 1.000
+
+RuleBlock: rules
+  enabled: true
+  conjunction: Minimum
+  disjunction: Maximum
+  implication: Minimum
+  activation: General
+
+  rule: if distanceToCenter is veryLeft and angle is veryLeft then leftWheel is middleForward and rightWheel is middleBackward
+  rule: if distanceToCenter is veryLeft and angle is left then leftWheel is slowForward and rightWheel is slowBackward
+  rule: if distanceToCenter is veryLeft and angle is center then leftWheel is normalForward and rightWheel is slowForward
+  rule: if distanceToCenter is veryLeft and angle is right then leftWheel is middleForward and rightWheel is middleForward
+  rule: if distanceToCenter is veryLeft and angle is veryRight then leftWheel is middleForward and rightWheel is normalForward
+
+  rule: if distanceToCenter is left and angle is veryLeft then leftWheel is middleForward and rightWheel is middleBackward
+  rule: if distanceToCenter is left and angle is left then leftWheel is slowForward and rightWheel is slowBackward
+  rule: if distanceToCenter is left and angle is center then leftWheel is normalForward and rightWheel is middleForward
+  rule: if distanceToCenter is left and angle is right then leftWheel is slowForward and rightWheel is slowForward
+  rule: if distanceToCenter is left and angle is veryRight then leftWheel is slowForward and rightWheel is normalForward
+
+  rule: if distanceToCenter is center and angle is veryLeft then leftWheel is slowForward and rightWheel is slowBackward
+  rule: if distanceToCenter is center and angle is left then leftWheel is middleForward and rightWheel is slowForward
+  rule: if distanceToCenter is center and angle is center then leftWheel is normalForward and rightWheel is normalForward
+  rule: if distanceToCenter is center and angle is right then leftWheel is slowForward and rightWheel is middleForward
+  rule: if distanceToCenter is center and angle is veryRight then leftWheel is slowBackward and rightWheel is slowForward
+
+  rule: if distanceToCenter is right and angle is veryLeft then leftWheel is normalForward and rightWheel is slowForward
+  rule: if distanceToCenter is right and angle is left then leftWheel is slowForward and rightWheel is slowForward
+  rule: if distanceToCenter is right and angle is center then leftWheel is middleForward and rightWheel is normalForward
+  rule: if distanceToCenter is right and angle is right then leftWheel is slowBackward and rightWheel is slowForward
+  rule: if distanceToCenter is right and angle is veryRight then leftWheel is middleBackward and rightWheel is middleForward
+
+  rule: if distanceToCenter is veryRight and angle is veryLeft then leftWheel is normalForward and rightWheel is middleForward
+  rule: if distanceToCenter is veryRight and angle is left then leftWheel is middleForward and rightWheel is middleForward
+  rule: if distanceToCenter is veryRight and angle is center then leftWheel is slowForward and rightWheel is normalForward
+  rule: if distanceToCenter is veryRight and angle is right then leftWheel is slowBackward and rightWheel is slowForward
+  rule: if distanceToCenter is veryRight and angle is veryRight then leftWheel is middleBackward and rightWheel is middleForward
+

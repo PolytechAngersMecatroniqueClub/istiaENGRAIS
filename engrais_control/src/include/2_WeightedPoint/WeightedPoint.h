@@ -5,7 +5,7 @@
 #include <iostream>
 #include <cmath>
 
-#include "../1_Point/Point.h"
+#include <Point.h>
 
 class WeightedPoint : public Point{ 
 

@@ -6,11 +6,11 @@
 void RubyGeneticOnePoint::populateOutliers(const sensor_msgs::LaserScan & msg){ //Checked 
     double angle = msg.angle_min;
 
-    outliers.clear();
+    this->outliers.clear();
 
-    for(int i = 0; i < models.size(); i++){
-        models[i].clearPoints();
-        models[i].resetParallelCount();
+    for(int i = 0; i < this->models.size(); i++){
+        this->models[i].clearPoints();
+        this->models[i].resetParallelCount();
     }
 
     WeightedPoint fusedPoint;
@@ -21,7 +21,7 @@ void RubyGeneticOnePoint::populateOutliers(const sensor_msgs::LaserScan & msg){ 
                 WeightedPoint p(msg.ranges[i] * cos(angle), msg.ranges[i] * sin(angle));
 
                 if(!fusedPoint.fusePoint(p, this->distanceToBeConsideredSamePoint)){
-                    outliers.push_back(fusedPoint);
+                    this->outliers.push_back(fusedPoint);
                     fusedPoint = p;
                 }
             }
@@ -33,7 +33,7 @@ void RubyGeneticOnePoint::populateOutliers(const sensor_msgs::LaserScan & msg){ 
     }
     
     if(fusedPoint.getX() != MIN_DBL && fusedPoint.getY() != MIN_DBL)
-        outliers.push_back(fusedPoint);
+        this->outliers.push_back(fusedPoint);
 
     initialField = outliers;
 }
@@ -41,31 +41,29 @@ void RubyGeneticOnePoint::populateOutliers(const sensor_msgs::LaserScan & msg){ 
 std::vector<Model> RubyGeneticOnePoint::findLines() { //Checked 
     int numberMinOfPoints;
 
-    //std::cout << "RubyGeneticOnePoint" << std::endl;
-
     double newEnergy = MAX_DBL, energy = MAX_DBL;
 
-    if(outliers.size() != 0){
+    if(this->outliers.size() != 0){
 
         std::vector<Model> bestModels;
         std::vector<Point> bestOutliers;
 
         for (int it = 0; it < this->maxNumberOfIterations; it++) {
-            searchModels(this->numberOfModelsToSearch - models.size());
+            this->searchModels(this->numberOfModelsToSearch - this->models.size());
             
-            fuseEqualModels();
+            this->fuseEqualModels();
 
-            redistributePoints();
+            this->redistributePoints();
 
-            numberMinOfPoints = std::max((int)(meanNumOfPoints() * this->factorToDeletePoints), 2);
+            numberMinOfPoints = std::max((int)(this->meanNumOfPoints() * this->factorToDeletePoints), 2);
 
-            removeTinyModels(3);
+            this->removeTinyModels(3);
 
-            reEstimation();
+            this->reEstimation();
             
-            eraseBadModels();
+            this->eraseBadModels();
             
-            newEnergy = calculateEnergy();
+            newEnergy = this->calculateEnergy();
 
             if ((newEnergy >= energy)){
                 this->models = bestModels;
@@ -82,7 +80,7 @@ std::vector<Model> RubyGeneticOnePoint::findLines() { //Checked
         }
     } 
 
-    return models;
+    return this->models;
 }
 
 //########################################################################################################
@@ -91,11 +89,11 @@ std::vector<Model> RubyGeneticOnePoint::findLines() { //Checked
 std::vector<Point> RubyGeneticOnePoint::randomPointsInField(const int num) { //Checked 
     std::vector<Point> ret(num);
 
-    std::vector<int> randomNums = Utility::randomDiffVector(0, outliers.size() - 1, num);
+    std::vector<int> randomNums = Utility::randomDiffVector(0, this->outliers.size() - 1, num);
 
     int pos = 0;
     for(int i : randomNums){
-        ret[pos] = outliers[i];
+        ret[pos] = this->outliers[i];
         pos++;
     }
     
@@ -103,13 +101,13 @@ std::vector<Point> RubyGeneticOnePoint::randomPointsInField(const int num) { //C
 }
 //--------------------------------------------------------------------------------------------------------
 void RubyGeneticOnePoint::searchModels(const int nbOfModels) { //Checked 
-    if(outliers.size() < INITIAL_NUMBER_OF_POINTS)
+    if(this->outliers.size() < INITIAL_NUMBER_OF_POINTS)
         return;
         
     for(int modelNum = 0; modelNum < nbOfModels; modelNum++){
-        std::vector<Point> points = randomPointsInField(INITIAL_NUMBER_OF_POINTS);
+        std::vector<Point> points = this->randomPointsInField(INITIAL_NUMBER_OF_POINTS);
         if(points.size() > 0)
-            models.push_back(Model::linearFit(points));
+            this->models.push_back(Model::linearFit(points));
     }
 }
 
@@ -117,50 +115,50 @@ void RubyGeneticOnePoint::searchModels(const int nbOfModels) { //Checked
 
 //--------------------------------------------------------------------------------------------------------
 double RubyGeneticOnePoint::calculateEnergy(){ //Checked 
-    double energy = outliers.size() * this->outlierPenalty;
+    double energy = this->outliers.size() * this->outlierPenalty;
 
-    for(Model m : models)
+    for(Model m : this->models)
         energy += m.getEnergy();
 
-    energy += calculateAdditionalEnergy();
+    energy += this->calculateAdditionalEnergy();
 
     return energy;
 }
 //--------------------------------------------------------------------------------------------------------
 double RubyGeneticOnePoint::meanNumOfPoints(){ //Checked 
     double mean = 0;
-    for(Model m : models)
+    for(Model m : this->models)
         mean += m.getPointsSize();
 
-    return mean/(double)models.size();
+    return mean/(double)this->models.size();
 }
 
 //########################################################################################################
 
 //--------------------------------------------------------------------------------------------------------
 void RubyGeneticOnePoint::countParallelLines(){ //Checked 
-    for(int model = 0; model < models.size(); model++){
-        for(int model2 = model + 1; model2 < models.size(); model2++){
-            if(fabs(models[model].getSlope() - models[model2].getSlope()) < this->sameSlopeThreshold){
-                models[model].incrementParallelCount();
-                models[model2].incrementParallelCount();
+    for(int model = 0; model < this->models.size(); model++){
+        for(int model2 = model + 1; model2 < this->models.size(); model2++){
+            if(fabs(this->models[model].getSlope() - this->models[model2].getSlope()) < this->sameSlopeThreshold){
+                this->models[model].incrementParallelCount();
+                this->models[model2].incrementParallelCount();
             }
         }
     }
 }
 //--------------------------------------------------------------------------------------------------------
 void RubyGeneticOnePoint::eraseBadModels(){ //Checked 
-    countParallelLines();
+    this->countParallelLines();
     
-    for(int i = 0; i < models.size(); i++)
-    	models[i].calculateFitness();
+    for(int i = 0; i < this->models.size(); i++)
+    	this->models[i].calculateFitness();
 
-    std::sort(models.begin(), models.end());
+    std::sort(this->models.begin(), this->models.end());
 
-    int initialPos = std::max((int)(models.size()*0.25), 6);
+    int initialPos = std::max((int)(this->models.size()*0.25), 6);
 
-    for(int i = initialPos; i < models.size(); i++){
-        removeModel(i);
+    for(int i = initialPos; i < this->models.size(); i++){
+        this->removeModel(i);
         i--;
     }
 }

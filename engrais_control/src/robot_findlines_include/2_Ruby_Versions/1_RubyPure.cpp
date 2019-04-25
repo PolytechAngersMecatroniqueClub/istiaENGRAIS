@@ -4,17 +4,16 @@
 
 //--------------------------------------------------------------------------------------------------------
 void RubyPure::populateOutliers(const sensor_msgs::LaserScan & msg){ //Checked 
-    //std::cout << "RubyPure" << std::endl;
     double angle = msg.angle_min;
 
-    outliers.clear();
+    this->outliers.clear();
 
-    for(int i = 0; i < models.size(); i++)
-        models[i].clearPoints();
+    for(int i = 0; i < this->models.size(); i++)
+        this->models[i].clearPoints();
 
     for(int i = 0; i < msg.ranges.size(); i++){
         if(!isinf(msg.ranges[i]))
-            outliers.push_back(Point(msg.ranges[i] * cos(angle), msg.ranges[i] * sin(angle)));
+            this->outliers.push_back(Point(msg.ranges[i] * cos(angle), msg.ranges[i] * sin(angle)));
         
         angle += msg.angle_increment;
     }
@@ -24,29 +23,29 @@ void RubyPure::populateOutliers(const sensor_msgs::LaserScan & msg){ //Checked
 
 //--------------------------------------------------------------------------------------------------------
 void RubyPure::countParallelLines(){ //Checked
-    for(int model = 0; model < models.size(); model++){
-        for(int model2 = model + 1; model2 < models.size(); model2++){
-            if(fabs(models[model].getSlope() - models[model2].getSlope()) < this->sameSlopeThreshold){
-                models[model].incrementParallelCount();
-                models[model2].incrementParallelCount();
+    for(int model = 0; model < this->models.size(); model++){
+        for(int model2 = model + 1; model2 < this->models.size(); model2++){
+            if(fabs(this->models[model].getSlope() - this->models[model2].getSlope()) < this->sameSlopeThreshold){
+                this->models[model].incrementParallelCount();
+                this->models[model2].incrementParallelCount();
             }
         }
     }
 }
 //--------------------------------------------------------------------------------------------------------
 void RubyPure::eraseBadModels(const double threshRatio) { //Checked
-    countParallelLines();
+    this->countParallelLines();
 
     std::vector<int> modelsToBeDeleted;
 
-    for(int model = 0; model < models.size(); model++){
-        if ((models[model].getEnergy() / (double)(models[model].getPointsSize() * models[model].getParallelCount())) >= threshRatio){
+    for(int model = 0; model < this->models.size(); model++){
+        if ((this->models[model].getEnergy() / (double)(this->models[model].getPointsSize() * this->models[model].getParallelCount())) >= threshRatio){
             modelsToBeDeleted.push_back(model);
         }
     }
 
     for(int i = 0; i < modelsToBeDeleted.size(); i++){
-        removeModel(modelsToBeDeleted[i]);
+        this->removeModel(modelsToBeDeleted[i]);
         for(int j = i + 1; j < modelsToBeDeleted.size(); j++){
             modelsToBeDeleted[j]--;
         }
