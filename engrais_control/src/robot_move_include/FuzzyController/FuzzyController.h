@@ -7,20 +7,20 @@
 
 class FuzzyController{
     private:
-        fl::Engine fuzzy;
+        fl::Engine* fuzzy;
 
-        fl::InputVariable angle;
-        fl::InputVariable distanceToCenter;
+        fl::InputVariable* angle;
+        fl::InputVariable* distanceToCenter;
         
-        fl::OutputVariable leftWheel;
-        fl::OutputVariable rightWheel;
-
+        fl::OutputVariable* leftWheel;
+        fl::OutputVariable* rightWheel;
+        
 
     public:
     	//------------------------------------------------------------------------------------------------
-        FuzzyController(fl::TNorm* = new fl::Minimum, fl::SNorm* = new fl::Maximum, fl::TNorm* = new fl::Minimum, fl::SNorm* = new fl::Maximum, fl::Defuzzifier* = new fl::Centroid(100));   
-		//------------------------------------------------------------------------------------------------
-        std::pair<double, double> getOutputValues(const double , const double );
+        FuzzyController(fl::TNorm* AndMethod = new fl::Minimum, fl::SNorm* OrMethod = new fl::Maximum, fl::TNorm* ImplicationMethod = new fl::Minimum, fl::SNorm* AggregationMethod = new fl::Maximum, fl::Defuzzifier* defuzzMethod = new fl::Centroid(100));   
+        //------------------------------------------------------------------------------------------------
+        std::pair<double, double> getOutputValues(const double dist, const double ang);
 
         //------------------------------------------------------------------------------------------------
         friend std::ostream & operator << (std::ostream & , const FuzzyController & );

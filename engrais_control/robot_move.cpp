@@ -21,6 +21,8 @@
 #define PI 3.141592
 #define BODY_SIZE 2
 
+#define MAX_VEL 3
+
 using namespace std;
 
 mutex critSec;
@@ -52,7 +54,6 @@ class WeightedModel{
 
         WeightedModel(const Model & m) : a(m.getSlope()), b(m.getIntercept()) {
             assignPoints(m);
-            //
         }
 
         WeightedModel(const double aa, const double bb) : a(aa), b(bb) {}
@@ -121,14 +122,13 @@ class WeightedModel{
         }
 };
 
-class Control{
+class LineSelector{
     public:
-        FuzzyController fuzzy;
         std::vector<WeightedModel> models;
 
 
     public:
-        Control(){}
+        LineSelector(){}
 
         void clearModels(){
             models.clear();
@@ -198,7 +198,6 @@ class Control{
         }
 
 
-
     public:
         visualization_msgs::Marker translateAxis(const visualization_msgs::Marker & msg, const double newOX, const double newOY){
             visualization_msgs::Marker ret;
@@ -255,15 +254,15 @@ class Control{
             return foundLines;
         }
 
-        friend std::ostream & operator << (std::ostream & out, const Control & c){
-            Utility::printVector(c.models);
+        friend std::ostream & operator << (std::ostream & out, const LineSelector & ls){
+            Utility::printVector(ls.models);
 
             return out;
         }
 };
 
-Control control;
-
+LineSelector selector;
+FuzzyController fuzzy;
 
 //--------------------------------------------------------------------------------------------------------
 void sendLine(const vector<Model> & models){ 
@@ -310,17 +309,31 @@ void controlThread(){
     while(!endProgram){
 
         critSec.lock();
-        control.clearModels();
+        selector.clearModels();
         critSec.unlock();
 
         usleep(250 * TO_MILLISECOND);
 
-        critSec.lock();
+        critSec.lock();  
 
-        vector<Model> selectModels = control.selectModels();
+        vector<Model> selectModels = selector.selectModels();
         sendLine(selectModels);
 
         critSec.unlock();
+
+        double distToCenter = (selectModels[0].getIntercept() + selectModels[1].getIntercept()) / 2.0;
+        double angle = atan((selectModels[0].getSlope() + selectModels[1].getSlope()) / 2.0);
+
+        pair<double, double> controls = fuzzy.getOutputValues(distToCenter, angle*180.0/PI);
+
+        std_msgs::Float64 lControl, rControl;
+
+        lControl.data = controls.first * MAX_VEL;
+        rControl.data = controls.second * MAX_VEL;
+
+        pubLeftControl.publish(lControl);
+        pubRightControl.publish(rControl);
+
     }
 }
 //--------------------------------------------------------------------------------------------------------
@@ -329,7 +342,7 @@ void BackLinesMsg(const visualization_msgs::Marker & msg){
         return;
 
     critSec.lock();
-    control.backMessage(msg);
+    selector.backMessage(msg);
     critSec.unlock();
 }
 //--------------------------------------------------------------------------------------------------------
@@ -338,7 +351,7 @@ void FrontLinesMsg(const visualization_msgs::Marker & msg){
         return;
     
     critSec.lock();
-    control.frontMessage(msg);
+    selector.frontMessage(msg);
     critSec.unlock();
 }
 //--------------------------------------------------------------------------------------------------------

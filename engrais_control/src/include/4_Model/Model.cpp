@@ -58,9 +58,9 @@ std::pair<Point, Point> Model::getFirstAndLastPoint() const{
     ret.second = Point(0,0);
 
     for(Point p : this->pointsInModel){
-        if(p.distanceToOrigin() < ret.first.distanceToOrigin())
+        if(fabs(p.getX()) < fabs(ret.first.getX()))
             ret.first = p;
-        if(p.distanceToOrigin() > ret.second.distanceToOrigin())
+        if(fabs(p.getX()) > fabs(ret.second.getX()))
             ret.second = p;
     }
 
