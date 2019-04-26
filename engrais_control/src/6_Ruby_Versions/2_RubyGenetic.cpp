@@ -32,13 +32,13 @@ std::vector<Model> RubyGenetic::findLines() { //Checked
         std::vector<Point> bestOutliers;
 
         for (int it = 0; it < this->maxNumberOfIterations; it++) {
-            this->searchModels(this->numberOfModelsToSearch - models.size());
+            this->searchModels(RubyGenetic::numberOfModelsToSearch - models.size());
 
             this->fuseEqualModels();
             
             this->redistributePoints();
 
-            numberMinOfPoints = std::max((int)(this->meanNumbOfPoints() * this->factorToDeletePoints), 3);
+            numberMinOfPoints = std::max((int)(this->meanNumbOfPoints() * RubyGenetic::factorToDeletePoints), 3);
 
             this->removeTinyModels(numberMinOfPoints);
 

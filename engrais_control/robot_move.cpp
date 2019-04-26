@@ -15,13 +15,13 @@
 #include <visualization_msgs/Marker.h>
 #include <std_msgs/Float64.h>
 
-#define KP 1
-#define DISTANCE_REFERENCE 1.5
-#define TO_MILLISECOND 1000
-#define PI 3.1415926535
-#define BODY_SIZE 2
 
-#define MAX_VEL 3
+#define BODY_SIZE 2
+#define PI 3.1415926535
+#define TO_MILLISECOND 1000
+#define DISTANCE_REFERENCE 1.5
+
+#define MAX_VEL 5
 
 using namespace std;
 
@@ -355,6 +355,8 @@ void controlThread(){
 
         pubLeftControl.publish(lControl);
         pubRightControl.publish(rControl);
+
+        cout << "Left: " << controls.first * MAX_VEL << ", Right: " << controls.second * MAX_VEL << endl;
 
     }
 }

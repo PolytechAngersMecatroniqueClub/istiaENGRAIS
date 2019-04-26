@@ -20,7 +20,7 @@ void RubyGeneticOnePoint::populateOutliers(const sensor_msgs::LaserScan & msg){ 
             if(!(fusedPoint.getX() == MIN_DBL && fusedPoint.getY() == MIN_DBL)){
                 WeightedPoint p(msg.ranges[i] * cos(angle), msg.ranges[i] * sin(angle));
 
-                if(!fusedPoint.fusePoint(p, this->distanceToBeConsideredSamePoint)){
+                if(!fusedPoint.fusePoint(p, RubyGeneticOnePoint::distanceToBeConsideredSamePoint)){
                     this->outliers.push_back(fusedPoint);
                     fusedPoint = p;
                 }
@@ -49,13 +49,13 @@ std::vector<Model> RubyGeneticOnePoint::findLines() { //Checked
         std::vector<Point> bestOutliers;
 
         for (int it = 0; it < this->maxNumberOfIterations; it++) {
-            this->searchModels(this->numberOfModelsToSearch - this->models.size());
+            this->searchModels(RubyGeneticOnePoint::numberOfModelsToSearch - this->models.size());
             
             this->fuseEqualModels();
 
             this->redistributePoints();
 
-            numberMinOfPoints = std::max((int)(this->meanNumOfPoints() * this->factorToDeletePoints), 2);
+            numberMinOfPoints = std::max((int)(this->meanNumOfPoints() * RubyGeneticOnePoint::factorToDeletePoints), 2);
 
             this->removeTinyModels(3);
 

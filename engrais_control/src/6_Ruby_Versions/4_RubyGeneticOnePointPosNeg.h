@@ -20,9 +20,9 @@ class RubyGeneticOnePointPosNeg : public Pearl{
 		
 		int numberOfPositivePointsInOutliers = 0;
 
-		double distanceToBeConsideredSamePoint = 0.1; 
-		double numberOfModelsToSearch = 40;
-		double factorToDeletePoints = 0.8;
+		static constexpr double distanceToBeConsideredSamePoint = 0.1; 
+		static constexpr double numberOfModelsToSearch = 40;
+		static constexpr double factorToDeletePoints = 0.8;
 
 	public:
 		//------------------------------------------------------------------------------------------------

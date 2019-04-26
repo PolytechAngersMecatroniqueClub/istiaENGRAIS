@@ -13,19 +13,21 @@ double Utility::calcSumDist(const std::vector<Point> & vec_p, const double a, co
 }
 //--------------------------------------------------------------------------------------------------------
 void Utility::printInColor(const std::string msg, const int color){ //Checked 
-    std::string msg;
+    std::string out;
 
     if(color == RED)
-        msg += "[ERR]" << std::endl << "\033[1;" << color << "m" << msgType << " " << msg << "\033[0m" << std::endl << std::endl;
+        out = "\n\033[1;" + std::to_string(color) + "m[ERR] " + msg + "\033[0m\n\n";
 
     else if(color == CYAN)
-        msg += "[OK]" << "\033[1;" << color << "m" << msgType << " " << msg << "\033[0m" << std::endl;
+        out = "\033[1;" + std::to_string(color) + "m[OK] " + msg + "\033[0m\n";
 
     else if(color == BLUE)
-        msg += "[OK]" << std::endl << "\033[1;" << color << "m" << msgType << " " << msg << "\033[0m" << std::endl << std::endl;
+        out = "\n\033[1;" + std::to_string(color) + "m[OK] " + msg + "\033[0m\n\n";
 
     else
-        msg += "[MSG]" << "\033[1;" << color << "m" << msgType << " " << msg << "\033[0m" << std::endl;
+        out = "\033[1;" + std::to_string(color) + "m[MSG] " + msg + "\033[0m\n";
+
+    std::cout << out;
 }
 // -------------------------------------------------------------------------------------------------------
 std::vector<int> Utility::randomDiffVector(const int min, const int max, const int size){ //Checked

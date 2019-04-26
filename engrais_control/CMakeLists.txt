@@ -91,16 +91,16 @@ catkin_package(
 include_directories(
     include ${catkin_INCLUDE_DIRS}
 
-    include src/include/1_Point/
-    include src/include/2_WeightedPoint/
-    include src/include/3_Utility/
-    include src/include/4_Model/
+    include src/1_Point/
+    include src/2_WeightedPoint/
+    include src/3_Utility/
+    include src/4_Model/
 
-    include src/robot_findlines_include/1_Pearl/
-    include src/robot_findlines_include/2_Ruby_Versions/
+    include src/5_Pearl/
+    include src/6_Ruby_Versions/
 
-    include src/robot_move_include/.fuzzylite-6.0/
-    include src/robot_move_include/FuzzyController
+    include src/7_FuzzyController
+    include src/.fuzzylite-6.0/
 )
 
 ## Declare a C++ library
@@ -183,17 +183,17 @@ include_directories(
 
 
 add_executable(robot_findlines robot_findlines.cpp
-    src/include/1_Point/Point.cpp
-    src/include/2_WeightedPoint/WeightedPoint.cpp
-    src/include/3_Utility/Utility.cpp
-    src/include/4_Model/Model.cpp
+    src/1_Point/Point.cpp
+    src/2_WeightedPoint/WeightedPoint.cpp
+    src/3_Utility/Utility.cpp
+    src/4_Model/Model.cpp
 
-    src/robot_findlines_include/1_Pearl/Pearl.cpp
-    src/robot_findlines_include/2_Ruby_Versions/1_RubyPure.cpp
-    src/robot_findlines_include/2_Ruby_Versions/2_RubyGenetic.cpp
-    src/robot_findlines_include/2_Ruby_Versions/3_RubyGeneticOnePoint.cpp
-    src/robot_findlines_include/2_Ruby_Versions/4_RubyGeneticOnePointPosNeg.cpp
-    src/robot_findlines_include/2_Ruby_Versions/5_RubyGeneticOnePointPosNegInfinite.cpp
+    src/5_Pearl/Pearl.cpp
+    src/6_Ruby_Versions/1_RubyPure.cpp
+    src/6_Ruby_Versions/2_RubyGenetic.cpp
+    src/6_Ruby_Versions/3_RubyGeneticOnePoint.cpp
+    src/6_Ruby_Versions/4_RubyGeneticOnePointPosNeg.cpp
+    src/6_Ruby_Versions/5_RubyGeneticOnePointPosNegInfinite.cpp
 )
 target_link_libraries(robot_findlines ${catkin_LIBRARIES})
 #add_dependencies(robot_findlines engrais_control_gencpp)
@@ -208,11 +208,11 @@ target_link_libraries(robot_keyboard_move ${catkin_LIBRARIES})
 
 
 add_executable(robot_move robot_move.cpp
-    src/include/1_Point/Point.cpp
-    src/include/3_Utility/Utility.cpp
-    src/include/4_Model/Model.cpp
+    src/1_Point/Point.cpp
+    src/3_Utility/Utility.cpp
+    src/4_Model/Model.cpp
 
-    src/robot_move_include/FuzzyController/FuzzyController.cpp
+    src/7_FuzzyController/FuzzyController.cpp
 )
 
 target_link_libraries(robot_move 
