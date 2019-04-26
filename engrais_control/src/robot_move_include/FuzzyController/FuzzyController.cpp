@@ -13,29 +13,29 @@ FuzzyController::FuzzyController(fl::TNorm* AndMethod, fl::SNorm* OrMethod, fl::
     this->angle->setName("angle");
     this->angle->setDescription("Angle made with central line of robot and the rows found-> Negative means at left side of center, positive means right sides ");
     this->angle->setEnabled(true);
-    this->angle->setRange(-45.000, 45.000);
+    this->angle->setRange(-PI / 4.0, -PI / 4.0);
     this->angle->setLockValueInRange(false);
-    this->angle->addTerm(new fl::Ramp("veryLeft", -15.000, -30.000));
-    this->angle->addTerm(new fl::Triangle("left", -30.000, -15.000, 0.000));
-    this->angle->addTerm(new fl::Triangle("center", -15.000, 0.000, 15.000));
-    this->angle->addTerm(new fl::Triangle("right", 0.000, 15.000, 30.000));
-    this->angle->addTerm(new fl::Ramp("veryRight", 15.000, 30.000));
+    this->angle->addTerm(new fl::Ramp("veryLeft", -PI / 12.0, -PI / 6.0));
+    this->angle->addTerm(new fl::Triangle("left", -PI / 6.0, -PI / 12.0, 0.000));
+    this->angle->addTerm(new fl::Triangle("center", -PI / 12.0, 0.000, PI / 12.0));
+    this->angle->addTerm(new fl::Triangle("right", 0.000, PI / 12.0, PI / 6.0));
+    this->angle->addTerm(new fl::Ramp("veryRight", PI / 12.0, PI / 6.0));
 
     this->fuzzy->addInputVariable(angle);
 
-    this->distanceToCenter = new fl::InputVariable;
-    this->distanceToCenter->setName("distanceToCenter");
-    this->distanceToCenter->setDescription("Distance to centrer of rows. Negative means at left side of center, positive means right side");
-    this->distanceToCenter->setEnabled(true);
-    this->distanceToCenter->setRange(-2.000, 2.000);
-    this->distanceToCenter->setLockValueInRange(false);
-    this->distanceToCenter->addTerm(new fl::Ramp("veryLeft", -0.750, -1.500));
-    this->distanceToCenter->addTerm(new fl::Triangle("left", -1.500, -0.750, 0.000));
-    this->distanceToCenter->addTerm(new fl::Triangle("center", -0.750, 0.000, 0.750));
-    this->distanceToCenter->addTerm(new fl::Triangle("right", 0.000, 0.750, 1.500));
-    this->distanceToCenter->addTerm(new fl::Ramp("veryRight", 0.750, 1.500));
+    this->ratio = new fl::InputVariable;
+    this->ratio->setName("ratio");
+    this->ratio->setDescription("");
+    this->ratio->setEnabled(true);
+    this->ratio->setRange(-1.000, 1.000);
+    this->ratio->setLockValueInRange(false);
+    this->ratio->addTerm(new fl::Ramp("veryLeft", -0.500, -1.000));
+    this->ratio->addTerm(new fl::Triangle("left", -1.000, -0.500, 0.000));
+    this->ratio->addTerm(new fl::Triangle("center", -0.500, 0.000, 0.500));
+    this->ratio->addTerm(new fl::Triangle("right", 0.000, 0.500, 1.000));
+    this->ratio->addTerm(new fl::Ramp("veryRight", 0.500, 1.000));
 
-    this->fuzzy->addInputVariable(distanceToCenter);
+    this->fuzzy->addInputVariable(ratio);
 
     this->leftWheel = new fl::OutputVariable;
     this->leftWheel->setName("leftWheel");
@@ -86,42 +86,42 @@ FuzzyController::FuzzyController(fl::TNorm* AndMethod, fl::SNorm* OrMethod, fl::
     rules->setImplication(ImplicationMethod);
     rules->setActivation(new fl::General);
 
-    rules->addRule(fl::Rule::parse("if distanceToCenter is veryLeft and angle is veryLeft then leftWheel is middleForward and rightWheel is middleBackward", fuzzy));
-    rules->addRule(fl::Rule::parse("if distanceToCenter is veryLeft and angle is left then leftWheel is slowForward and rightWheel is slowBackward", fuzzy));
-    rules->addRule(fl::Rule::parse("if distanceToCenter is veryLeft and angle is center then leftWheel is normalForward and rightWheel is slowForward", fuzzy));
-    rules->addRule(fl::Rule::parse("if distanceToCenter is veryLeft and angle is right then leftWheel is middleForward and rightWheel is middleForward", fuzzy));
-    rules->addRule(fl::Rule::parse("if distanceToCenter is veryLeft and angle is veryRight then leftWheel is middleForward and rightWheel is normalForward", fuzzy));
+    rules->addRule(fl::Rule::parse("if ratio is veryLeft and angle is veryLeft then leftWheel is middleForward and rightWheel is middleBackward", fuzzy));
+    rules->addRule(fl::Rule::parse("if ratio is veryLeft and angle is left then leftWheel is slowForward and rightWheel is slowBackward", fuzzy));
+    rules->addRule(fl::Rule::parse("if ratio is veryLeft and angle is center then leftWheel is normalForward and rightWheel is slowForward", fuzzy));
+    rules->addRule(fl::Rule::parse("if ratio is veryLeft and angle is right then leftWheel is middleForward and rightWheel is middleForward", fuzzy));
+    rules->addRule(fl::Rule::parse("if ratio is veryLeft and angle is veryRight then leftWheel is middleForward and rightWheel is normalForward", fuzzy));
  
-    rules->addRule(fl::Rule::parse("if distanceToCenter is left and angle is veryLeft then leftWheel is middleForward and rightWheel is middleBackward", fuzzy));
-    rules->addRule(fl::Rule::parse("if distanceToCenter is left and angle is left then leftWheel is slowForward and rightWheel is slowBackward", fuzzy));
-    rules->addRule(fl::Rule::parse("if distanceToCenter is left and angle is center then leftWheel is normalForward and rightWheel is middleForward", fuzzy));
-    rules->addRule(fl::Rule::parse("if distanceToCenter is left and angle is right then leftWheel is slowForward and rightWheel is slowForward", fuzzy));
-    rules->addRule(fl::Rule::parse("if distanceToCenter is left and angle is veryRight then leftWheel is slowForward and rightWheel is normalForward", fuzzy));
+    rules->addRule(fl::Rule::parse("if ratio is left and angle is veryLeft then leftWheel is middleForward and rightWheel is middleBackward", fuzzy));
+    rules->addRule(fl::Rule::parse("if ratio is left and angle is left then leftWheel is slowForward and rightWheel is slowBackward", fuzzy));
+    rules->addRule(fl::Rule::parse("if ratio is left and angle is center then leftWheel is normalForward and rightWheel is middleForward", fuzzy));
+    rules->addRule(fl::Rule::parse("if ratio is left and angle is right then leftWheel is slowForward and rightWheel is slowForward", fuzzy));
+    rules->addRule(fl::Rule::parse("if ratio is left and angle is veryRight then leftWheel is slowForward and rightWheel is normalForward", fuzzy));
     
-    rules->addRule(fl::Rule::parse("if distanceToCenter is center and angle is veryLeft then leftWheel is slowForward and rightWheel is slowBackward", fuzzy));
-    rules->addRule(fl::Rule::parse("if distanceToCenter is center and angle is left then leftWheel is middleForward and rightWheel is slowForward", fuzzy));
-    rules->addRule(fl::Rule::parse("if distanceToCenter is center and angle is center then leftWheel is normalForward and rightWheel is normalForward", fuzzy));
-    rules->addRule(fl::Rule::parse("if distanceToCenter is center and angle is right then leftWheel is slowForward and rightWheel is middleForward", fuzzy));
-    rules->addRule(fl::Rule::parse("if distanceToCenter is center and angle is veryRight then leftWheel is slowBackward and rightWheel is slowForward", fuzzy));
+    rules->addRule(fl::Rule::parse("if ratio is center and angle is veryLeft then leftWheel is slowForward and rightWheel is slowBackward", fuzzy));
+    rules->addRule(fl::Rule::parse("if ratio is center and angle is left then leftWheel is middleForward and rightWheel is slowForward", fuzzy));
+    rules->addRule(fl::Rule::parse("if ratio is center and angle is center then leftWheel is normalForward and rightWheel is normalForward", fuzzy));
+    rules->addRule(fl::Rule::parse("if ratio is center and angle is right then leftWheel is slowForward and rightWheel is middleForward", fuzzy));
+    rules->addRule(fl::Rule::parse("if ratio is center and angle is veryRight then leftWheel is slowBackward and rightWheel is slowForward", fuzzy));
     
-    rules->addRule(fl::Rule::parse("if distanceToCenter is right and angle is veryLeft then leftWheel is normalForward and rightWheel is slowForward", fuzzy));
-    rules->addRule(fl::Rule::parse("if distanceToCenter is right and angle is left then leftWheel is slowForward and rightWheel is slowForward", fuzzy));
-    rules->addRule(fl::Rule::parse("if distanceToCenter is right and angle is center then leftWheel is middleForward and rightWheel is normalForward", fuzzy));
-    rules->addRule(fl::Rule::parse("if distanceToCenter is right and angle is right then leftWheel is slowBackward and rightWheel is slowForward", fuzzy));
-    rules->addRule(fl::Rule::parse("if distanceToCenter is right and angle is veryRight then leftWheel is middleBackward and rightWheel is middleForward", fuzzy));
+    rules->addRule(fl::Rule::parse("if ratio is right and angle is veryLeft then leftWheel is normalForward and rightWheel is slowForward", fuzzy));
+    rules->addRule(fl::Rule::parse("if ratio is right and angle is left then leftWheel is slowForward and rightWheel is slowForward", fuzzy));
+    rules->addRule(fl::Rule::parse("if ratio is right and angle is center then leftWheel is middleForward and rightWheel is normalForward", fuzzy));
+    rules->addRule(fl::Rule::parse("if ratio is right and angle is right then leftWheel is slowBackward and rightWheel is slowForward", fuzzy));
+    rules->addRule(fl::Rule::parse("if ratio is right and angle is veryRight then leftWheel is middleBackward and rightWheel is middleForward", fuzzy));
 
-    rules->addRule(fl::Rule::parse("if distanceToCenter is veryRight and angle is veryLeft then leftWheel is normalForward and rightWheel is middleForward", fuzzy));
-    rules->addRule(fl::Rule::parse("if distanceToCenter is veryRight and angle is left then leftWheel is middleForward and rightWheel is middleForward", fuzzy));
-    rules->addRule(fl::Rule::parse("if distanceToCenter is veryRight and angle is center then leftWheel is slowForward and rightWheel is normalForward", fuzzy));
-    rules->addRule(fl::Rule::parse("if distanceToCenter is veryRight and angle is right then leftWheel is slowBackward and rightWheel is slowForward", fuzzy));
-    rules->addRule(fl::Rule::parse("if distanceToCenter is veryRight and angle is veryRight then leftWheel is middleBackward and rightWheel is middleForward", fuzzy));
+    rules->addRule(fl::Rule::parse("if ratio is veryRight and angle is veryLeft then leftWheel is normalForward and rightWheel is middleForward", fuzzy));
+    rules->addRule(fl::Rule::parse("if ratio is veryRight and angle is left then leftWheel is middleForward and rightWheel is middleForward", fuzzy));
+    rules->addRule(fl::Rule::parse("if ratio is veryRight and angle is center then leftWheel is slowForward and rightWheel is normalForward", fuzzy));
+    rules->addRule(fl::Rule::parse("if ratio is veryRight and angle is right then leftWheel is slowBackward and rightWheel is slowForward", fuzzy));
+    rules->addRule(fl::Rule::parse("if ratio is veryRight and angle is veryRight then leftWheel is middleBackward and rightWheel is middleForward", fuzzy));
     
     this->fuzzy->addRuleBlock(rules);
 }
 //--------------------------------------------------------------------------------------------------------
-std::pair<double, double> FuzzyController::getOutputValues(const double dist, const double ang){
+std::pair<double, double> FuzzyController::getOutputValues(const double ratio, const double ang){
     this->angle->setValue(ang);
-    this->distanceToCenter->setValue(dist);
+    this->ratio->setValue(ratio);
     
     this->fuzzy->process();
 
@@ -129,7 +129,7 @@ std::pair<double, double> FuzzyController::getOutputValues(const double dist, co
 }
 //--------------------------------------------------------------------------------------------------------
 std::ostream & operator << (std::ostream & out, const FuzzyController & fz){
-    out << "FuzzyController: [ Input Value Angle: " << fz.angle->getValue() << ", Input Value DistanceToCenter: " << fz.distanceToCenter->getValue();
+    out << "FuzzyController: [ Input Value Angle: " << fz.angle->getValue() << ", Input Value Ratio: " << fz.ratio->getValue();
     out << ", Output Value LeftWheel: " << fz.leftWheel->getValue() << ", Output Value RightWheel: " << fz.rightWheel->getValue() << "]";
 
     return out; 

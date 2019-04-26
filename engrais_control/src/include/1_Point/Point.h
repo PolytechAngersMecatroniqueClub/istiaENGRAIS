@@ -5,11 +5,21 @@
 #include <iostream>
 #include <cmath>
 
+#ifndef MIN_DBL
 #define MIN_DBL -1e+20
-#define MAX_DBL 1e+20
+#endif
 
+#ifndef MAX_DBL
+#define MAX_DBL 1e+20
+#endif
+
+#ifndef MIN_INT
 #define MIN_INT -10000000
+#endif
+
+#ifndef MAX_INT
 #define MAX_INT 10000000
+#endif
 
 class Point{ 
 

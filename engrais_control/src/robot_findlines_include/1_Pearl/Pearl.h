@@ -10,7 +10,9 @@
 #include <Model.h>
 #include <Utility.h>
 
+#ifndef INITIAL_NUMBER_OF_POINTS
 #define INITIAL_NUMBER_OF_POINTS 3
+#endif
 
 
 class Pearl{ 

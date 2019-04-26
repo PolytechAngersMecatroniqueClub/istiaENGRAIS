@@ -18,7 +18,7 @@
 #define KP 1
 #define DISTANCE_REFERENCE 1.5
 #define TO_MILLISECOND 1000
-#define PI 3.141592
+#define PI 3.1415926535
 #define BODY_SIZE 2
 
 #define MAX_VEL 3
@@ -304,6 +304,28 @@ void sendLine(const vector<Model> & models){
 }
 
 
+
+double calculateRatio(const vector<Model> & models){
+    double lAbs = models[0].isPopulated() ? fabs(models[0].getIntercept()) : DISTANCE_REFERENCE;
+    double rAbs = models[1].isPopulated() ? fabs(models[1].getIntercept()) : DISTANCE_REFERENCE;
+
+    double ratio = lAbs < rAbs ? lAbs / rAbs - 1.0 : 1.0 - rAbs / lAbs;
+
+    return ratio;
+}
+double calculateAngle(const vector<Model> & models){
+    double slopeMean = 0;
+    int cont = 0;
+
+    for(Model m : models){
+        if(m.isPopulated()){
+            slopeMean += m.getSlope();
+            cont++;
+        }
+    }
+
+    return slopeMean == 0 ? 0 : atan(slopeMean / (double)cont);
+}
 //--------------------------------------------------------------------------------------------------------
 void controlThread(){ 
     while(!endProgram){
@@ -321,10 +343,10 @@ void controlThread(){
 
         critSec.unlock();
 
-        double distToCenter = (selectModels[0].getIntercept() + selectModels[1].getIntercept()) / 2.0;
-        double angle = atan((selectModels[0].getSlope() + selectModels[1].getSlope()) / 2.0);
+        pair<double, double> controls(0,0);
 
-        pair<double, double> controls = fuzzy.getOutputValues(distToCenter, angle*180.0/PI);
+        if(selectModels[0].isPopulated() || selectModels[1].isPopulated())
+            controls = fuzzy.getOutputValues(calculateRatio(selectModels), calculateAngle(selectModels));
 
         std_msgs::Float64 lControl, rControl;
 

@@ -10,9 +10,17 @@
 
 #include <Point.h>
 
+#ifndef BLUE
 #define BLUE 34
+#endif
+
+#ifndef RED
 #define RED 31
+#endif
+
+#ifndef CYAN
 #define CYAN 36
+#endif
 
 class Utility{
     public:
