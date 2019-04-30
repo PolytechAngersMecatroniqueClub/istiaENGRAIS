@@ -83,13 +83,18 @@ void sendLine(const vector<Model> & models, const Pearl & pearl){
     	    p.x = points.first.getX();
     	    p.y = models[i].getSlope()*p.x + models[i].getIntercept();
 
+            cout << "Line [" << i << "] x_1: " << p.x << ", y_1: " << p.y;
+
     	    line_list.points.push_back(p);
 
     	    p.x = points.second.getX();
     	    p.y = models[i].getSlope()*p.x + models[i].getIntercept();
 
+            cout << ", x_2: " << p.x << ", y_2: " << p.y << endl;
     	    line_list.points.push_back(p);
     	}
+
+        cout << endl << endl;
     }
 
     pubLineNode.publish(points);
@@ -101,21 +106,25 @@ void sendLine(const vector<Model> & models, const Pearl & pearl){
 void OnRosMsg(const sensor_msgs::LaserScan & msg){
     auto start = std::chrono::system_clock::now();
 
-    for(int i = 0; i < 10; i++){
+    //for(int i = 0; i < 10; i++){
 
         rubyGenOPPN.populateOutliers(msg);
 
+        cout << rubyGenOPPN << endl;
+
         vector <Model> lines = rubyGenOPPN.findLines();
 
-        sendLine(lines, rubyGenOPPN);
-    }
+        cout << rubyGenOPPN << endl;
 
+        sendLine(lines, rubyGenOPPN);
+    //}
+    //exit(1);
     auto end = std::chrono::system_clock::now();
     std::chrono::duration<double> elapsed_seconds = end - start;
 
     totalExecutionTime += elapsed_seconds.count();
     timesExecuted++;
-
+    
     cout << "finished computation, elapsed time: " << elapsed_seconds.count()*1000 << " ms\n";
 }
 //--------------------------------------------------------------------------------------------------------
@@ -135,8 +144,6 @@ int main(int argc, char **argv){
     }
 
     node.param<string>(node_name + "/rviz_frame", mapName, "world");
-
-    Utility::printInColor("sub_topic: " + sub_topic + ", pub_topic: " + pub_topic + ", node_name: " + node_name, RED);
 
     ros::Subscriber sub = node.subscribe(sub_topic, 10, OnRosMsg); // /engrais/laser_front/scan or /engrais/laser_back/scan
     pubLineNode = node.advertise<visualization_msgs::Marker>(pub_topic, 10);// /engrais/laser_front/lines or /engrais/laser_back/lines

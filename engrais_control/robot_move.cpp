@@ -97,15 +97,15 @@ class WeightedModel{
         Model toModel(){
             Model ret(a,b);
 
-            if(negativePoints.second.getX() != MIN_DBL && negativePoints.second.getY() != MIN_DBL)
+            if(negativePoints.second.isAssigned())
                 ret.pushPoint(negativePoints.second);
-            else if(positivePoints.first.getX() != MIN_DBL && positivePoints.first.getY() != MIN_DBL)
+            else if(positivePoints.first.isAssigned())
                 ret.pushPoint(positivePoints.first);
                 
 
-            if(positivePoints.second.getX() != MIN_DBL && positivePoints.second.getY() != MIN_DBL)
+            if(positivePoints.second.isAssigned())
                 ret.pushPoint(positivePoints.second);
-            else if(negativePoints.first.getX() != MIN_DBL && negativePoints.first.getY() != MIN_DBL)
+            else if(negativePoints.first.isAssigned())
                 ret.pushPoint(negativePoints.first);
 
 
@@ -122,13 +122,18 @@ class WeightedModel{
         }
 };
 
-class LineSelector{
+class RobotControl{
     public:
+        enum Sense {Backward = -1, Unknown = 0,Forward = 1};
+
+        Sense robotSense = Unknown;
+
+        FuzzyController fuzzy;
         std::vector<WeightedModel> models;
 
 
     public:
-        LineSelector(){}
+        RobotControl(){}
 
         void clearModels(){
             models.clear();
@@ -140,65 +145,87 @@ class LineSelector{
 
             vector<Model> modelsInMsg = this->getFoundLines(finalMsg);
 
-            for(int i = 0; i < modelsInMsg.size(); i++){
-                bool existsInModels = false;
-
-                for(int j = 0; j < models.size(); j++){
-                    if(models[j].checkIfSameModel(modelsInMsg[i])){
-                        models[j].fuseModels(modelsInMsg[i]);
-                        existsInModels = true;
-                    }
-                }
-
-                if(!existsInModels){
-                    models.push_back(WeightedModel(modelsInMsg[i]));
-                }
-            }
+            addMsgModels(modelsInMsg);
         }
 
         void backMessage(const visualization_msgs::Marker & msg){
-            const visualization_msgs::Marker movedMsg = this->rotateAxis(msg, PI);
+            const visualization_msgs::Marker movedMsg = this->rotateAxis(msg, -PI);
             const visualization_msgs::Marker finalMsg = this->translateAxis(movedMsg, BODY_SIZE/2.0, 0);
 
             vector<Model> modelsInMsg = this->getFoundLines(finalMsg);
 
-            for(int i = 0; i < modelsInMsg.size(); i++){
-                bool existsInModels = false;
-
-                for(int j = 0; j < models.size(); j++){
-                    if(models[j].checkIfSameModel(modelsInMsg[i])){
-                        models[j].fuseModels(modelsInMsg[i]);
-                        existsInModels = true;
-                    }
-                }
-
-                if(!existsInModels){
-                    models.push_back(WeightedModel(modelsInMsg[i]));
-                }
-            }
+            addMsgModels(modelsInMsg);
         }     
 
-        vector<Model> selectModels(){
-            vector<Model> ret(2);
+        pair<Model, Model> selectModels(){
+            pair<Model, Model> ret;
             int bestCounterLeft = 0, bestCounterRight = 0;
 
             for(int i = 0; i < models.size(); i++){
                 if(models[i].getIntercept() >= 0 && models[i].getCounter() > bestCounterLeft){
                     bestCounterLeft = models[i].getCounter();
-                    ret[0] = models[i].toModel();
+                    ret.first = models[i].toModel();
                 }
 
                 if(models[i].getIntercept() < 0 && models[i].getCounter() > bestCounterRight){
                     bestCounterRight = models[i].getCounter();
-                    ret[1] = models[i].toModel();
+                    ret.second = models[i].toModel();
                 }
             }
 
             return ret;
         }
 
+        pair<std_msgs::Float64, std_msgs::Float64> getWheelsCommand(const pair<Model, Model> & models){
+
+            pair<double, double> controls(0,0);
+
+            if(models.first.isPopulated() || models.second.isPopulated()){
+
+                controls = fuzzy.getOutputValues(calculateRatio(models), calculateAngle(models));
+
+                vector<Point> lPoints = models.first.getPointsInModel();
+                vector<Point> rPoints = models.second.getPointsInModel();
+
+                if((lPoints.size() >= 2 && lPoints[0].getX() >= 0) || (rPoints.size() >= 2 && rPoints[0].getX() >= 0)){
+                    robotSense = Forward;
+                }
+
+                else if((lPoints.size() >= 2 && lPoints[1].getX() < 0) || (rPoints.size() >= 2 && rPoints[1].getX() < 0)){
+                    robotSense = Backward;
+                }
+            }
+            else{
+                robotSense = Unknown;
+            }
+
+            pair<std_msgs::Float64, std_msgs::Float64> ret;
+
+            ret.first.data = robotSense * controls.first * MAX_VEL;
+            ret.second.data = robotSense * controls.second * MAX_VEL;
+
+            return ret;
+        }
+
 
     public:
+        void addMsgModels(const vector<Model> & modelsInMsg){
+            for(int i = 0; i < modelsInMsg.size(); i++){
+                bool existsInModels = false;
+
+                for(int j = 0; j < models.size(); j++){
+                    if(models[j].checkIfSameModel(modelsInMsg[i])){
+                        models[j].fuseModels(modelsInMsg[i]);
+                        existsInModels = true;
+                    }
+                }
+
+                if(!existsInModels){
+                    models.push_back(WeightedModel(modelsInMsg[i]));
+                }
+            }
+        }
+
         visualization_msgs::Marker translateAxis(const visualization_msgs::Marker & msg, const double newOX, const double newOY){
             visualization_msgs::Marker ret;
             geometry_msgs::Point p;
@@ -254,18 +281,46 @@ class LineSelector{
             return foundLines;
         }
 
-        friend std::ostream & operator << (std::ostream & out, const LineSelector & ls){
-            Utility::printVector(ls.models);
+        double calculateRatio(const pair<Model, Model> & models){
+            double lAbs = models.first.isPopulated() ? fabs(models.first.getIntercept()) : DISTANCE_REFERENCE;
+            double rAbs = models.second.isPopulated() ? fabs(models.second.getIntercept()) : DISTANCE_REFERENCE;
+
+            double ratio = lAbs < rAbs ? lAbs / rAbs - 1.0 : 1.0 - rAbs / lAbs;
+
+            return ratio;
+        }
+
+        double calculateAngle(const pair<Model, Model> & models){
+            double slopeMean = 0;
+            int cont = 0;
+
+            
+            if(models.first.isPopulated()){
+                slopeMean += models.first.getSlope();
+                cont++;
+            }
+
+            if(models.second.isPopulated()){
+                slopeMean += models.second.getSlope();
+                cont++;
+            }
+            
+            return slopeMean == 0 ? 0 : atan(slopeMean / (double)cont);
+        }
+
+        friend std::ostream & operator << (std::ostream & out, const RobotControl & rc){
+            Utility::printVector(rc.models);
+            out << "\n" << rc.fuzzy << endl;
 
             return out;
         }
 };
 
-LineSelector selector;
-FuzzyController fuzzy;
+RobotControl control;
+
 
 //--------------------------------------------------------------------------------------------------------
-void sendLine(const vector<Model> & models){ 
+void sendLine(const pair<Model, Model> & models){ 
     visualization_msgs::Marker line_list;
     geometry_msgs::Point p;
 
@@ -283,80 +338,61 @@ void sendLine(const vector<Model> & models){
     line_list.color.g = 1.0;
     line_list.color.a = 0.4;
 
-    for(Model m : models){
-        if(m.isPopulated()){
+    if(models.first.isPopulated()){
+        pair<Point, Point> points = models.first.getFirstAndLastPoint();
 
-            pair<Point, Point> points = m.getFirstAndLastPoint();
+        p.x = points.first.getX();
+        p.y = models.first.getSlope()*p.x + models.first.getIntercept();
 
-            p.x = points.first.getX();
-            p.y = m.getSlope()*p.x + m.getIntercept();
+        line_list.points.push_back(p);
 
-            line_list.points.push_back(p);
+        p.x = points.second.getX();
+        p.y = models.first.getSlope()*p.x + models.first.getIntercept();
 
-            p.x = points.second.getX();
-            p.y = m.getSlope()*p.x + m.getIntercept();
+        line_list.points.push_back(p);
+    }
 
-            line_list.points.push_back(p);
-        }
+    if(models.second.isPopulated()){
+        pair<Point, Point> points = models.second.getFirstAndLastPoint();
+
+        p.x = points.first.getX();
+        p.y = models.second.getSlope()*p.x + models.second.getIntercept();
+
+        line_list.points.push_back(p);
+
+        p.x = points.second.getX();
+        p.y = models.second.getSlope()*p.x + models.second.getIntercept();
+
+        line_list.points.push_back(p);
     }
     
     pubSelectedLines.publish(line_list);
 }
 
 
-
-double calculateRatio(const vector<Model> & models){
-    double lAbs = models[0].isPopulated() ? fabs(models[0].getIntercept()) : DISTANCE_REFERENCE;
-    double rAbs = models[1].isPopulated() ? fabs(models[1].getIntercept()) : DISTANCE_REFERENCE;
-
-    double ratio = lAbs < rAbs ? lAbs / rAbs - 1.0 : 1.0 - rAbs / lAbs;
-
-    return ratio;
-}
-double calculateAngle(const vector<Model> & models){
-    double slopeMean = 0;
-    int cont = 0;
-
-    for(Model m : models){
-        if(m.isPopulated()){
-            slopeMean += m.getSlope();
-            cont++;
-        }
-    }
-
-    return slopeMean == 0 ? 0 : atan(slopeMean / (double)cont);
-}
 //--------------------------------------------------------------------------------------------------------
 void controlThread(){ 
     while(!endProgram){
 
         critSec.lock();
-        selector.clearModels();
+        control.clearModels();
         critSec.unlock();
 
         usleep(250 * TO_MILLISECOND);
 
         critSec.lock();  
 
-        vector<Model> selectModels = selector.selectModels();
+        pair<Model, Model> selectModels = control.selectModels();
         sendLine(selectModels);
+        pair<std_msgs::Float64, std_msgs::Float64> wheels = control.getWheelsCommand(selectModels);
+
 
         critSec.unlock();
 
-        pair<double, double> controls(0,0);
+        //pubLeftControl.publish(wheels.first);
+        //pubRightControl.publish(wheels.second);
 
-        if(selectModels[0].isPopulated() || selectModels[1].isPopulated())
-            controls = fuzzy.getOutputValues(calculateRatio(selectModels), calculateAngle(selectModels));
-
-        std_msgs::Float64 lControl, rControl;
-
-        lControl.data = controls.first * MAX_VEL;
-        rControl.data = controls.second * MAX_VEL;
-
-        pubLeftControl.publish(lControl);
-        pubRightControl.publish(rControl);
-
-        cout << "Left: " << controls.first * MAX_VEL << ", Right: " << controls.second * MAX_VEL << endl;
+        cout << "Left: " << wheels.first.data <<  ", Right: " << wheels.second.data << endl << endl << endl << endl << endl;
 
     }
 }
@@ -366,7 +402,7 @@ void BackLinesMsg(const visualization_msgs::Marker & msg){
         return;
 
     critSec.lock();
-    selector.backMessage(msg);
+    control.backMessage(msg);
     critSec.unlock();
 }
 //--------------------------------------------------------------------------------------------------------
@@ -375,7 +411,7 @@ void FrontLinesMsg(const visualization_msgs::Marker & msg){
         return;
     
     critSec.lock();
-    selector.frontMessage(msg);
+    control.frontMessage(msg);
     critSec.unlock();
 }
 //--------------------------------------------------------------------------------------------------------

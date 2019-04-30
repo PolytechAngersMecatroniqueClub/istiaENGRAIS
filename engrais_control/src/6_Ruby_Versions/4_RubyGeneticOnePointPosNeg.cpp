@@ -23,7 +23,7 @@ void RubyGeneticOnePointPosNeg::populateOutliers(const sensor_msgs::LaserScan & 
 
                 if(!fusedPoint.fusePoint(p, RubyGeneticOnePointPosNeg::distanceToBeConsideredSamePoint)){
                     if(fusedPoint.getY() >= 0){
-                        this->outliers.insert(this->outliers.begin(), 1, fusedPoint);
+                        this->outliers.insert(this->outliers.begin() + this->numberOfPositivePointsInOutliers, 1, fusedPoint);
                         this->numberOfPositivePointsInOutliers++;
                     }
                     else
@@ -41,7 +41,7 @@ void RubyGeneticOnePointPosNeg::populateOutliers(const sensor_msgs::LaserScan & 
     }
 
     if(fusedPoint.getY() >= 0){
-        this->outliers.insert(this->outliers.begin(), 1, fusedPoint);
+        this->outliers.insert(this->outliers.begin() + this->numberOfPositivePointsInOutliers, 1, fusedPoint);
         this->numberOfPositivePointsInOutliers++;
     }
     else if(fusedPoint.getX() != MIN_DBL && fusedPoint.getY() != MIN_DBL){
@@ -102,7 +102,7 @@ void RubyGeneticOnePointPosNeg::removeModel(const int modelIndex){ //Checked
 		return;
 	}
 	
-    this->outliers.insert(this->outliers.begin(), this->models[modelIndex].getPointsVecBegin(), this->models[modelIndex].getPointsVecBegin() + this->models[modelIndex].getPositivePointsNum());
+    this->outliers.insert(this->outliers.begin() + this->numberOfPositivePointsInOutliers, this->models[modelIndex].getPointsVecBegin(), this->models[modelIndex].getPointsVecBegin() + this->models[modelIndex].getPositivePointsNum());
 	this->numberOfPositivePointsInOutliers += this->models[modelIndex].getPositivePointsNum();
 
     this->outliers.insert(this->outliers.end(), this->models[modelIndex].getPointsVecBegin() + this->models[modelIndex].getPositivePointsNum(), this->models[modelIndex].getPointsVecEnd());
@@ -113,7 +113,7 @@ void RubyGeneticOnePointPosNeg::removeModel(const int modelIndex){ //Checked
 //--------------------------------------------------------------------------------------------------------
 void RubyGeneticOnePointPosNeg::clearPointsInModels(){ //Checked 
     for(int i = 0; i < this->models.size(); i++){
-	    this->outliers.insert(this->outliers.begin(), this->models[i].getPointsVecBegin(), this->models[i].getPointsVecBegin() + this->models[i].getPositivePointsNum());
+	    this->outliers.insert(this->outliers.begin() + this->numberOfPositivePointsInOutliers, this->models[i].getPointsVecBegin(), this->models[i].getPointsVecBegin() + this->models[i].getPositivePointsNum());
 		this->numberOfPositivePointsInOutliers += this->models[i].getPositivePointsNum();
 
 	    this->outliers.insert(this->outliers.end(), this->models[i].getPointsVecBegin() + this->models[i].getPositivePointsNum(), this->models[i].getPointsVecEnd());

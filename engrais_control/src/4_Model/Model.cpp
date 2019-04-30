@@ -55,7 +55,10 @@ void Model::findBestModel(const std::vector<Point> & rPointsInModel){ //Checked
 std::pair<Point, Point> Model::getFirstAndLastPoint() const{
     std::pair<Point, Point> ret;
 
-    ret.second = Point(0,0);
+    if(this->pointsInModel.size() == 0)
+        return ret;
+
+    ret.first = ret.second = this->pointsInModel[0];
 
     for(Point p : this->pointsInModel){
         if(fabs(p.getX()) < fabs(ret.first.getX()))
@@ -76,7 +79,7 @@ void Model::pushPoint(const Point & p) {
     }
 
     if(p.getY() >= 0){
-        this->pointsInModel.insert(pointsInModel.begin(), 1, p);
+        this->pointsInModel.insert(pointsInModel.begin() + this->positivePoints, 1, p);
         this->positivePoints++;
     }
 
@@ -87,7 +90,7 @@ void Model::pushPoint(const Point & p) {
 void Model::fuseModel(const Model & m){ //Checked 
     this->positivePoints += m.getPositivePointsNum();
 
-    this->pointsInModel.insert(this->pointsInModel.begin(), m.getPointsVecBegin(), m.getPointsVecBegin() + m.getPositivePointsNum());
+    this->pointsInModel.insert(this->pointsInModel.begin() + this->positivePoints, m.getPointsVecBegin(), m.getPointsVecBegin() + m.getPositivePointsNum());
     this->pointsInModel.insert(this->pointsInModel.end(), m.getPointsVecBegin() + m.getPositivePointsNum(), m.getPointsVecEnd());
 
     this->findBestModel();
