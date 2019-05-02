@@ -184,15 +184,26 @@ class RobotControl{
 
                 controls = fuzzy.getOutputValues(calculateRatio(models), calculateAngle(models));
 
-                vector<Point> lPoints = models.first.getPointsInModel();
-                vector<Point> rPoints = models.second.getPointsInModel();
-
-                if((lPoints.size() >= 2 && lPoints[0].getX() >= 0) || (rPoints.size() >= 2 && rPoints[0].getX() >= 0)){
-                    robotSense = Forward;
+                if(isPointsDistanceMoreThan(models, 0, 0)){
+                    if(robotSense == Unknown){
+                        robotSense = Forward;
+                    }
+                    else if(robotSense == Backward && isPointsDistanceMoreThan(models, 2, 0)){
+                       robotSense = Forward;
+                    }                    
                 }
 
-                else if((lPoints.size() >= 2 && lPoints[1].getX() < 0) || (rPoints.size() >= 2 && rPoints[1].getX() < 0)){
-                    robotSense = Backward;
+                else if(isPointsDistanceLessThan(models, 0, 1)){
+                    if(robotSense == Unknown){
+                        robotSense = Backward;
+                    }
+                    else if(robotSense == Forward  && isPointsDistanceLessThan(models, -2, 1)){
+                        robotSense = Backward;
+                    }                   
+                }
+
+                else if(isPointsDistanceLessThan(models, 0, 0) && isPointsDistanceMoreThan(models, 0, 1)){
+                    robotSense = Forward;
                 }
             }
             else{
@@ -209,6 +220,20 @@ class RobotControl{
 
 
     public:
+        bool isPointsDistanceMoreThan(const pair<Model, Model> & models, const double dist, const int index){
+            vector<Point> lPoints = models.first.getPointsInModel();
+            vector<Point> rPoints = models.second.getPointsInModel();
+
+            return ((lPoints.size() >= 2 && lPoints[index].getX() >= dist) || (rPoints.size() >= 2 && rPoints[index].getX() >= dist));
+        }
+
+        bool isPointsDistanceLessThan(const pair<Model, Model> & models, const double dist, const int index){
+            vector<Point> lPoints = models.first.getPointsInModel();
+            vector<Point> rPoints = models.second.getPointsInModel();
+
+            return ((lPoints.size() >= 2 && lPoints[index].getX() < dist) || (rPoints.size() >= 2 && rPoints[index].getX() < dist));
+        }
+
         void addMsgModels(const vector<Model> & modelsInMsg){
             for(int i = 0; i < modelsInMsg.size(); i++){
                 bool existsInModels = false;
@@ -378,7 +403,7 @@ void controlThread(){
         control.clearModels();
         critSec.unlock();
 
-        usleep(250 * TO_MILLISECOND);
+        usleep(500 * TO_MILLISECOND);
 
         critSec.lock();  
 
