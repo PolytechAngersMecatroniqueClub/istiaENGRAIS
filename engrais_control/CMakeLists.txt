@@ -209,8 +209,16 @@ target_link_libraries(robot_keyboard_move ${catkin_LIBRARIES})
 
 add_executable(robot_move robot_move.cpp
     src/1_Point/Point.cpp
+    src/2_WeightedPoint/WeightedPoint.cpp
     src/3_Utility/Utility.cpp
     src/4_Model/Model.cpp
+
+    src/5_Pearl/Pearl.cpp
+    src/6_Ruby_Versions/1_RubyPure.cpp
+    src/6_Ruby_Versions/2_RubyGenetic.cpp
+    src/6_Ruby_Versions/3_RubyGeneticOnePoint.cpp
+    src/6_Ruby_Versions/4_RubyGeneticOnePointPosNeg.cpp
+    src/6_Ruby_Versions/5_RubyGeneticOnePointPosNegInfinite.cpp
 
     src/7_FuzzyController/FuzzyController.cpp
 )

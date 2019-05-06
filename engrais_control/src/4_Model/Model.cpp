@@ -1,5 +1,4 @@
 //********************************************************************************************************
-
 #include "Model.h"
 
 
@@ -88,11 +87,12 @@ void Model::pushPoint(const Point & p) {
 }
 //--------------------------------------------------------------------------------------------------------
 void Model::fuseModel(const Model & m){ //Checked 
-    this->positivePoints += m.getPositivePointsNum();
-
     this->pointsInModel.insert(this->pointsInModel.begin() + this->positivePoints, m.getPointsVecBegin(), m.getPointsVecBegin() + m.getPositivePointsNum());
+    
     this->pointsInModel.insert(this->pointsInModel.end(), m.getPointsVecBegin() + m.getPositivePointsNum(), m.getPointsVecEnd());
-
+    
+    this->positivePoints += m.getPositivePointsNum();
+    
     this->findBestModel();
 }   
 //--------------------------------------------------------------------------------------------------------

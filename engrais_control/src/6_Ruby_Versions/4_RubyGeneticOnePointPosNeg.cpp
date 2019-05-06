@@ -63,21 +63,21 @@ std::vector<Model> RubyGeneticOnePointPosNeg::findLines() { //Checked
 
         for (int it = 0; it < this->maxNumberOfIterations; it++) {
             this->searchModels(RubyGeneticOnePointPosNeg::numberOfModelsToSearch - this->models.size());
-
+            //cout << "Search ok" << endl;
             this->fuseEqualModels();
-
+            //cout << "fuse ok" << endl;
             this->redistributePoints();
-
+            //cout << "redist ok" << endl;
             numberMinOfPoints = std::max((int)(this->meanNumOfPoints() * RubyGeneticOnePointPosNeg::factorToDeletePoints), 2);
 
             this->removeTinyModels(2);
-
+            //cout << "remove tiny ok" << endl;
             this->reEstimation();
-
+            //cout << "estim ok" << endl;
             this->eraseBadModels();
-
+            //cout << "erase ok" << endl;
             newEnergy = this->calculateEnergy();
-
+            //cout << "calclate ok" << endl;
             if ((newEnergy >= energy)){
                 this->models = bestModels;
                 this->outliers = bestOutliers;
@@ -144,6 +144,10 @@ void RubyGeneticOnePointPosNeg::searchModels(const int nbOfModels) { //Checked
     int numberOfPositiveModels = (int)(nbOfModels/2);
     int numberOfNegativeModels = nbOfModels - numberOfPositiveModels;
 
+    //cout << numberOfNegativeModels << " " << numberOfPositiveModels << endl;
+
+    //cout << this->numberOfPositivePointsInOutliers << " " << this->outliers.size() << endl;
+
     if(this->outliers.size() < INITIAL_NUMBER_OF_POINTS)
         return;
 
@@ -154,12 +158,14 @@ void RubyGeneticOnePointPosNeg::searchModels(const int nbOfModels) { //Checked
     	numberOfNegativeModels = 0;
         
     for(int modelPosNum = 0; modelPosNum < numberOfPositiveModels; modelPosNum++){
+        //cout << "a" << endl;
         std::vector<Point> positivePoints = this->randomPointsInField(0, this->numberOfPositivePointsInOutliers - 1, INITIAL_NUMBER_OF_POINTS);
         if(positivePoints.size() > 0)
             this->models.push_back(Model::linearFit(positivePoints));
     }
 
     for(int modelNegNum = 0; modelNegNum < numberOfNegativeModels; modelNegNum++){
+        //cout << "b" << endl;
         std::vector<Point> negativePoints = this->randomPointsInField(this->numberOfPositivePointsInOutliers, this->outliers.size() - 1, INITIAL_NUMBER_OF_POINTS);
         if(negativePoints.size() > 0)
             this->models.push_back(Model::linearFit(negativePoints));
@@ -260,6 +266,9 @@ void RubyGeneticOnePointPosNeg::eraseBadModels(){ //Checked
 }
 //--------------------------------------------------------------------------------------------------------
 void RubyGeneticOnePointPosNeg::fuseEqualModels(){ //Checked 
+    //cout << "Models size " << models.size() << endl;
+
+    //cout << *this << endl;
     for(int model = 0; model < this->models.size(); model++){
         for(int model2 = model + 1; model2 < this->models.size() && model >= 0; model2++){
             if(model2 == model || model2 < 0)
@@ -269,13 +278,19 @@ void RubyGeneticOnePointPosNeg::fuseEqualModels(){ //Checked
                 int model1Size = this->models[model].getPointsSize();
                 int model2Size = this->models[model2].getPointsSize();
 
+                //cout << "entrou if" << endl;
+
                 if(model1Size >= model2Size){
-                	this->models[model].fuseModel(this->models[model2]);                	
+                    //cout << "fuse error" << endl;
+                	this->models[model].fuseModel(this->models[model2]); 
+                    //cout << "erase error" << endl;               	
                 	this->models.erase(this->models.begin() + model2);
                 	model2--;
                 }
                 else{
-                	this->models[model2].fuseModel(this->models[model]);                    
+                    //cout << "fuse error 2" << endl;
+                	this->models[model2].fuseModel(this->models[model]); 
+                    //cout << "erase error 2" << endl;                   
                 	this->models.erase(this->models.begin() + model);
                 	model--;
                 }

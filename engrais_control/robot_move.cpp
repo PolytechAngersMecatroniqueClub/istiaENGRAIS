@@ -1,4 +1,5 @@
 //********************************************************************************************************
+#include <chrono>
 #include <stdio.h> 
 #include <stdlib.h>   
 #include <iostream>
@@ -15,13 +16,19 @@
 #include <visualization_msgs/Marker.h>
 #include <std_msgs/Float64.h>
 
+#include <Pearl.h>
+#include <1_RubyPure.h>
+#include <2_RubyGenetic.h>
+#include <3_RubyGeneticOnePoint.h>
+#include <4_RubyGeneticOnePointPosNeg.h>
+#include <5_RubyGeneticOnePointPosNegInfinite.h>
 
-#define BODY_SIZE 2
+
+#define BODY_SIZE 2.0
+#define SLEEP_TIME 500
 #define PI 3.1415926535
 #define TO_MILLISECOND 1000
 #define DISTANCE_REFERENCE 1.5
-
-#define MAX_VEL 5
 
 using namespace std;
 
@@ -33,6 +40,13 @@ bool endProgram = false;
 ros::Publisher pubLeftControl;
 ros::Publisher pubRightControl;
 ros::Publisher pubSelectedLines;
+
+/*enum LinearSense { Backward = -1, Unknown = 0, Forward = 1 };
+
+enum TurningSense { Left = -1, TurningUnknown = 0, Right = 1 };
+
+LinearSense robotSense = Unknown;
+TurningSense turn = Left;*/
 
 
 class WeightedModel{
@@ -122,15 +136,227 @@ class WeightedModel{
         }
 };
 
+class StateMachine{
+public:
+    enum States { INITIAL, FORWARD, BACKWARD, LINEAR_STOP, CLOCKWISE_TURN, ANGULAR_STOP, ANTI_CLOCKWISE_TURN };
+
+    class Transition{
+    public:
+        States nextState;
+        pair<double, double> output;
+
+        Transition(){}
+        Transition(const States & st, const pair<double, double> & o){
+            nextState = st;
+            output = o;
+        }
+    };
+
+    double max_vel = 4;
+
+    double oldAngle;
+    double oldDistance;
+    std::chrono::time_point<std::chrono::system_clock> oldTime;
+
+    States currentState;
+
+    FuzzyController fuzzy;
+
+    pair<double, double> lastControlBeforeStop;
+
+    StateMachine(){
+        currentState = INITIAL;
+        oldAngle = oldDistance = 0;
+        oldTime = std::chrono::system_clock::now();
+    }
+
+    pair<double, double> makeTransition(const pair<Model, Model> & models){
+        Transition stateTransition;
+
+        switch(currentState){
+            case INITIAL:
+                stateTransition = initialStateRoutine(models);
+                break;
+
+            case FORWARD:
+                stateTransition = forwardStateRoutine(models);
+                break;
+
+            case BACKWARD:
+                stateTransition = backwardStateRoutine(models);
+                break;
+
+            case LINEAR_STOP:
+                stateTransition = linearStopStateRoutine(models);
+                break;
+
+            case CLOCKWISE_TURN:
+                stateTransition = clockwiseTurnStateRoutine(models);
+                break;
+
+            case ANGULAR_STOP:
+                stateTransition = angularStopStateRoutine(models);
+                break;
+
+            case ANTI_CLOCKWISE_TURN:
+                stateTransition = antiClockwiseTurnStateRoutine(models);
+                break;
+        }
+
+        currentState = stateTransition.nextState;
+        return pair<double, double> (stateTransition.output.first * max_vel, stateTransition.output.second * max_vel);
+    }
+
+
+    Transition initialStateRoutine(const pair<Model, Model> & models){
+        cout << "Initial state" << endl;
+
+        if(models.first.isPopulated() || models.second.isPopulated()){    
+            vector<Point> lPoints = models.first.getPointsInModel();
+            vector<Point> rPoints = models.second.getPointsInModel();
+
+            pair<double, double> controls = fuzzy.getOutputValues(calculateRatio(models), calculateAngle(models));
+
+            if((lPoints.size() >= 2 && lPoints[1].getX() < 0) || (rPoints.size() >= 2 && rPoints[1].getX() < 0))
+                return Transition();
+            
+            else
+                return Transition(FORWARD, pair<double, double> (controls.first, controls.second));
+        }
+
+        else{
+            return Transition(INITIAL, pair<double, double> (0,0));
+        }
+    }
+
+    Transition forwardStateRoutine(const pair<Model, Model> & models){
+        cout << "forward state" << endl;
+
+        if(models.first.isPopulated() || models.second.isPopulated()){
+            vector<Point> lPoints = models.first.getPointsInModel();
+            vector<Point> rPoints = models.second.getPointsInModel();
+
+            if(((lPoints.size() >= 2 && lPoints[1].getX() + BODY_SIZE/2.0 <= -0.5) || (rPoints.size() >= 2 && rPoints[1].getX() + BODY_SIZE/2.0 <= -0.5))){
+                oldTime = std::chrono::system_clock::now();
+                oldDistance = calculateDistance(models);
+
+                return Transition(LINEAR_STOP, pair<double, double> (-lastControlBeforeStop.first, -lastControlBeforeStop.second));           
+            }
+            else{
+                pair<double, double> controls = lastControlBeforeStop = fuzzy.getOutputValues(calculateRatio(models), calculateAngle(models));
+                
+                return Transition(FORWARD, pair<double, double> (controls.first, controls.second));
+            }
+        }
+        else
+            return Transition(INITIAL, pair<double, double> (0,0));
+    }
+
+    Transition backwardStateRoutine(const pair<Model, Model> & models){
+
+    }
+
+    Transition linearStopStateRoutine(const pair<Model, Model> & models){
+        cout << "linear stop state" << endl;
+
+        if(models.first.isPopulated() || models.second.isPopulated()){    
+            std::chrono::time_point<std::chrono::system_clock> time = std::chrono::system_clock::now();
+            double distance = calculateDistance(models);
+
+            std::chrono::duration<double> elapsed_seconds = time - oldTime;
+            double deltaDist = distance - oldDistance;
+
+            double x_vel = deltaDist / elapsed_seconds.count();
+            cout << "x_vel: " << x_vel << ", dist: " << deltaDist << ", time: " << elapsed_seconds.count() << endl;
+            
+            if(x_vel >= 0.1)
+                return Transition(LINEAR_STOP, pair<double, double> (0.5, 0.5));
+            
+            else if(x_vel <= -0.1)
+                return Transition(LINEAR_STOP, pair<double, double> (-lastControlBeforeStop.first, -lastControlBeforeStop.second));
+            
+            else if(-0.1 < x_vel && x_vel < -0.001 || 0.001 < x_vel && x_vel < 0.1)
+                return Transition(LINEAR_STOP, pair<double, double> (0,0));
+
+            else
+                return Transition(ANTI_CLOCKWISE_TURN, pair<double, double> (0,0));
+            
+
+        }
+        else
+            return Transition(INITIAL, pair<double, double> (0,0));
+    }
+
+    Transition clockwiseTurnStateRoutine(const pair<Model, Model> & models){
+
+    }
+
+    Transition angularStopStateRoutine(const pair<Model, Model> & models){
+
+    }
+
+    Transition antiClockwiseTurnStateRoutine(const pair<Model, Model> & models){
+        cout << "anti clockwise state" << endl;
+
+        return Transition(ANTI_CLOCKWISE_TURN, pair<double, double> (0,0));
+    } 
+
+    double calculateRatio(const pair<Model, Model> & m){
+        double lAbs = m.first.isPopulated() ? fabs(m.first.getIntercept()) : DISTANCE_REFERENCE;
+        double rAbs = m.second.isPopulated() ? fabs(m.second.getIntercept()) : DISTANCE_REFERENCE;
+
+        double ratio = lAbs < rAbs ? lAbs / rAbs - 1.0 : 1.0 - rAbs / lAbs;
+
+        return ratio;
+    }
+
+    double calculateDistance(const pair<Model, Model> & m){
+        double distMean = 0;
+        int cont = 0;
+
+        vector<Point> lPoints = m.first.getPointsInModel();
+        vector<Point> rPoints = m.second.getPointsInModel();
+
+        if(lPoints.size() >= 2){
+            distMean += (pow(lPoints[0].getX(), 2) + pow(lPoints[0].getY(), 2) < pow(lPoints[1].getX(), 2) + pow(lPoints[1].getY(), 2)) ? lPoints[0].getX() : lPoints[1].getX();
+            cont++;
+        }
+
+        if(rPoints.size() >= 2){
+            distMean += (pow(rPoints[0].getX(), 2) + pow(rPoints[0].getY(), 2) < pow(rPoints[1].getX(), 2) + pow(rPoints[1].getY(), 2)) ? rPoints[0].getX() : rPoints[1].getX();
+            cont++;
+        }
+        
+        return distMean / (double)cont;       
+    }
+
+    double calculateAngle(const pair<Model, Model> & m){
+        double slopeMean = 0;
+        int cont = 0;
+
+        
+        if(m.first.isPopulated()){
+            slopeMean += m.first.getSlope();
+            cont++;
+        }
+
+        if(m.second.isPopulated()){
+            slopeMean += m.second.getSlope();
+            cont++;
+        }
+        
+        return slopeMean == 0 ? 0 : atan(slopeMean / (double)cont);
+    }
+
+};
+
+
 class RobotControl{
     public:
-        enum Sense {Backward = -1, Unknown = 0,Forward = 1};
-
-        Sense robotSense = Unknown;
-
-        FuzzyController fuzzy;
+        pair<Model, Model> selectedModels;
         std::vector<WeightedModel> models;
 
+        StateMachine robotFSM;
 
     public:
         RobotControl(){}
@@ -171,38 +397,61 @@ class RobotControl{
                     bestCounterRight = models[i].getCounter();
                     ret.second = models[i].toModel();
                 }
-            }
+            }  
+
+            this->selectedModels = ret;
 
             return ret;
         }
 
-        pair<std_msgs::Float64, std_msgs::Float64> getWheelsCommand(const pair<Model, Model> & models){
+        pair<std_msgs::Float64, std_msgs::Float64> getWheelsCommand(){
+            pair<double, double> controls = robotFSM.makeTransition(selectedModels);
 
+            pair<std_msgs::Float64, std_msgs::Float64> ret;
+
+            ret.first.data = controls.first;
+            ret.second.data = controls.second;
+
+            return ret;
+        }
+
+
+    private:
+        /*pair<double, double> linearMotion(){
             pair<double, double> controls(0,0);
 
-            if(models.first.isPopulated() || models.second.isPopulated()){
+            if(selectedModels.first.isPopulated() || selectedModels.second.isPopulated()){
 
-                controls = fuzzy.getOutputValues(calculateRatio(models), calculateAngle(models));
+                vector<Point> lPoints = selectedModels.first.getPointsInModel();
+                vector<Point> rPoints = selectedModels.second.getPointsInModel();
 
-                if(isPointsDistanceMoreThan(models, 0, 0)){
+                controls = fuzzy.getOutputValues(calculateRatio(selectedModels), calculateAngle(selectedModels));
+
+                if((lPoints.size() >= 2 && lPoints[0].getX() >= 0) || (rPoints.size() >= 2 && rPoints[0].getX() >= 0)){
                     if(robotSense == Unknown){
                         robotSense = Forward;
                     }
-                    else if(robotSense == Backward && isPointsDistanceMoreThan(models, 2, 0)){
-                       robotSense = Forward;
-                    }                    
+                    else if(robotSense == Backward && ((lPoints.size() >= 2 && 0.5 <= lPoints[0].getX() - BODY_SIZE/2.0) || (rPoints.size() >= 2 && 0.5 <= rPoints[0].getX() - BODY_SIZE/2.0))){
+                        controls.first = 0;
+                        controls.second = 0;
+
+                        motion = "Turn";
+                    }
                 }
 
-                else if(isPointsDistanceLessThan(models, 0, 1)){
+                else if((lPoints.size() >= 2 && lPoints[1].getX() < 0) || (rPoints.size() >= 2 && rPoints[1].getX() < 0)){
                     if(robotSense == Unknown){
                         robotSense = Backward;
                     }
-                    else if(robotSense == Forward  && isPointsDistanceLessThan(models, -2, 1)){
-                        robotSense = Backward;
-                    }                   
+                    else if(robotSense == Forward && ((lPoints.size() >= 2 && lPoints[1].getX() + BODY_SIZE/2.0 <= -0.5) || (rPoints.size() >= 2 && rPoints[1].getX() + BODY_SIZE/2.0 <= -0.5))){
+                        controls.first = 0;
+                        controls.second = 0;
+
+                        motion = "Turn";
+                    }
                 }
 
-                else if(isPointsDistanceLessThan(models, 0, 0) && isPointsDistanceMoreThan(models, 0, 1)){
+                else if(((lPoints.size() >= 2 && lPoints[0].getX() < 0) || (rPoints.size() >= 2 && rPoints[0].getX() < 0)) && ((lPoints.size() >= 2 && lPoints[1].getX() >= 0) || (rPoints.size() >= 2 && rPoints[1].getX() >= 0))){
                     robotSense = Forward;
                 }
             }
@@ -210,29 +459,59 @@ class RobotControl{
                 robotSense = Unknown;
             }
 
-            pair<std_msgs::Float64, std_msgs::Float64> ret;
+            controls.first = robotSense * controls.first;
+            controls.second = robotSense * controls.second;
 
-            ret.first.data = robotSense * controls.first * MAX_VEL;
-            ret.second.data = robotSense * controls.second * MAX_VEL;
-
-            return ret;
+            return controls;
         }
 
+        pair<double, double> turningMotion(TurningSense turn){
+            pair<double, double> controls(0,0);
 
-    public:
-        bool isPointsDistanceMoreThan(const pair<Model, Model> & models, const double dist, const int index){
-            vector<Point> lPoints = models.first.getPointsInModel();
-            vector<Point> rPoints = models.second.getPointsInModel();
+            static bool firstAssign;
 
-            return ((lPoints.size() >= 2 && lPoints[index].getX() >= dist) || (rPoints.size() >= 2 && rPoints[index].getX() >= dist));
-        }
+            double angVel = 0;
 
-        bool isPointsDistanceLessThan(const pair<Model, Model> & models, const double dist, const int index){
-            vector<Point> lPoints = models.first.getPointsInModel();
-            vector<Point> rPoints = models.second.getPointsInModel();
+            if(selectedModels.first.isPopulated() || selectedModels.second.isPopulated()){
 
-            return ((lPoints.size() >= 2 && lPoints[index].getX() < dist) || (rPoints.size() >= 2 && rPoints[index].getX() < dist));
-        }
+                double oldAngle = angle;
+                angle = calculateAngle(selectedModels);
+
+                std::chrono::time_point<std::chrono::system_clock> oldTime = time;
+                time = std::chrono::system_clock::now();
+
+                std::chrono::duration<double> elapsed_seconds = time - oldTime;
+
+                if((SLEEP_TIME * 0.99 <= elapsed_seconds.count()*1000 && elapsed_seconds.count()*1000 <= SLEEP_TIME * 1.01)){
+                    firstAssign = false;
+                    angVel = (angle - oldAngle) / (double)elapsed_seconds.count();
+                }
+                else
+                    firstAssign = true;
+
+                cout << firstAssign << " " <<  angVel<< endl;
+
+                if(fabs(angle) < PI / 12.0){
+                    controls.first = 0.5;
+                    controls.second = -0.5;
+                }
+                else{
+                    if(!firstAssign && fabs(angVel) < 0.1){
+                        controls.first = -0.5;
+                        controls.second = 0.5;
+                    }
+                    else{
+                        controls.first = 0;
+                        controls.second = 0;
+                    }
+                }
+            }
+
+            controls.first = turn * controls.first;
+            controls.second = turn * controls.second;
+
+            return controls;
+        }*/
 
         void addMsgModels(const vector<Model> & modelsInMsg){
             for(int i = 0; i < modelsInMsg.size(); i++){
@@ -306,36 +585,9 @@ class RobotControl{
             return foundLines;
         }
 
-        double calculateRatio(const pair<Model, Model> & models){
-            double lAbs = models.first.isPopulated() ? fabs(models.first.getIntercept()) : DISTANCE_REFERENCE;
-            double rAbs = models.second.isPopulated() ? fabs(models.second.getIntercept()) : DISTANCE_REFERENCE;
-
-            double ratio = lAbs < rAbs ? lAbs / rAbs - 1.0 : 1.0 - rAbs / lAbs;
-
-            return ratio;
-        }
-
-        double calculateAngle(const pair<Model, Model> & models){
-            double slopeMean = 0;
-            int cont = 0;
-
-            
-            if(models.first.isPopulated()){
-                slopeMean += models.first.getSlope();
-                cont++;
-            }
-
-            if(models.second.isPopulated()){
-                slopeMean += models.second.getSlope();
-                cont++;
-            }
-            
-            return slopeMean == 0 ? 0 : atan(slopeMean / (double)cont);
-        }
 
         friend std::ostream & operator << (std::ostream & out, const RobotControl & rc){
             Utility::printVector(rc.models);
-            out << "\n" << rc.fuzzy << endl;
 
             return out;
         }
@@ -403,19 +655,19 @@ void controlThread(){
         control.clearModels();
         critSec.unlock();
 
-        usleep(500 * TO_MILLISECOND);
+        usleep(SLEEP_TIME * TO_MILLISECOND);
 
         critSec.lock();  
 
         pair<Model, Model> selectModels = control.selectModels();
         sendLine(selectModels);
-        pair<std_msgs::Float64, std_msgs::Float64> wheels = control.getWheelsCommand(selectModels);
+        pair<std_msgs::Float64, std_msgs::Float64> wheels = control.getWheelsCommand();
 
 
         critSec.unlock();
 
-        //pubLeftControl.publish(wheels.first);
-        //pubRightControl.publish(wheels.second);
+        pubLeftControl.publish(wheels.first);
+        pubRightControl.publish(wheels.second);
 
         cout << "Left: " << wheels.first.data <<  ", Right: " << wheels.second.data << endl << endl << endl << endl << endl;
 

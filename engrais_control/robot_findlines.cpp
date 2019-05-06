@@ -110,11 +110,11 @@ void OnRosMsg(const sensor_msgs::LaserScan & msg){
 
         rubyGenOPPN.populateOutliers(msg);
 
-        cout << rubyGenOPPN << endl;
+        //cout << rubyGenOPPN << endl;
 
         vector <Model> lines = rubyGenOPPN.findLines();
 
-        cout << rubyGenOPPN << endl;
+        //cout << rubyGenOPPN << endl;
 
         sendLine(lines, rubyGenOPPN);
     //}
