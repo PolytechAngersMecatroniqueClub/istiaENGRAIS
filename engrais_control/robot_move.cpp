@@ -41,13 +41,6 @@ ros::Publisher pubLeftControl;
 ros::Publisher pubRightControl;
 ros::Publisher pubSelectedLines;
 
-/*enum LinearSense { Backward = -1, Unknown = 0, Forward = 1 };
-
-enum TurningSense { Left = -1, TurningUnknown = 0, Right = 1 };
-
-LinearSense robotSense = Unknown;
-TurningSense turn = Left;*/
-
 
 class WeightedModel{ 
     public:
@@ -138,7 +131,9 @@ class WeightedModel{
 
 class StateMachine{
 public:
-    enum States { INITIAL, FORWARD, BACKWARD, LINEAR_STOP, CLOCKWISE_TURN, ANGULAR_STOP, ANTI_CLOCKWISE_TURN, REPOSITION};
+    enum States { INITIAL, FORWARD, BACKWARD, LINEAR_STOP, ANGULAR_STOP, LEFT_TURN_BEGIN, LEFT_TURN_MID, LEFT_TURN_REMERGE};
+
+    enum Turn { LEFT, RIGHT };
 
     class Transition{ 
         public:
@@ -161,14 +156,14 @@ public:
     States currentState;
     States lastMovement;
 
+    Transition tAfterStop;
+
+    Turn toTurn = LEFT;
+
     FuzzyController fuzzy;
 
-    pair<double, double> lastControlBeforeStop;
-
-    pair<double, int> meanB;
-
-    StateMachine() : meanB(0,1) { 
-        currentState = INITIAL;
+    StateMachine(){ 
+        currentState = LEFT_TURN_MID;
         oldAngle = oldDistance = 0;
         oldTime = std::chrono::system_clock::now();
     }
@@ -185,29 +180,25 @@ public:
                 stateTransition = forwardStateRoutine(models);
                 break;
 
-            case BACKWARD:
-                stateTransition = backwardStateRoutine(models);
-                break;
-
             case LINEAR_STOP:
                 stateTransition = linearStopStateRoutine(models);
-                break;
-
-            case CLOCKWISE_TURN:
-                stateTransition = clockwiseTurnStateRoutine(models);
                 break;
 
             case ANGULAR_STOP:
                 stateTransition = angularStopStateRoutine(models);
                 break;
 
-            case ANTI_CLOCKWISE_TURN:
-                stateTransition = antiClockwiseTurnStateRoutine(models);
+            case LEFT_TURN_BEGIN:
+                stateTransition = leftTurnBeginStateRoutine(models);
                 break;
 
-            case REPOSITION:
-                stateTransition = repositionStateRoutine(models);
-                break; 
+            case LEFT_TURN_MID:
+                stateTransition = leftTurnMidStateRoutine(models);
+                break;
+
+            case LEFT_TURN_REMERGE:
+                stateTransition = leftTurnRemergeStateRoutine(models);
+
         }
 
         currentState = stateTransition.nextState;
@@ -222,13 +213,11 @@ public:
             vector<Point> lPoints = models.first.getPointsInModel();
             vector<Point> rPoints = models.second.getPointsInModel();
 
-            pair<double, double> controls = fuzzy.getOutputValues(calculateRatio(models), calculateAngle(models));
-
             if((lPoints.size() >= 2 && lPoints[1].getX() < 0) || (rPoints.size() >= 2 && rPoints[1].getX() < 0))
-                return Transition();
+                return Transition(INITIAL, pair<double, double> (0,0));
             
             else
-                return Transition(FORWARD, pair<double, double> (controls.first, controls.second));
+                return Transition(FORWARD, pair<double, double> (0,0));
         }
 
         else{
@@ -249,25 +238,19 @@ public:
                 oldTime = std::chrono::system_clock::now();
                 oldDistance = calculateDistance(models);
 
-                return Transition(LINEAR_STOP, pair<double, double> (-lastControlBeforeStop.first, -lastControlBeforeStop.second));
+                if(toTurn == LEFT)
+                    tAfterStop = Transition(LEFT_TURN_BEGIN, pair<double, double> (0,0));
+
+                return Transition(LINEAR_STOP, pair<double, double> (0,0));
             }
             else{
-                double lAbs = models.first.isPopulated() ? fabs(models.first.getIntercept()) : DISTANCE_REFERENCE;
-                double rAbs = models.second.isPopulated() ? fabs(models.second.getIntercept()) : DISTANCE_REFERENCE;
-
-                meanB.first = (meanB.first * meanB.second + lAbs + rAbs) / (double)(meanB.second++);
-
-                pair<double, double> controls = lastControlBeforeStop = fuzzy.getOutputValues(calculateRatio(models), calculateAngle(models));
+                pair<double, double> controls = fuzzy.getOutputValues(calculateRatio(models), calculateAngle(models));
                 
                 return Transition(FORWARD, pair<double, double> (controls.first, controls.second));
             }
         }
         else
             return Transition(INITIAL, pair<double, double> (0,0));
-    }
-
-    Transition backwardStateRoutine(const pair<Model, Model> & models){
-
     }
 
     Transition linearStopStateRoutine(const pair<Model, Model> & models){ 
@@ -285,22 +268,22 @@ public:
             oldDistance = distance;
             oldTime = time;
             
-            if(fabs(x_vel) >= 0.1 )
-                return Transition(LINEAR_STOP, pair<double, double> (-lastControlBeforeStop.first, -lastControlBeforeStop.second));
+            if(x_vel < -0.1 )
+                return Transition(LINEAR_STOP, pair<double, double> (-0.25, -0.25));
+
+            else if(x_vel > 0.1 )
+                return Transition(LINEAR_STOP, pair<double, double> (0.25, 0.25));
             
-            else if(-0.1 < x_vel && x_vel < -0.001 || 0.001 < x_vel && x_vel < 0.1)
+            else if(-0.1 <= x_vel && x_vel <= -0.001 || 0.001 <= x_vel && x_vel <= 0.1)
                 return Transition(LINEAR_STOP, pair<double, double> (0,0));
 
-            else
-                return Transition(ANTI_CLOCKWISE_TURN, pair<double, double> (-0.5, 0.5));
+            else{
+                return tAfterStop;
+            }
         }
 
         else
             return Transition(INITIAL, pair<double, double> (0,0));
-    }
-
-    Transition clockwiseTurnStateRoutine(const pair<Model, Model> & models){
-
     }
 
     Transition angularStopStateRoutine(const pair<Model, Model> & models){ 
@@ -315,54 +298,66 @@ public:
 
             double a_vel = angDist / elapsed_seconds.count();
 
-            cout << "angle: " << angle << ", oldAngle: " << oldAngle << ", a_vel: " << a_vel << ", angDist: " <<  angDist << ", elapsed_seconds: " << elapsed_seconds.count() << endl; 
-
             oldAngle = angle;
             oldTime = time;
             
-            if(fabs(a_vel) >= 0.01 )
-                return Transition(ANGULAR_STOP, pair<double, double> (-lastControlBeforeStop.first, -lastControlBeforeStop.second));
+            if(a_vel < -0.01 )
+                return Transition(ANGULAR_STOP, pair<double, double> (0.25, -0.25));
+
+            else if(a_vel > 0.01 )
+                return Transition(ANGULAR_STOP, pair<double, double> (-0.25, 0.25));
             
-            else if(-0.01 < a_vel && a_vel < -0.001 || 0.001 < a_vel && a_vel < 0.01)
+            else if(-0.01 <= a_vel && a_vel <= -0.001 || 0.001 <= a_vel && a_vel <= 0.01)
                 return Transition(ANGULAR_STOP, pair<double, double> (0,0));
 
             else
-                return Transition(REPOSITION, pair<double, double> (0,0));
+                return tAfterStop;
         }
 
         else
             return Transition(INITIAL, pair<double, double> (0,0));
     }
 
-    Transition antiClockwiseTurnStateRoutine(const pair<Model, Model> & models){ 
-        cout << "anti clockwise state" << endl;
+    Transition leftTurnBeginStateRoutine(const pair<Model, Model> & models){ 
+        cout << "Left turn begin state" << endl;
 
         if(models.first.isPopulated() || models.second.isPopulated()){
             double angle = calculateAngle(models);
 
             if(fabs(angle) < PI / 4.0){
-                lastControlBeforeStop = pair<double, double> (-0.5, 0.5);
-                return Transition(ANTI_CLOCKWISE_TURN, pair<double, double> (-0.5, 0.5));
+                return Transition(LEFT_TURN_BEGIN, pair<double, double> (-0.5, 0.5));
             }
 
             else{
                 oldTime = std::chrono::system_clock::now();
                 oldAngle = angle;
 
-                return Transition(ANGULAR_STOP, pair<double, double> (0.5, -0.5));
+                tAfterStop = Transition(LEFT_TURN_MID, pair<double, double> (0,0));
+                return Transition(ANGULAR_STOP, pair<double, double> (0,0));
             }
         }
 
         else
             return Transition(INITIAL, pair<double, double> (0,0));
-    } 
+    }    
 
-    Transition repositionStateRoutine(const pair<Model, Model> & models){
-        cout << "reposition state" << endl;
+    Transition leftTurnMidStateRoutine(const pair<Model, Model> & models){ 
+        cout << "Left turn mid state" << endl;
 
-        //if()
-        return Transition(REPOSITION, pair<double, double> (0,0));
+        if(models.second.isPopulated()){
+            //if()
+        }
+
+        else
+            return Transition(INITIAL, pair<double, double> (0,0));
     }
+
+    Transition leftTurnRemergeStateRoutine(const pair<Model, Model> & models){ 
+        cout << "Left turn remerge state" << endl;
+
+        return Transition(LEFT_TURN_REMERGE, pair<double, double> (0,0));
+    }    
+
 
     double calculateRatio(const pair<Model, Model> & m){ 
         double lAbs = m.first.isPopulated() ? fabs(m.first.getIntercept()) : DISTANCE_REFERENCE;
