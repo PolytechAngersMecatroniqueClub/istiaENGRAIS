@@ -106,7 +106,7 @@ void sendLine(const vector<Model> & models, const Pearl & pearl){
 void OnRosMsg(const sensor_msgs::LaserScan & msg){
     auto start = std::chrono::system_clock::now();
 
-    //for(int i = 0; i < 10; i++){
+    for(int i = 0; i < 10; i++){
 
         rubyGenOPPN.populateOutliers(msg);
 
@@ -117,7 +117,7 @@ void OnRosMsg(const sensor_msgs::LaserScan & msg){
         //cout << rubyGenOPPN << endl;
 
         sendLine(lines, rubyGenOPPN);
-    //}
+    }
     //exit(1);
     auto end = std::chrono::system_clock::now();
     std::chrono::duration<double> elapsed_seconds = end - start;
