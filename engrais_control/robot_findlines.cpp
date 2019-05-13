@@ -34,10 +34,6 @@ ros::Publisher pubLineNode;
 ros::Publisher resultsPubNode;
 
 
-double totalExecutionTime = 0;
-int timesExecuted = 0;
-
-
 //--------------------------------------------------------------------------------------------------------
 void sendLine(const vector<Model> & models, const Pearl & pearl){ 
     visualization_msgs::Marker line_list, points;
@@ -83,49 +79,51 @@ void sendLine(const vector<Model> & models, const Pearl & pearl){
     	    p.x = points.first.getX();
     	    p.y = models[i].getSlope()*p.x + models[i].getIntercept();
 
-            cout << "Line [" << i << "] x_1: " << p.x << ", y_1: " << p.y;
+            //cout << "Line [" << i << "] x_1: " << p.x << ", y_1: " << p.y;
 
     	    line_list.points.push_back(p);
 
     	    p.x = points.second.getX();
     	    p.y = models[i].getSlope()*p.x + models[i].getIntercept();
 
-            cout << ", x_2: " << p.x << ", y_2: " << p.y << endl;
+            //cout << ", x_2: " << p.x << ", y_2: " << p.y << endl;
     	    line_list.points.push_back(p);
     	}
 
-        cout << endl << endl;
+        //cout << endl << endl;
     }
 
     pubLineNode.publish(points);
     pubLineNode.publish(line_list);
 }
 
-
+std::chrono::time_point<std::chrono::system_clock> oldTime;
 //--------------------------------------------------------------------------------------------------------
 void OnRosMsg(const sensor_msgs::LaserScan & msg){
+    static int msgCont = 0;
+    const static auto firstMsgTime = std::chrono::system_clock::now();
+
     auto start = std::chrono::system_clock::now();
 
-    for(int i = 0; i < 10; i++){
+    std::chrono::duration<double> total_time = start - firstMsgTime;
+    std::chrono::duration<double> elapsed_seconds = std::chrono::duration<double>::zero();
+
+    const double msgPeriod = msgCont == 0 ? 0 : total_time.count() / msgCont;
+
+    while(ros::ok() && elapsed_seconds.count() <= msgPeriod * 0.8){
 
         rubyGenOPPN.populateOutliers(msg);
 
-        //cout << rubyGenOPPN << endl;
-
         vector <Model> lines = rubyGenOPPN.findLines();
 
-        //cout << rubyGenOPPN << endl;
-
         sendLine(lines, rubyGenOPPN);
-    }
-    //exit(1);
-    auto end = std::chrono::system_clock::now();
-    std::chrono::duration<double> elapsed_seconds = end - start;
 
-    totalExecutionTime += elapsed_seconds.count();
-    timesExecuted++;
-    
-    cout << "finished computation, elapsed time: " << elapsed_seconds.count()*1000 << " ms\n";
+        auto end = std::chrono::system_clock::now();
+
+        elapsed_seconds = end - start;
+    }
+
+    msgCont++;
 }
 //--------------------------------------------------------------------------------------------------------
 int main(int argc, char **argv){

@@ -149,12 +149,7 @@ class StateMachine{
 
         double max_vel = 4;
 
-        double oldAngle;
-        double oldDistance;
-
-        std::chrono::time_point<std::chrono::system_clock> oldTime;
-
-        States currentState;
+        States currentState = INITIAL;
         States lastMovement = INITIAL;
 
         Transition tAfterStop;
@@ -163,11 +158,7 @@ class StateMachine{
 
         FuzzyController fuzzy;
 
-        StateMachine(){ 
-            currentState = INITIAL;
-            oldAngle = oldDistance = 0;
-            oldTime = std::chrono::system_clock::now();
-        }
+        StateMachine(){}
 
         pair<double, double> makeTransition(const pair<Model, Model> & models){ 
             Transition stateTransition;
@@ -244,9 +235,6 @@ class StateMachine{
                 vector<Point> rPoints = models.second.getPointsInModel();
 
                 if((lPoints.size() >= 2 && lPoints[1].getX() + BODY_SIZE/2.0 <= -0.5) || (rPoints.size() >= 2 && rPoints[1].getX() + BODY_SIZE/2.0 <= -0.5)){
-                    oldTime = std::chrono::system_clock::now();
-                    oldDistance = calculateDistance(models);
-
                     if(toTurn == LEFT)
                         tAfterStop = Transition(LEFT_TURN_BEGIN, pair<double, double> (-0.25 * FORWARD, 0.25 * FORWARD));
 
@@ -272,9 +260,6 @@ class StateMachine{
                 vector<Point> rPoints = models.second.getPointsInModel();
 
                 if((lPoints.size() >= 2 && lPoints[0].getX() - BODY_SIZE/2.0 >= 0.5) || (rPoints.size() >= 2 && rPoints[0].getX() - BODY_SIZE/2.0 >= 0.5)){
-                    oldTime = std::chrono::system_clock::now();
-                    oldDistance = calculateDistance(models);
-
                     if(toTurn == LEFT)
                         tAfterStop = Transition(LEFT_TURN_BEGIN, pair<double, double> (-0.25, 0.25));
 
@@ -293,6 +278,10 @@ class StateMachine{
         Transition linearStopStateRoutine(const pair<Model, Model> & models){ 
             cout << "linear stop state" << endl;
 
+            static std::chrono::time_point<std::chrono::system_clock> oldTime = std::chrono::system_clock::now();
+            static double oldDistance = 0;
+            static bool first = true;
+
             if(models.first.isPopulated() || models.second.isPopulated()){
                 std::chrono::time_point<std::chrono::system_clock> time = std::chrono::system_clock::now();
                 double distance = calculateDistance(models);
@@ -304,17 +293,17 @@ class StateMachine{
 
                 oldDistance = distance;
                 oldTime = time;
-                
-                if(x_vel < -0.1 )
-                    return Transition(LINEAR_STOP, pair<double, double> (-0.25, -0.25));
 
-                else if(x_vel > 0.1 )
-                    return Transition(LINEAR_STOP, pair<double, double> (0.25, 0.25));
+                if(first){
+                    first = false;
+                    return Transition(LINEAR_STOP, pair<double, double> (0,0));
+                }
                 
-                else if(-0.1 <= x_vel && x_vel <= -0.001 || 0.001 <= x_vel && x_vel <= 0.1)
+                if(!(-0.1 <= x_vel && x_vel <= -0.001 || 0.001 <= x_vel && x_vel <= 0.1))
                     return Transition(LINEAR_STOP, pair<double, double> (0,0));
 
                 else{
+                    first = true;
                     return tAfterStop;
                 }
             }
@@ -325,6 +314,10 @@ class StateMachine{
 
         Transition angularStopStateRoutine(const pair<Model, Model> & models){ 
             cout << "angular stop state" << endl;
+
+            static std::chrono::time_point<std::chrono::system_clock> oldTime;
+            static double oldAngle;
+            static bool first = true;
 
             if(models.first.isPopulated() || models.second.isPopulated()){
                 std::chrono::time_point<std::chrono::system_clock> time = std::chrono::system_clock::now();
@@ -337,6 +330,11 @@ class StateMachine{
 
                 oldAngle = angle;
                 oldTime = time;
+
+                if(first){
+                    first = false;
+                    return Transition(ANGULAR_STOP, pair<double, double> (0,0));
+                }
                 
                 if(a_vel < -0.01 )
                     return Transition(ANGULAR_STOP, pair<double, double> (0.25, -0.25));
@@ -348,7 +346,7 @@ class StateMachine{
                     return Transition(ANGULAR_STOP, pair<double, double> (0,0));
 
                 else{
-                    
+                    first = true;
                     return tAfterStop;
                 }
             }
@@ -368,9 +366,6 @@ class StateMachine{
                 }
 
                 else{
-                    oldTime = std::chrono::system_clock::now();
-                    oldAngle = angle;
-
                     tAfterStop = Transition(LEFT_TURN_MID, pair<double, double> (0.25, 0.25));
 
                     return Transition(ANGULAR_STOP, pair<double, double> (0,0));
@@ -379,7 +374,7 @@ class StateMachine{
 
             else
                 return Transition(INITIAL, pair<double, double> (0,0));
-        }    
+        }
 
         Transition leftTurnMidStateRoutine(const pair<Model, Model> & models){ 
             cout << "Left turn mid state" << endl;
@@ -391,7 +386,7 @@ class StateMachine{
             cout << "Sentido: " << Sense << ", condition : " << condition << ", intercept : " << intercept << endl;
 
             if(condition){
-                if(0.5 <= fabs(intercept) && fabs(intercept) <= 1.0){
+                if(0.6 <= fabs(intercept) && fabs(intercept) <= 1.0){
                     tAfterStop = Transition(LEFT_TURN_REMERGE, pair<double, double> (0.25, -0.25));
 
                     return Transition(LINEAR_STOP, pair<double, double> (0, 0));
@@ -416,9 +411,6 @@ class StateMachine{
                 }
 
                 else{
-                    oldTime = std::chrono::system_clock::now();
-                    oldAngle = angle;
-
                     if(lastMovement == BACKWARD)
                         tAfterStop = Transition(FORWARD, pair<double, double> (0,0));
 
@@ -431,7 +423,7 @@ class StateMachine{
             }
 
             return Transition(INITIAL, pair<double, double> (0,0));
-        }    
+        }
 
         Transition impossibleStateRoutine(const pair<Model, Model> & models){ 
             cout << "impossible state" << endl;
@@ -486,13 +478,10 @@ class StateMachine{
             
             return slopeMean == 0 ? 0 : atan(slopeMean / (double)cont);
         }
-
 };
-
 
 class RobotControl{
     public:
-        pair<Model, Model> selectedModels;
         std::vector<WeightedModel> models;
 
         StateMachine robotFSM;
@@ -538,12 +527,10 @@ class RobotControl{
                 }
             }  
 
-            this->selectedModels = ret;
-
             return ret;
         }
 
-        pair<std_msgs::Float64, std_msgs::Float64> getWheelsCommand(){
+        pair<std_msgs::Float64, std_msgs::Float64> getWheelsCommand(const pair<Model, Model> & selectedModels){
             pair<double, double> controls = robotFSM.makeTransition(selectedModels);
 
             pair<std_msgs::Float64, std_msgs::Float64> ret;
@@ -556,102 +543,6 @@ class RobotControl{
 
 
     private:
-        /*pair<double, double> linearMotion(){
-            pair<double, double> controls(0,0);
-
-            if(selectedModels.first.isPopulated() || selectedModels.second.isPopulated()){
-
-                vector<Point> lPoints = selectedModels.first.getPointsInModel();
-                vector<Point> rPoints = selectedModels.second.getPointsInModel();
-
-                controls = fuzzy.getOutputValues(calculateRatio(selectedModels), calculateAngle(selectedModels));
-
-                if((lPoints.size() >= 2 && lPoints[0].getX() >= 0) || (rPoints.size() >= 2 && rPoints[0].getX() >= 0)){
-                    if(robotSense == Unknown){
-                        robotSense = Forward;
-                    }
-                    else if(robotSense == Backward && ((lPoints.size() >= 2 && 0.5 <= lPoints[0].getX() - BODY_SIZE/2.0) || (rPoints.size() >= 2 && 0.5 <= rPoints[0].getX() - BODY_SIZE/2.0))){
-                        controls.first = 0;
-                        controls.second = 0;
-
-                        motion = "Turn";
-                    }
-                }
-
-                else if((lPoints.size() >= 2 && lPoints[1].getX() < 0) || (rPoints.size() >= 2 && rPoints[1].getX() < 0)){
-                    if(robotSense == Unknown){
-                        robotSense = Backward;
-                    }
-                    else if(robotSense == Forward && ((lPoints.size() >= 2 && lPoints[1].getX() + BODY_SIZE/2.0 <= -0.5) || (rPoints.size() >= 2 && rPoints[1].getX() + BODY_SIZE/2.0 <= -0.5))){
-                        controls.first = 0;
-                        controls.second = 0;
-
-                        motion = "Turn";
-                    }
-                }
-
-                else if(((lPoints.size() >= 2 && lPoints[0].getX() < 0) || (rPoints.size() >= 2 && rPoints[0].getX() < 0)) && ((lPoints.size() >= 2 && lPoints[1].getX() >= 0) || (rPoints.size() >= 2 && rPoints[1].getX() >= 0))){
-                    robotSense = Forward;
-                }
-            }
-            else{
-                robotSense = Unknown;
-            }
-
-            controls.first = robotSense * controls.first;
-            controls.second = robotSense * controls.second;
-
-            return controls;
-        }
-
-        pair<double, double> turningMotion(TurningSense turn){
-            pair<double, double> controls(0,0);
-
-            static bool firstAssign;
-
-            double angVel = 0;
-
-            if(selectedModels.first.isPopulated() || selectedModels.second.isPopulated()){
-
-                double oldAngle = angle;
-                angle = calculateAngle(selectedModels);
-
-                std::chrono::time_point<std::chrono::system_clock> oldTime = time;
-                time = std::chrono::system_clock::now();
-
-                std::chrono::duration<double> elapsed_seconds = time - oldTime;
-
-                if((SLEEP_TIME * 0.99 <= elapsed_seconds.count()*1000 && elapsed_seconds.count()*1000 <= SLEEP_TIME * 1.01)){
-                    firstAssign = false;
-                    angVel = (angle - oldAngle) / (double)elapsed_seconds.count();
-                }
-                else
-                    firstAssign = true;
-
-                cout << firstAssign << " " <<  angVel<< endl;
-
-                if(fabs(angle) < PI / 12.0){
-                    controls.first = 0.5;
-                    controls.second = -0.5;
-                }
-                else{
-                    if(!firstAssign && fabs(angVel) < 0.1){
-                        controls.first = -0.5;
-                        controls.second = 0.5;
-                    }
-                    else{
-                        controls.first = 0;
-                        controls.second = 0;
-                    }
-                }
-            }
-
-            controls.first = turn * controls.first;
-            controls.second = turn * controls.second;
-
-            return controls;
-        }*/
-
         void addMsgModels(const vector<Model> & modelsInMsg){
             for(int i = 0; i < modelsInMsg.size(); i++){
                 bool existsInModels = false;
@@ -798,11 +689,11 @@ void controlThread(){
 
         critSec.lock();  
 
-        pair<Model, Model> selectModels = control.selectModels();
-        sendLine(selectModels);
-        pair<std_msgs::Float64, std_msgs::Float64> wheels = control.getWheelsCommand();
+        pair<Model, Model> selectedModels = control.selectModels();
+        sendLine(selectedModels);
+        pair<std_msgs::Float64, std_msgs::Float64> wheels = control.getWheelsCommand(selectedModels);
 
-
+        //cout << control << endl;
         critSec.unlock();
 
         pubLeftControl.publish(wheels.first);
