@@ -17,6 +17,8 @@ class RubyGeneticOnePoint : public Pearl{
 	private:
 		std::vector<Point> initialField;
 
+		
+	public:
 		static constexpr double distanceToBeConsideredSamePoint = 0.1; 
 		static constexpr double numberOfModelsToSearch = 40;
 		static constexpr double factorToDeletePoints = 0.8;

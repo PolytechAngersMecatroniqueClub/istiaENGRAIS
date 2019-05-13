@@ -14,7 +14,7 @@
 
 
 class RubyGenetic : public Pearl{
-	private:
+	public:
 
 		static constexpr double numberOfModelsToSearch = 40;
 		static constexpr double factorToDeletePoints = 0.8;

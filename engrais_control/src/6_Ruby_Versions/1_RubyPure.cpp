@@ -25,7 +25,7 @@ void RubyPure::populateOutliers(const sensor_msgs::LaserScan & msg){ //Checked
 void RubyPure::countParallelLines(){ //Checked
     for(int model = 0; model < this->models.size(); model++){
         for(int model2 = model + 1; model2 < this->models.size(); model2++){
-            if(fabs(this->models[model].getSlope() - this->models[model2].getSlope()) < this->sameSlopeThreshold){
+            if(fabs(this->models[model].getSlope() - this->models[model2].getSlope()) < Pearl::sameSlopeThreshold){
                 this->models[model].incrementParallelCount();
                 this->models[model2].incrementParallelCount();
             }

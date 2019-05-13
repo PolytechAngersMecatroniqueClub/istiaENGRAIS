@@ -61,21 +61,27 @@ std::vector<Model> RubyGeneticOnePointPosNeg::findLines() { //Checked
         std::vector<Model> bestModels;
         std::vector<Point> bestOutliers;
 
-        for (int it = 0; it < this->maxNumberOfIterations; it++) {
+        for (int it = 0; it < 1; it++) {
             this->searchModels(RubyGeneticOnePointPosNeg::numberOfModelsToSearch - this->models.size());
             //cout << "Search ok" << endl;
+            //cout << *this << endl;
             this->fuseEqualModels();
             //cout << "fuse ok" << endl;
+            //cout << *this << endl;
             this->redistributePoints();
             //cout << "redist ok" << endl;
+            //cout << *this << endl;
             numberMinOfPoints = std::max((int)(this->meanNumOfPoints() * RubyGeneticOnePointPosNeg::factorToDeletePoints), 2);
 
             this->removeTinyModels(2);
             //cout << "remove tiny ok" << endl;
+            //cout << *this << endl;
             this->reEstimation();
             //cout << "estim ok" << endl;
+            //cout << *this << endl;
             this->eraseBadModels();
             //cout << "erase ok" << endl;
+            //cout << *this << endl;
             newEnergy = this->calculateEnergy();
             //cout << "calclate ok" << endl;
             if ((newEnergy >= energy)){
@@ -176,7 +182,7 @@ void RubyGeneticOnePointPosNeg::searchModels(const int nbOfModels) { //Checked
 
 //--------------------------------------------------------------------------------------------------------
 double RubyGeneticOnePointPosNeg::calculateEnergy() const { //Checked
-    double energy = this->outliers.size() * this->outlierPenalty;
+    double energy = this->outliers.size() * Pearl::outlierPenalty;
 
     for(Model m : this->models)
         energy += m.getEnergy();
@@ -201,7 +207,7 @@ double RubyGeneticOnePointPosNeg::redistributePoints() { //Checked
     double newEnergy = 0;
 
     if(this->outliers.size() > 0){
-	    newEnergy = this->outliers.size() * this->outlierPenalty;
+	    newEnergy = this->outliers.size() * Pearl::outlierPenalty;
 
 	    int dominantModelPos;
 	    for(int p = 0; p < this->outliers.size(); p++){
@@ -216,8 +222,8 @@ double RubyGeneticOnePointPosNeg::redistributePoints() { //Checked
 	            }
 	        }
 
-	        if (minDist < this->distanceForOutlier){
-	            newEnergy += minDist - this->outlierPenalty;
+	        if (minDist < Pearl::distanceForOutlier){
+	            newEnergy += minDist - Pearl::outlierPenalty;
 
 	            if(this->outliers[p].getY() >= 0){
 	            	this->models[dominantModelPos].pushPoint(this->outliers[p]);
@@ -241,7 +247,7 @@ double RubyGeneticOnePointPosNeg::redistributePoints() { //Checked
 void RubyGeneticOnePointPosNeg::countParallelLines() { //Checked 
     for(int model = 0; model < this->models.size(); model++){
         for(int model2 = model + 1; model2 < this->models.size(); model2++){
-            if(fabs(this->models[model].getSlope() - this->models[model2].getSlope()) < this->sameSlopeThreshold){
+            if(fabs(this->models[model].getSlope() - this->models[model2].getSlope()) < Pearl::sameSlopeThreshold){
                 this->models[model].incrementParallelCount();
                 this->models[model2].incrementParallelCount();
             }
@@ -274,7 +280,17 @@ void RubyGeneticOnePointPosNeg::fuseEqualModels(){ //Checked
             if(model2 == model || model2 < 0)
                 continue;
         
-            if(fabs(this->models[model].getSlope() - this->models[model2].getSlope()) < this->sameSlopeThreshold && fabs(this->models[model].getIntercept() - this->models[model2].getIntercept()) < this->sameInterceptThreshold){
+            double slopeRatio = this->models[model].getSlope() / this->models[model2].getSlope();
+            double interceptRatio = this->models[model].getIntercept() / this->models[model2].getIntercept();
+
+            double slopeDifference = fabs(this->models[model].getSlope() - this->models[model2].getSlope());
+            double interceptDifference = fabs(this->models[model].getIntercept() - this->models[model2].getIntercept());
+
+            bool isSlopeTheSame = ((1 - Pearl::sameSlopeThreshold <= slopeRatio && slopeRatio <= 1 + Pearl::sameSlopeThreshold) || slopeDifference <= Pearl::sameSlopeThreshold);
+            bool isInterceptTheSame = ((1 - Pearl::sameInterceptThreshold <= interceptRatio && interceptRatio <= 1 + Pearl::sameInterceptThreshold) || interceptDifference <= Pearl::sameInterceptThreshold);
+
+            if(isSlopeTheSame && isInterceptTheSame){
+
                 int model1Size = this->models[model].getPointsSize();
                 int model2Size = this->models[model2].getPointsSize();
 

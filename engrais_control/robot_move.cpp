@@ -85,7 +85,16 @@ class WeightedModel{
         }
 
         bool checkIfSameModel(const Model & m){
-            if(fabs(this->getSlope() - m.getSlope()) < sameSlopeThreshold && fabs(this->getIntercept() - m.getIntercept()) < sameInterceptThreshold){
+            double slopeRatio = this->a / m.getSlope();
+            double interceptRatio = this->b / m.getIntercept();
+
+            double slopeDifference = fabs(this->a - m.getSlope());
+            double interceptDifference = fabs(this->b - m.getIntercept());
+
+            bool isSlopeTheSame = ((1 - Pearl::sameSlopeThreshold <= slopeRatio && slopeRatio <= 1 + Pearl::sameSlopeThreshold) || slopeDifference <= Pearl::sameSlopeThreshold);
+            bool isInterceptTheSame = ((1 - Pearl::sameInterceptThreshold <= interceptRatio && interceptRatio <= 1 + Pearl::sameInterceptThreshold) || interceptDifference <= Pearl::sameInterceptThreshold);
+
+            if(isSlopeTheSame && isInterceptTheSame){
                 return true;
             }
 
@@ -129,7 +138,7 @@ class WeightedModel{
         }
 };
 
-class StateMachine{
+class StateMachine{ 
     public:
         enum States { BACKWARD = -1, INITIAL = 0, FORWARD = 1, LINEAR_STOP = 2, ANGULAR_STOP = 3, LEFT_TURN_BEGIN = 4, LEFT_TURN_MID = 5, LEFT_TURN_REMERGE = 6 };
 
@@ -308,8 +317,10 @@ class StateMachine{
                 }
             }
 
-            else
+            else{
+                first = true;
                 return Transition(INITIAL, pair<double, double> (0,0));
+            }
         }
 
         Transition angularStopStateRoutine(const pair<Model, Model> & models){ 
@@ -351,8 +362,10 @@ class StateMachine{
                 }
             }
 
-            else
+            else{
+                first = true;
                 return Transition(INITIAL, pair<double, double> (0,0));
+            }
         }
 
         Transition leftTurnBeginStateRoutine(const pair<Model, Model> & models){ 
@@ -383,21 +396,35 @@ class StateMachine{
             const bool condition = Sense == 1 ? models.second.isPopulated() : models.first.isPopulated();
             const double intercept = Sense == 1 ? models.second.getIntercept() : models.first.getIntercept();
 
+            static bool firstAssing = true;
+            static double lastIntercept;
+
             cout << "Sentido: " << Sense << ", condition : " << condition << ", intercept : " << intercept << endl;
 
-            if(condition){
-                if(0.6 <= fabs(intercept) && fabs(intercept) <= 1.0){
-                    tAfterStop = Transition(LEFT_TURN_REMERGE, pair<double, double> (0.25, -0.25));
+            if(firstAssing){
+                firstAssing = false;
+                lastIntercept = intercept;
 
+                return Transition(LEFT_TURN_MID, pair<double, double> (0.25 * Sense, 0.25 * Sense));
+            }
+
+            if(condition){
+                if(0.5 <= fabs(intercept) && fabs(intercept) <= lastIntercept * 0.6){
+                    firstAssing = true;
+
+                    tAfterStop = Transition(LEFT_TURN_REMERGE, pair<double, double> (0.25, -0.25));
                     return Transition(LINEAR_STOP, pair<double, double> (0, 0));
                 }
                 else{
+                    lastIntercept = intercept;
                     return Transition(LEFT_TURN_MID, pair<double, double> (0.25 * Sense, 0.25 * Sense));
                 }
             }
 
-            else
+            else{
+                firstAssing = true;
                 return Transition(INITIAL, pair<double, double> (0,0));
+            }
         }
 
         Transition leftTurnRemergeStateRoutine(const pair<Model, Model> & models){ 
@@ -480,7 +507,7 @@ class StateMachine{
         }
 };
 
-class RobotControl{
+class RobotControl{ 
     public:
         std::vector<WeightedModel> models;
 
@@ -721,6 +748,8 @@ void FrontLinesMsg(const visualization_msgs::Marker & msg){
     control.frontMessage(msg);
     critSec.unlock();
 }
+
+
 //--------------------------------------------------------------------------------------------------------
 int main(int argc, char **argv){
 

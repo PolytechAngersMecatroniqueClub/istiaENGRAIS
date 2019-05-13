@@ -58,7 +58,7 @@ std::vector<Model> RubyGeneticOnePointPosNegInfinite::findLines() { //Checked
 
         std::vector<Model> bestModels;
 
-        for (int it = 0; it < this->maxNumberOfIterations; it++) {
+        for (int it = 0; it < Pearl::maxNumberOfIterations; it++) {
             this->clearPointsInModels();
 
             this->searchModels(RubyGeneticOnePointPosNegInfinite::numberOfModelsToSearch - this->models.size());
@@ -183,7 +183,7 @@ double RubyGeneticOnePointPosNegInfinite::redistributePoints() { //Checked
         for(int model = 0; model < this->models.size(); model++){
             double distAt = fabs(this->models[model].getSlope() * this->field[p].getX() - this->field[p].getY() + this->models[model].getIntercept()) / sqrt(pow(this->models[model].getSlope(), 2) + 1.0);
             
-            if (distAt < this->distanceForOutlier){
+            if (distAt < Pearl::distanceForOutlier){
                 this->models[model].pushPoint(this->field[p]);
             }
         }
@@ -198,7 +198,7 @@ double RubyGeneticOnePointPosNegInfinite::redistributePoints() { //Checked
 void RubyGeneticOnePointPosNegInfinite::countParallelLines() { //Checked 
     for(int model = 0; model < this->models.size(); model++){
         for(int model2 = model + 1; model2 < this->models.size(); model2++){
-            if(fabs(this->models[model].getSlope() - this->models[model2].getSlope()) < this->sameSlopeThreshold){
+            if(fabs(this->models[model].getSlope() - this->models[model2].getSlope()) < Pearl::sameSlopeThreshold){
                 this->models[model].incrementParallelCount();
                 this->models[model2].incrementParallelCount();
             }
@@ -228,7 +228,7 @@ void RubyGeneticOnePointPosNegInfinite::fuseEqualModels(){ //Checked
             if(model2 == model || model2 < 0)
                 continue;
         
-            if(fabs(this->models[model].getSlope() - this->models[model2].getSlope()) < this->sameSlopeThreshold && fabs(this->models[model].getIntercept() - this->models[model2].getIntercept()) < this->sameInterceptThreshold){
+            if(fabs(this->models[model].getSlope() - this->models[model2].getSlope()) < Pearl::sameSlopeThreshold && fabs(this->models[model].getIntercept() - this->models[model2].getIntercept()) < Pearl::sameInterceptThreshold){
                 int model1Size = this->models[model].getPointsSize();
                 int model2Size = this->models[model2].getPointsSize();
 

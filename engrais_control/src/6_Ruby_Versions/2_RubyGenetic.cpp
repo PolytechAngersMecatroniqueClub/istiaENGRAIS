@@ -31,7 +31,7 @@ std::vector<Model> RubyGenetic::findLines() { //Checked
         std::vector<Model> bestModels;
         std::vector<Point> bestOutliers;
 
-        for (int it = 0; it < this->maxNumberOfIterations; it++) {
+        for (int it = 0; it < Pearl::maxNumberOfIterations; it++) {
             this->searchModels(RubyGenetic::numberOfModelsToSearch - models.size());
 
             this->fuseEqualModels();
@@ -98,7 +98,7 @@ void RubyGenetic::searchModels(const int nbOfModels) { //Checked
 
 //--------------------------------------------------------------------------------------------------------
 double RubyGenetic::calculateEnergy() const { //Checked 
-    double energy = this->outliers.size() * this->outlierPenalty;
+    double energy = this->outliers.size() * Pearl::outlierPenalty;
 
     for(Model m : models)
         energy += m.getEnergy();
@@ -122,7 +122,7 @@ double RubyGenetic::meanNumbOfPoints() const { //Checked
 void RubyGenetic::countParallelLines(){ //Checked 
     for(int model = 0; model < this->models.size(); model++){
         for(int model2 = model + 1; model2 < this->models.size(); model2++){
-            if(fabs(this->models[model].getSlope() - this->models[model2].getSlope()) < this->sameSlopeThreshold){
+            if(fabs(this->models[model].getSlope() - this->models[model2].getSlope()) < Pearl::sameSlopeThreshold){
                 this->models[model].incrementParallelCount();
                 this->models[model2].incrementParallelCount();
             }

@@ -13,9 +13,9 @@
 #include <visualization_msgs/Marker.h>
 
 #include <Point.h>
+#include <WeightedPoint.h>
 #include <Model.h>
 #include <Utility.h>
-#include <WeightedPoint.h>
 
 #include <Pearl.h>
 #include <1_RubyPure.h>
@@ -97,7 +97,7 @@ void sendLine(const vector<Model> & models, const Pearl & pearl){
     pubLineNode.publish(line_list);
 }
 
-std::chrono::time_point<std::chrono::system_clock> oldTime;
+
 //--------------------------------------------------------------------------------------------------------
 void OnRosMsg(const sensor_msgs::LaserScan & msg){
     static int msgCont = 0;
@@ -115,6 +115,7 @@ void OnRosMsg(const sensor_msgs::LaserScan & msg){
         rubyGenOPPN.populateOutliers(msg);
 
         vector <Model> lines = rubyGenOPPN.findLines();
+        //cout << rubyGenOPPN << endl << endl;
 
         sendLine(lines, rubyGenOPPN);
 
@@ -122,7 +123,7 @@ void OnRosMsg(const sensor_msgs::LaserScan & msg){
 
         elapsed_seconds = end - start;
     }
-
+    
     msgCont++;
 }
 //--------------------------------------------------------------------------------------------------------

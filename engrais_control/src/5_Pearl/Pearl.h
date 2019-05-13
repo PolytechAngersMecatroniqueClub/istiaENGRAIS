@@ -21,20 +21,20 @@ class Pearl{
         std::vector<Point> outliers;   
         std::vector<Point> initialField;
         
-    protected:
-        int maxNumberOfIterations = 10; 
-        int divideFactor = 2*INITIAL_NUMBER_OF_POINTS;     
+    public:
+        static const int maxNumberOfIterations = 10; 
+        static const int divideFactor = 2*INITIAL_NUMBER_OF_POINTS;     
 
-        double outlierPenalty = 3;
-        double distanceForOutlier = 0.5;
+        static constexpr double outlierPenalty = 3;
+        static constexpr double distanceForOutlier = 0.5;
 
-        double additionalEnergyLambda = 4;
-        double additionalEnergyCsi = 3;
+        static constexpr double additionalEnergyLambda = 4;
+        static constexpr double additionalEnergyCsi = 3;
 
-        double sameSlopeThreshold = 0.1;
-        double sameInterceptThreshold = 0.3;
+        static constexpr double sameSlopeThreshold = 0.2;
+        static constexpr double sameInterceptThreshold = 0.3;
 
-        double worstEnergySizeRatioAllowed = 0.7;
+        static constexpr double worstEnergySizeRatioAllowed = 0.7;
 
     public:   
         //------------------------------------------------------------------------------------------------

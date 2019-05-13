@@ -22,7 +22,7 @@ std::vector<Model> Pearl::findLines() { //Checked
 	double energy = MAX_DBL;
 
 	if(this->outliers.size() != 0){
-	    int nModels = int(this->outliers.size() / this->divideFactor);
+	    int nModels = int(this->outliers.size() / Pearl::divideFactor);
 
 	    if(nModels > 0){
 	        this->searchModels(nModels);
@@ -31,19 +31,17 @@ std::vector<Model> Pearl::findLines() { //Checked
 
 	        newEnergy += this->removeTinyModels((int)(1.5*nModels));
 
-	        int nbOfIteractions = 0;
-
 	        energy = newEnergy;
 
 	        std::vector<Model> bestModels = this->models;
 	        std::vector<Point> bestOutliers = this->outliers;
 
-	        while (nbOfIteractions < this->maxNumberOfIterations) {
-	            this->searchModels((int)(this->outliers.size() / this->divideFactor));
+	        for(int nbOfIteractions = 0; nbOfIteractions < Pearl::maxNumberOfIterations; nbOfIteractions++) {
+	            this->searchModels((int)(this->outliers.size() / Pearl::divideFactor));
 
 	            this->reEstimation();
 
-	            this->eraseBadModels(this->worstEnergySizeRatioAllowed);
+	            this->eraseBadModels(Pearl::worstEnergySizeRatioAllowed);
 
 	            this->fuseEqualModels();
 
@@ -60,8 +58,6 @@ std::vector<Model> Pearl::findLines() { //Checked
 
 	                newEnergy = energy;
 	            }
-
-	            nbOfIteractions++;
 	        }
 	    }
 	}
@@ -77,11 +73,11 @@ void Pearl::removeModel(const int modelIndex){ //Checked
 
     this->outliers.insert(this->outliers.end(), this->models[modelIndex].getPointsVecBegin(), this->models[modelIndex].getPointsVecEnd());
     this->models[modelIndex].clearPoints();
-    this->models.erase(models.begin() + modelIndex);
+    this->models.erase(this->models.begin() + modelIndex);
 }
 //--------------------------------------------------------------------------------------------------------
 void Pearl::removePointsInModels(){ //Checked 
-    for(int i = 0; i < models.size(); i++){
+    for(int i = 0; i < this->models.size(); i++){
         this->outliers.insert(this->outliers.end(), this->models[i].getPointsVecBegin(), this->models[i].getPointsVecEnd());
         this->models[i].clearPoints();
     }
@@ -133,7 +129,7 @@ double Pearl::redistributePoints() { //Checked
     double newEnergy = 0;
 
     if(this->outliers.size() > 0){
-	    newEnergy = this->outliers.size() * this->outlierPenalty;
+	    newEnergy = this->outliers.size() * Pearl::outlierPenalty;
 
 	    int dominantModelPos;
 	    for(int p = 0; p < this->outliers.size(); p++){
@@ -149,8 +145,8 @@ double Pearl::redistributePoints() { //Checked
 	            }
 	        }
 
-	        if (minDist < this->distanceForOutlier){
-	            newEnergy += minDist - this->outlierPenalty;
+	        if (minDist < Pearl::distanceForOutlier){
+	            newEnergy += minDist - Pearl::outlierPenalty;
 
 	            this->models[dominantModelPos].pushPoint(this->outliers[p]);
 	            this->outliers.erase(this->outliers.begin() + p);
@@ -166,7 +162,7 @@ double Pearl::removeTinyModels(const int minimum_points) { //Checked
     double gainEnergy = 0;
     for(int model = 0; model < this->models.size(); model++){
         if(this->models[model].getPointsSize() <= minimum_points){
-            gainEnergy += this->models[model].getPointsSize()*this->outlierPenalty - this->models[model].getEnergy();
+            gainEnergy += this->models[model].getPointsSize() * Pearl::outlierPenalty - this->models[model].getEnergy();
             removeModel(model);
             model--;
         }
@@ -180,7 +176,7 @@ double Pearl::calculateAdditionalEnergy() const { //Checked
         for(int model2 = model + 1; model2 < this->models.size(); model2++)
             for(Point p : this->models[model].getPointsInModel())
                 for(Point q : this->models[model2].getPointsInModel())
-                    addEnergy += this->additionalEnergyLambda * exp(-(pow(p.getX() - q.getX(), 2) + pow(p.getY() - q.getY(), 2)) / pow(this->additionalEnergyCsi, 2));
+                    addEnergy += Pearl::additionalEnergyLambda * exp(-(pow(p.getX() - q.getX(), 2) + pow(p.getY() - q.getY(), 2)) / pow(Pearl::additionalEnergyCsi, 2));
 
     return addEnergy;                           
 }
@@ -221,8 +217,17 @@ void Pearl::fuseEqualModels(){ //Checked
         for(int model2 = model + 1; model2 < this->models.size() && model >= 0; model2++){
             if(model2 == model || model2 < 0)
                 continue;
-        
-            if(fabs(this->models[model].getSlope() - this->models[model2].getSlope()) < this->sameSlopeThreshold && fabs(this->models[model].getIntercept() - this->models[model2].getIntercept()) < this->sameInterceptThreshold){
+            
+            double slopeRatio = this->models[model].getSlope() / this->models[model2].getSlope();
+            double interceptRatio = this->models[model].getIntercept() / this->models[model2].getIntercept();
+
+            double slopeDifference = fabs(this->models[model].getSlope() - this->models[model2].getSlope());
+            double interceptDifference = fabs(this->models[model].getIntercept() - this->models[model2].getIntercept());
+
+            bool isSlopeTheSame = ((1 - Pearl::sameSlopeThreshold <= slopeRatio && slopeRatio <= 1 + Pearl::sameSlopeThreshold) || slopeDifference <= Pearl::sameSlopeThreshold);
+            bool isInterceptTheSame = ((1 - Pearl::sameInterceptThreshold <= interceptRatio && interceptRatio <= 1 + Pearl::sameInterceptThreshold) || interceptDifference <= Pearl::sameInterceptThreshold);
+
+            if(isSlopeTheSame && isInterceptTheSame){
                 int model1Size = this->models[model].getPointsSize();
                 int model2Size = this->models[model2].getPointsSize();
 
