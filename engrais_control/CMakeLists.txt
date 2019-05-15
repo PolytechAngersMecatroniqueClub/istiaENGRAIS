@@ -100,6 +100,7 @@ include_directories(
     include src/6_Ruby_Versions/
 
     include src/7_FuzzyController
+    include src/8_StateMachine/
     include src/.fuzzylite-6.0/
 )
 
@@ -221,6 +222,7 @@ add_executable(robot_move robot_move.cpp
     src/6_Ruby_Versions/5_RubyGeneticOnePointPosNegInfinite.cpp
 
     src/7_FuzzyController/FuzzyController.cpp
+    src/8_StateMachine/StateMachine.cpp
 )
 
 target_link_libraries(robot_move 
