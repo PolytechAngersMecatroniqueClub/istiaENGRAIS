@@ -101,6 +101,8 @@ include_directories(
 
     include src/7_FuzzyController
     include src/8_StateMachine/
+    include src/9_WeightedModel/
+    include src/10_RobotControl/
     include src/.fuzzylite-6.0/
 )
 
@@ -223,6 +225,8 @@ add_executable(robot_move robot_move.cpp
 
     src/7_FuzzyController/FuzzyController.cpp
     src/8_StateMachine/StateMachine.cpp
+    src/9_WeightedModel/WeightedModel.cpp
+    src/10_RobotControl/RobotControl.cpp
 )
 
 target_link_libraries(robot_move 

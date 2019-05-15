@@ -24,10 +24,11 @@
 
 class StateMachine{ 
     private:
+        //------------------------------------------------------------------------------------------------
         enum States { BACKWARD = -1, INITIAL = 0, FORWARD = 1, LINEAR_STOP, ANGULAR_STOP, LEFT_TURN_BEGIN, LEFT_TURN_MID, LEFT_TURN_REMERGE };
-
+        //------------------------------------------------------------------------------------------------
         enum Turn { LEFT, RIGHT };
-
+        //------------------------------------------------------------------------------------------------
         class Transition{ 
             public:
                 States nextState;
@@ -35,6 +36,7 @@ class StateMachine{
 
                 Transition(const States & st, const std::pair<double, double> & out);
         };
+        //------------------------------------------------------------------------------------------------
 
         Turn toTurn = LEFT;
 

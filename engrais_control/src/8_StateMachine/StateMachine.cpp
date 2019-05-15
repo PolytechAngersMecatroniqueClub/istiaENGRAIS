@@ -4,8 +4,8 @@
 
 //--------------------------------------------------------------------------------------------------------
 StateMachine::Transition::Transition(const States & st, const std::pair<double, double> & out){
-    nextState = st;
-    output = out;
+    this->nextState = st;
+    this->output = out;
 }
 
 //########################################################################################################
@@ -14,7 +14,7 @@ StateMachine::Transition::Transition(const States & st, const std::pair<double, 
 std::pair<double, double> StateMachine::makeTransition(const std::pair<Model, Model> & models){ 
     Transition stateTransition(INITIAL, std::pair<double, double> (0,0));
 
-    switch(currentState){
+    switch(this->currentState){
         case INITIAL:
             stateTransition = initialStateRoutine(models);
             break;
@@ -52,7 +52,7 @@ std::pair<double, double> StateMachine::makeTransition(const std::pair<Model, Mo
 
     }
 
-    currentState = stateTransition.nextState;
+    this->currentState = stateTransition.nextState;
     return std::pair<double, double> (stateTransition.output.first * MAX_VEL, stateTransition.output.second * MAX_VEL);
 }
 //--------------------------------------------------------------------------------------------------------
@@ -78,20 +78,20 @@ StateMachine::Transition StateMachine::initialStateRoutine(const std::pair<Model
 StateMachine::Transition StateMachine::forwardStateRoutine(const std::pair<Model, Model> & models){ 
     //cout << "forward state" << endl;
 
-    lastMovement = FORWARD;
+    this->lastMovement = FORWARD;
 
     if(models.first.isPopulated() || models.second.isPopulated()){
         std::vector<Point> lPoints = models.first.getPointsInModel();
         std::vector<Point> rPoints = models.second.getPointsInModel();
 
         if((lPoints.size() >= 2 && lPoints[1].getX() + BODY_SIZE/2.0 <= -0.5) || (rPoints.size() >= 2 && rPoints[1].getX() + BODY_SIZE/2.0 <= -0.5)){
-            if(toTurn == LEFT)
-                tAfterStop = Transition(LEFT_TURN_BEGIN, std::pair<double, double> (-0.25 * FORWARD, 0.25 * FORWARD));
+            if(this->toTurn == LEFT)
+                this->tAfterStop = Transition(LEFT_TURN_BEGIN, std::pair<double, double> (-0.25 * FORWARD, 0.25 * FORWARD));
 
             return Transition(LINEAR_STOP, std::pair<double, double> (0,0));
         }
         else{
-            std::pair<double, double> controls = fuzzy.getOutputValues(calculateRatio(models), calculateAngle(models));
+            std::pair<double, double> controls = this->fuzzy.getOutputValues(calculateRatio(models), calculateAngle(models));
             
             return Transition(FORWARD, std::pair<double, double> (controls.first, controls.second));
         }
@@ -103,20 +103,20 @@ StateMachine::Transition StateMachine::forwardStateRoutine(const std::pair<Model
 StateMachine::Transition StateMachine::backwardStateRoutine(const std::pair<Model, Model> & models){ 
     //cout << "backward state" << endl;
 
-    lastMovement = BACKWARD;
+    this->lastMovement = BACKWARD;
 
     if(models.first.isPopulated() || models.second.isPopulated()){
         std::vector<Point> lPoints = models.first.getPointsInModel();
         std::vector<Point> rPoints = models.second.getPointsInModel();
 
         if((lPoints.size() >= 2 && lPoints[0].getX() - BODY_SIZE/2.0 >= 0.5) || (rPoints.size() >= 2 && rPoints[0].getX() - BODY_SIZE/2.0 >= 0.5)){
-            if(toTurn == LEFT)
-                tAfterStop = Transition(LEFT_TURN_BEGIN, std::pair<double, double> (-0.25, 0.25));
+            if(this->toTurn == LEFT)
+                this->tAfterStop = Transition(LEFT_TURN_BEGIN, std::pair<double, double> (-0.25, 0.25));
 
             return Transition(LINEAR_STOP, std::pair<double, double> (0,0));
         }
         else{
-            std::pair<double, double> controls = fuzzy.getOutputValues(calculateRatio(models), -calculateAngle(models));
+            std::pair<double, double> controls = this->fuzzy.getOutputValues(calculateRatio(models), -calculateAngle(models));
             
             return Transition(BACKWARD, std::pair<double, double> (-controls.first, -controls.second));
         }
@@ -154,7 +154,7 @@ StateMachine::Transition StateMachine::linearStopStateRoutine(const std::pair<Mo
 
         else{
             first = true;
-            return tAfterStop;
+            return this->tAfterStop;
         }
     }
 
@@ -199,7 +199,7 @@ StateMachine::Transition StateMachine::angularStopStateRoutine(const std::pair<M
 
         else{
             first = true;
-            return tAfterStop;
+            return this->tAfterStop;
         }
     }
 
@@ -220,7 +220,7 @@ StateMachine::Transition StateMachine::leftTurnBeginStateRoutine(const std::pair
         }
 
         else{
-            tAfterStop = Transition(LEFT_TURN_MID, std::pair<double, double> (0.25, 0.25));
+            this->tAfterStop = Transition(LEFT_TURN_MID, std::pair<double, double> (0.25, 0.25));
 
             return Transition(ANGULAR_STOP, std::pair<double, double> (0,0));
         }
@@ -254,7 +254,7 @@ StateMachine::Transition StateMachine::leftTurnMidStateRoutine(const std::pair<M
         if(0.5 <= fabs(intercept) && fabs(intercept) <= fabs(savedIntercept * 0.6)){
             firstAssing = true;
 
-            tAfterStop = Transition(LEFT_TURN_REMERGE, std::pair<double, double> (0.25, -0.25));
+            this->tAfterStop = Transition(LEFT_TURN_REMERGE, std::pair<double, double> (0.25, -0.25));
             return Transition(LINEAR_STOP, std::pair<double, double> (0, 0));
         }
         else{
@@ -283,10 +283,10 @@ StateMachine::Transition StateMachine::leftTurnRemergeStateRoutine(const std::pa
 
         else{
             if(lastMovement == BACKWARD)
-                tAfterStop = Transition(FORWARD, std::pair<double, double> (0,0));
+                this->tAfterStop = Transition(FORWARD, std::pair<double, double> (0,0));
 
             else if(lastMovement == FORWARD)
-                tAfterStop = Transition(BACKWARD, std::pair<double, double> (0,0));
+                this->tAfterStop = Transition(BACKWARD, std::pair<double, double> (0,0));
 
 
             return Transition(ANGULAR_STOP, std::pair<double, double> (0,0));
