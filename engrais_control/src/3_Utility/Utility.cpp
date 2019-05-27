@@ -3,16 +3,16 @@
 
 
 //--------------------------------------------------------------------------------------------------------
-double Utility::calcSumDist(const std::vector<Point> & vec_p, const double a, const double b) { //Checked
-    double dist = 0;
-    for(Point p : vec_p){ 
-        dist +=  fabs(a * p.getX() - p.getY() + b) / sqrt(pow(a, 2) + 1.0); 
+double Utility::calcSumDist(const std::vector<Point> & vec_p, const double a, const double b) { //Calculates the sum of all points in the vector and a line 
+    double dist = 0; //Sum = 0
+    for(Point p : vec_p){ //For each point
+        dist +=  fabs(a * p.getX() - p.getY() + b) / sqrt(pow(a, 2) + 1.0); //Sum the distance from point to line
     }
     
     return dist;
 }
 //--------------------------------------------------------------------------------------------------------
-void Utility::printInColor(const std::string msg, const int color){ //Checked 
+void Utility::printInColor(const std::string msg, const int color){ //Print colored text to console 
     std::string out;
 
     if(color == RED)
@@ -30,22 +30,22 @@ void Utility::printInColor(const std::string msg, const int color){ //Checked
     std::cout << out;
 }
 // -------------------------------------------------------------------------------------------------------
-std::vector<int> Utility::randomDiffVector(const int min, const int max, const int size){ //Checked
-    std::vector<int> r(size, MIN_INT);
+std::vector<int> Utility::randomDiffVector(const int min, const int max, const int size){ //Returns a vector, sized "size", of different random numbers ranging from "min" from "max", boundaries included 
+    std::vector<int> r(size, MIN_INT); //Initializes vector
     int randNum;
 
-    if((max-min+1) < size){
+    if((max-min+1) < size){ //If the number of available numbers is smaller than the amount passed, prints an error
         Utility::printInColor("Wrong usage of randomDiffVector, max - min + 1 should be greater than the size", RED);
         return std::vector<int>();
     }
 
-    for(int i = 0; i < size; i++){
+    for(int i = 0; i < size; i++){ //Randomizes a number that is not inside the vector
         while(true){
-            randNum = Utility::randomInt(min, max);
-            if(findIndex(r, randNum) == MIN_INT)
+            randNum = Utility::randomInt(min, max); //Guess a number
+            if(findIndex(r, randNum) == MIN_INT) //If the element exists in the vector, try again
                 break;
         }
-        r[i] = randNum;
+        r[i] = randNum; //Put the number into vector
     }
 
     return r;

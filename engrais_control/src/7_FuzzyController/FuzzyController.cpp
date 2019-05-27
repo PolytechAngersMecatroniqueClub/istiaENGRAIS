@@ -3,17 +3,17 @@
 
 
 //--------------------------------------------------------------------------------------------------------
-FuzzyController::FuzzyController(fl::TNorm* AndMethod, fl::SNorm* OrMethod, fl::TNorm* ImplicationMethod, fl::SNorm* AggregationMethod, fl::Defuzzifier* defuzzMethod){
+FuzzyController::FuzzyController(fl::TNorm* AndMethod, fl::SNorm* OrMethod, fl::TNorm* ImplicationMethod, fl::SNorm* AggregationMethod, fl::Defuzzifier* defuzzMethod){ //Fuzzy controller constructor to default operators 
 
-    this->fuzzy = new fl::Engine;
+    this->fuzzy = new fl::Engine; 
     this->fuzzy->setName("EngraisController");
     this->fuzzy->setDescription("");
 
-    this->angle = new fl::InputVariable;
+    this->angle = new fl::InputVariable; 
     this->angle->setName("angle");
-    this->angle->setDescription("Angle made with central line of robot and the rows found-> Negative means at left side of center, positive means right sides ");
+    this->angle->setDescription("Angle made with central line of robot and the rows found. Negative means at left side of center, positive means right side");
     this->angle->setEnabled(true);
-    this->angle->setRange(-PI / 4.0, -PI / 4.0);
+    this->angle->setRange(-PI / 4.0, PI / 4.0);
     this->angle->setLockValueInRange(false);
     this->angle->addTerm(new fl::Ramp("veryLeft", -PI / 12.0, -PI / 6.0));
     this->angle->addTerm(new fl::Triangle("left", -PI / 6.0, -PI / 12.0, 0.000));
@@ -25,7 +25,7 @@ FuzzyController::FuzzyController(fl::TNorm* AndMethod, fl::SNorm* OrMethod, fl::
 
     this->ratio = new fl::InputVariable;
     this->ratio->setName("ratio");
-    this->ratio->setDescription("");
+    this->ratio->setDescription("A ratio that tells how distant the robot is from the center. Negative means at left side of center, positive means right side, Read .h for more information");
     this->ratio->setEnabled(true);
     this->ratio->setRange(-1.000, 1.000);
     this->ratio->setLockValueInRange(false);
@@ -119,16 +119,16 @@ FuzzyController::FuzzyController(fl::TNorm* AndMethod, fl::SNorm* OrMethod, fl::
     this->fuzzy->addRuleBlock(rules);
 }
 //--------------------------------------------------------------------------------------------------------
-std::pair<double, double> FuzzyController::getOutputValues(const double ratio, const double ang){
-    this->angle->setValue(ang);
-    this->ratio->setValue(ratio);
+std::pair<double, double> FuzzyController::getOutputValues(const double ratio, const double ang){ //Use the inputs passed as parameters to calculate the output 
+    this->angle->setValue(ang); //Set angle
+    this->ratio->setValue(ratio); //Set ratio
     
-    this->fuzzy->process();
+    this->fuzzy->process(); //Calculates output
 
-    return std::pair<double, double>(this->leftWheel->getValue(), this->rightWheel->getValue());
+    return std::pair<double, double>(this->leftWheel->getValue(), this->rightWheel->getValue()); //Return output
 }
 //--------------------------------------------------------------------------------------------------------
-std::ostream & operator << (std::ostream & out, const FuzzyController & fz){
+std::ostream & operator << (std::ostream & out, const FuzzyController & fz){ //Print Fuzzy Controller 
     out << "FuzzyController: [ Input Value Angle: " << fz.angle->getValue() << ", Input Value Ratio: " << fz.ratio->getValue();
     out << ", Output Value LeftWheel: " << fz.leftWheel->getValue() << ", Output Value RightWheel: " << fz.rightWheel->getValue() << "]";
 
