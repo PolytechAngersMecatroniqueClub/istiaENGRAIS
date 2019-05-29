@@ -106,6 +106,8 @@ include_directories(
     include src/.fuzzylite-6.0/
 )
 
+link_directories(~/catkin_ws/src/istiaENGRAIS/engrais_control/src/.fuzzylite-6.0/bin/)
+
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
 #   src/${PROJECT_NAME}/engrais_control.cpp
