@@ -27,7 +27,7 @@
 class StateMachine{ //Class to implement a state machine 
     private:
         //------------------------------------------------------------------------------------------------
-        enum States { BACKWARD = -1, INITIAL = 0, FORWARD = 1, LINEAR_STOP, ANGULAR_STOP, LEFT_TURN_BEGIN, LEFT_TURN_MID, LEFT_TURN_MERGE }; //All possible states
+        enum States { BACKWARD = -1, INITIAL = 0, FORWARD = 1, LINEAR_STOP, ANGULAR_STOP, LEFT_TURN_BEGIN, LEFT_TURN_MID, LEFT_TURN_MERGE, IMPOSSIBLE }; //All possible states
         //------------------------------------------------------------------------------------------------
         enum Turn { LEFT, RIGHT }; //Where to turn
         //------------------------------------------------------------------------------------------------

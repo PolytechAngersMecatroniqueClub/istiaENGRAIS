@@ -16,21 +16,21 @@ class WeightedPoint : public Point { //Class to combine point into a "Center Of 
         //------------------------------------------------------------------------------------------------
         WeightedPoint(); //Default constructor
         //------------------------------------------------------------------------------------------------
-        WeightedPoint(const double , const double, const int = 1); //Constructor to assign values
+        WeightedPoint(const double xx, const double yy, const int w = 1); //Constructor to assign values
         
 
         //------------------------------------------------------------------------------------------------
         int getWeight() const; //Get counter
         //------------------------------------------------------------------------------------------------
-        bool fusePoint(const WeightedPoint & , const double ); //Calculates the center of mass between the 2 Points
+        bool fusePoint(const WeightedPoint & wp, const double limitDist); //Calculates the center of mass between the 2 Points
         //------------------------------------------------------------------------------------------------
-        bool operator == (const WeightedPoint & ) const; //Checks if equal
+        bool operator == (const WeightedPoint & wp) const; //Checks if equal
         //------------------------------------------------------------------------------------------------
-        bool operator != (const WeightedPoint & ) const; //Checks if different
+        bool operator != (const WeightedPoint & wp) const; //Checks if different
 
 
         //------------------------------------------------------------------------------------------------
-        friend std::ostream & operator << (std::ostream & , const WeightedPoint & ); //Print WeightedPoint
+        friend std::ostream & operator << (std::ostream & out, const WeightedPoint & wp); //Print WeightedPoint
 
 };
 
@@ -50,7 +50,7 @@ inline bool WeightedPoint::operator != (const WeightedPoint & wp) const { return
 
 
 //--------------------------------------------------------------------------------------------------------
-inline std::ostream & operator << (std::ostream &out, const WeightedPoint &p){ return (out << "WeightedPoint: [ x: " << p.getX() << ", y: " << p.getY() << ", Weight: " << p.pointWeight << " ]"); } //Print WeightedPoint
+inline std::ostream & operator << (std::ostream &out, const WeightedPoint & wp){ return (out << "WeightedPoint: [ x: " << wp.getX() << ", y: " << wp.getY() << ", Weight: " << wp.pointWeight << " ]"); } //Print WeightedPoint
 
 #endif
 //********************************************************************************************************

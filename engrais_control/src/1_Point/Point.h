@@ -21,7 +21,7 @@
 #define MAX_INT 10000000
 #endif
 
-class Point{ //Class to store (X,Y) coordinates
+class Point{ //Class to store (X,Y) coordinates 
 
     private: 
         double x = MIN_DBL;
@@ -31,7 +31,7 @@ class Point{ //Class to store (X,Y) coordinates
         //------------------------------------------------------------------------------------------------
         Point(); //Default constructor 
         //------------------------------------------------------------------------------------------------
-        Point(const double , const double ); //Constructor to assign values
+        Point(const double xx, const double yy); //Constructor to assign values
 
 
 
@@ -46,13 +46,13 @@ class Point{ //Class to store (X,Y) coordinates
 
 
         //------------------------------------------------------------------------------------------------
-        bool operator == (const Point & ) const; //Operator to check if equal
+        bool operator == (const Point & p) const; //Operator to check if equal
         //------------------------------------------------------------------------------------------------
-        bool operator != (const Point & ) const; //Operator to check if different
+        bool operator != (const Point & p) const; //Operator to check if different
 
 
         //------------------------------------------------------------------------------------------------
-        friend std::ostream & operator << (std::ostream & , const Point & ); //Print Point
+        friend std::ostream & operator << (std::ostream & out, const Point & p); //Print Point
 
 };
 

@@ -182,7 +182,6 @@ int main(int argc, char **argv){
 
     Utility::printInColor("Code ended without errors", BLUE);
 
-    return 0;
 }
 
 //********************************************************************************************************

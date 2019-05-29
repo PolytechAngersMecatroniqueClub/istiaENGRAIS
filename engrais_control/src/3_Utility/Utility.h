@@ -27,15 +27,15 @@ class Utility{
         //------------------------------------------------------------------------------------------------
         static int randomInt(const int min, const int max); //Generates a random integer between "min" and "max", boundaries included
         //------------------------------------------------------------------------------------------------
-        static double distPoints(const Point & , const Point & ); //Calculates the Euclidean distance between 2 points
+        static double distPoints(const Point & p1, const Point & p2); //Calculates the Euclidean distance between 2 points
         //------------------------------------------------------------------------------------------------
-        static double calcSumDist(const std::vector<Point> & , const double , const double ); //Calculates the sum of all points in the vector and a line 
+        static double calcSumDist(const std::vector<Point> & vec_p, const double a, const double b); //Calculates the sum of all points in the vector and a line 
         //------------------------------------------------------------------------------------------------
-        static void printInColor(const std::string , const int ); //Print colored text to console
+        static void printInColor(const std::string msg, const int color); //Print colored text to console
         //------------------------------------------------------------------------------------------------
         static std::vector<int> randomDiffVector(const int min, const int max, const int size); //Returns a vector, sized "size", of different random numbers ranging from "min" from "max", boundaries included
         //------------------------------------------------------------------------------------------------
-        template < class T> static std::string getClassName(T classElement){ //Template function to get any class name 
+        template < class T> static std::string getClassName(const T & classElement){ //Template function to get any class name 
             std::string type = typeid(classElement).name(); //Get Class' name  
             while('0' <= type[0] && type[0] <= '9') //Erase Numbers that appear in front
                 type.erase(0, 1);
@@ -65,7 +65,7 @@ class Utility{
 //--------------------------------------------------------------------------------------------------------
 inline int Utility::randomInt(const int min, const int max){ return (rand() % (max - min + 1)) + min; } //Generates a random integer between "min" and "max", boundaries included
 //--------------------------------------------------------------------------------------------------------
-inline double Utility::distPoints(const Point & P1, const Point & P2) { return sqrt( pow(P1.getX() - P2.getX(), 2) + pow(P1.getY() - P2.getY(), 2) ); } //Calculates the Euclidean distance between 2 points
+inline double Utility::distPoints(const Point & p1, const Point & p2) { return sqrt( pow(p1.getX() - p2.getX(), 2) + pow(p1.getY() - p2.getY(), 2) ); } //Calculates the Euclidean distance between 2 points
 
 #endif
 //********************************************************************************************************
