@@ -1,0 +1,19 @@
+<?xml version="1.6" ?>
+<launch>
+
+	<!--> Robot Find Lines arguments <-->
+	<arg name="front_scan_topic" value="scan1"/>
+	<arg name="front_lines_topic" value="/engrais/laser_front/lines"/>
+	<arg name="front_rviz_frame" value="laser1"/>
+
+
+	<include file="$(find sick_tim)/launch/engrais.launch" />
+
+
+	<node name="engrais_findlines_front" pkg="engrais_control" type="robot_findlines">
+		<param name="subscribe_topic" type="string" value="$(arg subscribe_topic_front)"/>
+		<param name="publish_topic" type="string" value="$(arg publish_topic_front)"/>
+		<param name="rviz_frame" type="string" value="$(arg rviz_frame_front)"/>
+	</node>
+
+</launch>
