@@ -6,21 +6,10 @@
 	<arg name="rviz_frame_front" default="sick_front_link"/>
 
 
-	<arg name="subscribe_topic_back" default="/engrais/laser_back/scan"/>
-	<arg name="publish_topic_back" default="/engrais/laser_back/lines"/>
-	<arg name="rviz_frame_back" default="sick_back_link"/>
-
-
 	<node name="engrais_findlines_front" pkg="engrais_control" type="robot_findlines">
 		<param name="subscribe_topic" type="string" value="$(arg subscribe_topic_front)"/>
 		<param name="publish_topic" type="string" value="$(arg publish_topic_front)"/>
 		<param name="rviz_frame" type="string" value="$(arg rviz_frame_front)"/>
-	</node>
-	
-	<node name="engrais_findlines_back" pkg="engrais_control" type="robot_findlines">
-		<param name="subscribe_topic" type="string" value="$(arg subscribe_topic_back)"/>
-		<param name="publish_topic" type="string" value="$(arg publish_topic_back)"/>
-		<param name="rviz_frame" type="string" value="$(arg rviz_frame_back)"/>
 	</node>
 
 </launch>
