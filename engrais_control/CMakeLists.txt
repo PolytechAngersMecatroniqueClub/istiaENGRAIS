@@ -210,7 +210,7 @@ target_link_libraries(robot_keyboard_move ${catkin_LIBRARIES})
 
 
 
-add_executable(robot_move robot_move.cpp
+add_executable(robot_control robot_control.cpp
     src/1_Point/Point.cpp
     src/2_WeightedPoint/WeightedPoint.cpp
     src/3_Utility/Utility.cpp
@@ -229,9 +229,9 @@ add_executable(robot_move robot_move.cpp
     src/10_RobotControl/RobotControl.cpp
 )
 
-target_link_libraries(robot_move 
+target_link_libraries(robot_control 
 	${catkin_LIBRARIES} 
 	fuzzylite-static
 )
 
-#add_dependencies(robot_move engrais_control_gencpp)
+#add_dependencies(robot_control engrais_control_gencpp)
