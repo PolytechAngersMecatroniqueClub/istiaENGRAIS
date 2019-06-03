@@ -8,13 +8,19 @@
 	<arg name="publish_topic_left" default="leftCommand"/>
 	<arg name="publish_topic_right" default="rightCommand"/>
 
+	<arg name="global_frame" default="body"/>
+	<arg name="selected_lines_topic" default="selectedLines"/>
+
 
 	<node name="$(arg control_node_name)" pkg="engrais_control" type="robot_control">
 		<param name="subscribe_topic_front" type="string" value="$(arg subscribe_topic_1)"/>
 		<param name="subscribe_topic_back" type="string" value="$(arg subscribe_topic_2)"/>
 		<param name="publish_topic_left" type="string" value="$(arg publish_topic_left)"/>
 		<param name="publish_topic_right" type="string" value="$(arg publish_topic_right)"/>
-		
+
+		<param name="rviz_frame" type="string" value="$(arg global_frame)"/>
+		<param name="rviz_topic" type="string" value="$(arg selected_lines_topic)"/>
+
 	</node>
 
 </launch>
