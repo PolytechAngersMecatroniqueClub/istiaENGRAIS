@@ -1,191 +1,84 @@
-# ENGRAIS
-This repository contains all the packages to simulate and control a robot through an unknown field, using LIDAR sensors.
+# ENGRAIS Raspberry
+This repository contains all the packages to install into our 4 raspberry pi
 
 This project contains 3 packages.
 
+# Network
+
+Since we use ROS TCP/IP architecture, we have to define an IP for each object conected to the network
+
+* Raspberry 1 : 192.168.10.101
+* Raspberry 2 : 192.168.10.102
+* Raspberry 3 : 192.168.10.103
+* Raspberry 4 : 192.168.10.104
+
+* Sick Tim LIDAR 1 : 192.168.10.111
+* Sick Tim LIDAR 2 : 192.168.10.112
+
+* ROS core master : 192.168.10.200
+
+To change the default ROS core master, just run: 
+
+-export ROS_MASTER_URI=http://<RosMasterMachineIP>:11311
+
+-export ROS_IP=<YourMachineIP>
+
 # engrais_control
 
-This package allows to deal with the controllers to interract from ROS to gazebo
+This package has the code to find the lines into the set of points received from sick_tim. The lines found are sent using visualization_marker, making it possible to visualize it in rviz.
 
 ## organisation
 
 engrais_control - package created with catkin_create_pkg
 * package.xml
 * CMakeLists.txt
-* config
-  * engrais_control.yaml : configuration file for the controllers
 * launch
-  * engrais_control.launch : to start the controllers
+  * central.launch : to start the central of processing that will receive all lines found, select 2 models from them, and calculate the control to the wheels
+  * rasp1.launch : to start rasp 1's code, receiving the control and sending the reference to the right wheel
+  * rasp2.launch : to start rasp 2's code, receiving the control and sending the reference to the left wheel
+  * rasp3.launch : to start rasp 3 and sick tim's code, getting all the information sent by the first sick Tim and finding the lines that are in the set of points 
+  * rasp4.launch : to start rasp 4 and sick tim's code, getting all the information sent by the second sick Tim and finding the lines that are in the set of points
 
 ## how to use
 
-You should not have to deal with this package, the launch file is started from the main launch file (cf the package engrais_gazebo)
+None of the launch files contains arguments, meaning that manual modifications are needed if one wants to change the way the nodes work. 
 
-## work to do
+# engrais_motors
 
-The physical behavior of the robot is not as expected, some parameters of the controllers (PID values for instance) should be optimized.
-
-# engrais_description
-
-This package contains the description of the robot and the sensors.
+This package comunicates with the EZ Wheels and send velocity reference
 
 ## organisation
 
-engrais_description - package created with catkin_create_pkg
+engrais_motors - package created with catkin_create_pkg
 * package.xml
 * CMakeLists.txt
 * launch
-  * rviz.launch : to start rviz with a good configuration
-* rviz
-  * engrais.rviz : configuration file for rviz tool
-* urdf
-  * engrais.gazebo : xml file that contains:
-    * the gazebo colors to use for robot parst (caster wheels and body)
-    * the gazebo configuration of the caster wheels
-    * the gazebo configuration of the LiDAR (all the sensor parameters and plugins)
-  * engrais.xacro : xml file that discribes the robot (links and joints) and define the robot constants
-  * macros.xacro : xml file that defines macros to create wheels and to evaluate classical inertia matrices, those macros are used in the engrais.xacro file
-  * materials.xacro : defines colors
+  * motor.launch : 
 
 ## how to use
 
-The only thing to do from this package it is to start rviz
-```
-roslaunch engrais_description rviz.launch
-```
+run motor.launch
 
-## Work to do
+# sick_tim
 
-The behavior of the robot is not quite as expected, some parameters may be changed...
+This package is made by the sick Tim development team and it receives the data from the sensor, sending it through ROS using LaserScan message type 
 
-# engrais_gazebo
-
-This package contains the launch files to start the simulation, and the world configuration
 
 ## organisation
 
-engrais_gazebo - package created with catkin_create_pkg
+Since it is an extern package, this readme will inclue our modifications, for more information go to https://github.com/uos/sick_tim
+
+sick_tim - package created with catkin_create_pkg
 * package.xml
 * CMakeLists.txt
 * launch
-  * engrais_world.launch : launch file to start the simulation, cf "how to use -> start the simulation" to check how to use it
-* models
-  * plantgreen : folder that contains the plantgreen model
-    * model.config : configuration file for the plantgreen model, it includes the sdf file
-    * plantgreen.sdf : description of the model, it is generated autonomatically, you must not modify it
-    * plantgreen.xacro : description of the model, to generate the sdf file from the xacro you can use the Makefile (cf "how to use -> modify the plant models")
-  * plantred : folder that contains the plantred model
-    * model.config : configuration file for the plantred model, it includes the sdf file
-    * plantred.sdf : description of the model, it is generated autonomatically, you must not modify it
-    * plantred.xacro : description of the model, to generate the sdf file from the xacro you can use the Makefile (cf "how to use -> modify the plant models")
-  * Makefile : to easilly generate the sdf files from the xacro files
-* worlds : cf "how to use -> modify the worlds"
-  * engrais.world : file generated automatically, should not be modified
-  * engrais2.world : file generated automatically, should not be modified
-  * engrais3.world : file generated automatically, should not be modified
-  * engrais.world.xacro : xacro file that uses population tags to generate the default world
-  * engrais2.world.py : python3 code that uses population tags to generate a world
-  * engrais3.world.py : python3 code that fully generates a customable random world
+  * laser1.launch : receives information from the sick tim 1
+  * laser2.launch : receives information from the sick tim 2
 
 ## how to use
 
-### start the simulation
+None of the launch files contains arguments, meaning that manual modifications are needed if one wants to change the way the nodes work. 
 
-To use the launch file starting the default world:
-```
-roslaunch engrais_gazebo engrais_world.launch
-```
+# Launching Everyting
 
-To start the simulation with another world configuration (worldname beeing the name of the file worldname.world that you want to use)
-```
-roslaunch engrais_gazebo engrais_world.launch world:=worldname
-```
-
-### modify the plant models
-
-In order to ease the creation of the plant models, it was decided to use first an xacro file and then to convert this file into the needed sdf file. That is, if you want to modify the model, you should modify the corresponding xacro file, and then use the Makefile to generate the sdf file. The Makefile uses two toos: rosrun xacro, and sed bash tool.
-
-To update both models:
-```
-make all
-```
-
-To update the plantgreen model
-```
-make green
-```
-
-To update the plantred model
-```
-make red
-```
-
-To clean the sdf files (also done with make all):
-```
-make clean
-```
-By cleaning the sdf files, we mean removing the xmlns:xacro tag, needed to convert xacro file into sdf file, but that causes a warning (because the tag is unkown) when importing the model into the world.
-
-### modify the worlds
-
-Two ways of generatic a world are considered: the use of xacro file or the use of a python3 script. To easily convert the xacro/python3 file into a world file, you can use the Makefile
-
-To generate the world engrais.world (simple, world by default)
-```
-make engrais
-```
-
-To generate the world engrais2.world (work in progress, should not be used for now, may be removed)
-```
-make engrais2
-```
-
-To generate the world engrais3.world (random plants and weeds)
-```
-make engrais3
-```
-
-### control the robot
-
-## work to do
-
-* optimize the plant model by maybe removing the joint
-* create new worlds
-
-# general usefull commands
-
-## xacro
-
-To check an xacro file when generating urdf file:
-```
-xacro inputfile.xacro | check_urdfs
-```
-## git
-
-To check wich branch you are working on
-```
-git branch
-```
-
-To change branch
-```
-git checkout branchname
-```
-
-To remove files or folders
-```
-git rm filepath
-git rm -rf folderpath
-```
-
-## to be installed to use those packages
-
-```
-sudo apt install ros-melodic-gazebo-ros
-sudo apt install ros-melodic-controller-manager
-sudo apt install ros-melodic-velocity-controllers
-sudo apt install ros-melodic-controller-interface
-sudo apt install ros-melodic-joint-state-controller
-sudo apt install ros-melodic-effort-controllers
-```
-
+First, run raspX.launch for each raspberry, where X is the number described in the network topic. Then, in a computer or central of processing, run central.launch. This will call every launch file needed to run the robot and everything should work if done correctly 
