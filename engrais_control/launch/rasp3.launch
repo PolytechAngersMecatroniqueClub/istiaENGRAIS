@@ -2,26 +2,26 @@
 <launch>
 
 	<!--> Sick Tim Arguments <-->
-	<arg name="sick1_node_name" value="sick_1_rpi_3"/>
-	<arg name="sick1_scan_topic" value="scan1"/>
-	<arg name="laser1_rviz_frame" value="laser1"/>
+	<arg name="sick_node_name" value="sick_1_rpi_3"/>
+	<arg name="scan_topic" value="scan1"/>
+	<arg name="rviz_frame" value="laser1"/>
 
 	<!--> Find Lines Arguments <-->
-	<arg name="lines1_topic" value="lines1"/>
+	<arg name="lines_topic" value="lines1"/>
 	<arg name="findlines_node_name" value="engrais_findlines_1"/>
 
 
-	<include file="$(find sick_tim)/launch/engrais.launch">
-		<arg name="node_name" value="$(arg sick1_node_name)"/>
-		<arg name="publish_topic" value="$(arg sick1_scan_topic)"/>
-		<arg name="frame_name" value="$(arg laser1_rviz_frame)"/>
+	<include file="$(find sick_tim)/launch/$(arg rviz_frame).launch">
+		<arg name="node_name" value="$(arg sick_node_name)"/>
+		<arg name="publish_topic" value="$(arg scan_topic)"/>
+		<arg name="frame_name" value="$(arg rviz_frame)"/>
 	</include>
 
 
 	<node name="$(arg findlines_node_name)" pkg="engrais_control" type="robot_findlines">
-		<param name="subscribe_topic" type="string" value="$(arg sick1_scan_topic)"/>
-		<param name="publish_topic" type="string" value="$(arg lines1_topic)"/>
-		<param name="frame_name" type="string" value="$(arg laser1_rviz_frame)"/>
+		<param name="subscribe_topic" type="string" value="$(arg scan_topic)"/>
+		<param name="publish_topic" type="string" value="$(arg lines_topic)"/>
+		<param name="frame_name" type="string" value="$(arg rviz_frame)"/>
 	</node>
 
 </launch>

@@ -3,8 +3,8 @@
     <!-- <param name="robot_description" command="$(find xacro)/xacro - - inorder '$(find sick_tim)/urdf/example.urdf.xacro'" />
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" /> -->
 
-    <arg name="publish_topic" default="scan"/>
-    <arg name="frame_name" default="laser"/>
+    <arg name="publish_topic" default="scan2"/>
+    <arg name="frame_name" default="laser2"/>
     <arg name="node_name" default="sick_rpi"/>
 
     <node name="$(arg node_name)" pkg="sick_tim" type="sick_tim551_2050001" respawn="false" output="screen">
@@ -27,7 +27,7 @@
 
         <!-- Uncomment this to enable TCP instead of USB connection; 'hostname' is the host name or IP address of the laser scanner
         In cases where a race condition exists and the computer boots up before the TIM is ready, increase 'timelimit.'-->
-        <param name="hostname" type="string" value="192.168.10.111" />
+        <param name="hostname" type="string" value="192.168.10.112" />
         <param name="lidar_topic_name" type="string" value="$(arg publish_topic)" />
         <param name="port" type="string" value="2112" />
         <param name="timelimit" type="int" value="5" />
@@ -37,7 +37,7 @@
     <node
         pkg = "tf"
         type = "static_transform_publisher"
-        name = "laser3_body_broadcaster"
-        args="-0.7 0 0 3.14159 0 0 body laser1 100"
+        name = "$(arg frame_name)_body_broadcaster"
+        args="-0.7 0 0 3.141592 0 0 body $(arg frame_name) 100"
     />
 </launch>
