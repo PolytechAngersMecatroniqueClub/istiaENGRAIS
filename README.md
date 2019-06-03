@@ -19,9 +19,9 @@ Since we use ROS TCP/IP architecture, we have to define an IP for each object co
 
 To change the default ROS core master, just run: 
 
--export ROS_MASTER_URI=http://<RosMasterMachineIP>:11311
+-export ROS_MASTER_URI=http://'RosMasterMachineIP':11311
 
--export ROS_IP=<YourMachineIP>
+-export ROS_IP='YourMachineIP'
 
 # engrais_control
 
