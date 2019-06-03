@@ -15,53 +15,19 @@ int main(int argc, char **argv){
     // Initialization of the node parameters
 
     std::string port_name = "/dev/ttyUSBX";
-    if(node.getParam("port_name", port_name)){
-            ROS_INFO("motor_node::port_name parameter: %s", port_name.c_str());
-    }else{
-            ROS_WARN("motor_node::Could not get the port_name parameter, default value: %s", port_name.c_str());
-    }
-
+    node.getParam("port_name", port_name);
     int baud = 57600;
-    if(node.getParam("baud", baud)){
-            ROS_INFO("motor_node::baud parameter: %d", (int)baud);
-    }else{
-            ROS_WARN("motor_node::Could not get the baud parameter, default value: %d", (int)baud);
-    }
-
+    node.getParam("baud", baud);
     int timeout = 1000;
-    if(node.getParam("timeout", timeout)){
-            ROS_INFO("motor_node::timeout parameter: %d", (int)timeout);
-    }else{
-            ROS_WARN("motor_node::Could not get the timeout parameter, default value: %d", (int)timeout);
-    }
-
+    node.getParam("timeout", timeout);
     int bytesize = 8;
-    if(node.getParam("data_bits", bytesize)){
-            ROS_INFO("motor_node::data_bits parameter: %d", (int)bytesize);
-    }else{
-            ROS_WARN("motor_node::Could not get the data_bits parameter, default value: %d", (int)bytesize);
-    }
-
+    node.getParam("data_bits", bytesize);
     int parity = 0;
-    if(node.getParam("parity", parity)){
-            ROS_INFO("motor_node::parity parameter: %d", (int)parity);
-    }else{
-            ROS_WARN("motor_node::Could not get the parity parameter, default value: %d", (int)parity);
-    }
-
+    node.getParam("parity", parity);
     int flowctrl = 0;
-    if(node.getParam("hdw_flow_ctrl", flowctrl)){
-            ROS_INFO("motor_node::hdw_flow_ctrl parameter: %d", (int)flowctrl);
-    }else{
-            ROS_WARN("motor_node::Could not get the hdw_flow_ctrl parameter, default value: %d", (int)flowctrl);
-    }
-
+    node.getParam("hdw_flow_ctrl", flowctrl);
     int stop_bit = 1;
-    if(node.getParam("stop_bit", stop_bit)){
-            ROS_INFO("motor_node::stop_bit parameter: %d", (int)stop_bit);
-    }else{
-            ROS_WARN("motor_node::Could not get the stop_bit parameter, default value: %d", (int)stop_bit);
-    }
+    node.getParam("stop_bit", stop_bit);
 
     serial::Serial my_serial(port_name,
                              baud,
@@ -81,9 +47,9 @@ int main(int argc, char **argv){
         ROS_ERROR("Serial port named %s can not be oppened", port_name.c_str());
         return 1;
     }
-    uint8_t charge;
+    /*uint8_t charge;
     while(getStateOfCharge(my_serial, charge) != 1);
-    ROS_INFO("State of charge (percent): %d", charge);
+    ROS_INFO("State of charge (percent): %d", charge);*/
 
     double temp;
     if(getEngineTemperature(my_serial, temp)== 1){
