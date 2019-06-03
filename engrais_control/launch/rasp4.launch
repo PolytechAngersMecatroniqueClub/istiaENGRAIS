@@ -11,7 +11,7 @@
 	<arg name="findlines_node_name" value="engrais_findlines_2"/>
 
 
-	<include file="$(find sick_tim)/launch/engrais.launch">
+	<include file="$(find sick_tim)/launch/$(arg rviz_frame).launch">
 		<arg name="node_name" value="$(arg sick_node_name)"/>
 		<arg name="publish_topic" value="$(arg scan_topic)"/>
 		<arg name="frame_name" value="$(arg rviz_frame)"/>
