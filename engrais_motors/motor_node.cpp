@@ -1,264 +1,18 @@
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 
-#include "serial/serial.h"
+#include "src/ezwheel_serial.h"
 
 #include <sstream>
 #include <string>
 #include <vector>
 
-uint8_t cpt=0;
-
-typedef struct{
-    uint8_t direction;
-    uint8_t control_mode;
-    uint8_t brake_mode;
-    uint16_t tork_estimate;
-    uint16_t speed;
-    uint8_t error;
-    uint8_t charge_status;
-    uint8_t power_status;
-}WheelStatus;
-
-
-uint8_t addCRC(uint8_t* frame, size_t size){
-    uint8_t crc = 0;
-    for(size_t i=2; i<size-1; i++){ // skip the header (first 2 bytes) and the crc (last byte)
-        // the crc is just the LSB of the sum of the data
-        crc += frame[i];
-    }
-    frame[size-1] = crc;
-    return crc;
-}
-
-void initGetRequest(uint8_t* request){
-    request[0]  = 0xAA; // synchronization
-    request[1]  = 0x0F; // frame size (from the following byte)
-    request[2]  = 0x08; // Quick session frame type
-
-    // In every session, the value is incremented
-    // the 4 MSB must be 0x1 (USB application)
-    // the 4 LSB should count from 0x0 to 0xF and loop back
-    // In every session, the value is incremented. After 0xF is 0x0
-    request[3]  = 0x10; // Session identification - modify
-
-    //The value is incremented in every exchange.
-    request[4]  = 0x00 + cpt; // Frame identification - modify
-    cpt++;
-
-    request[5]  = 0x0A; // Reserved
-    request[6]  = 0x00; // Reserved
-    request[7]  = 0x00; // Reserved
-    request[8]  = 0x00; // Reserved
-    request[9]  = 0x01; // Get request type
-    request[10] = 0x05; // Reserved
-}
-
-void initSetRequest(uint8_t* request, uint8_t data_size){
-    request[0]  = 0xAA; // synchronization
-    request[1]  = 0x0F + data_size; // frame size (from the following byte)
-    request[2]  = 0x08; // Quick session frame type
-
-    // In every session, the value is incremented
-    // the 4 MSB must be 0x1 (USB application)
-    // the 4 LSB should count from 0x0 to 0xF and loop back
-    // In every session, the value is incremented. After 0xF is 0x0
-    request[3]  = 0x11; // Session identification - modify
-
-    //The value is incremented in every exchange.
-    request[4]  = 0x00 + cpt; // Frame identification - modify
-    cpt++;
-
-    request[5]  = 0x0A + data_size; // Reserved
-    request[6]  = 0x00; // Reserved
-    request[7]  = 0x00; // Reserved
-    request[8]  = 0x00; // Reserved
-    request[9]  = 0x02; // Set request type
-    request[10] = 0x05; // Reserved
-}
-
-
-int getStateOfCharge(serial::Serial& my_serial, uint8_t& charge){
-    size_t req_size = 17;
-    uint8_t request[req_size];
-
-    initGetRequest(request);
-
-    request[11] = 0x01; // Data address
-    request[12] = 0x00; // Data address
-    request[13] = 0x06; // Data address
-    request[14] = 0x06; // Data address
-
-    request[15] = 0x01; // Data Size
-
-    addCRC(request, req_size);
-
-    my_serial.write(request, req_size);
-
-    size_t resp_size = 10; // 7 + 2 + 1
-    size_t received_cpt;
-    uint8_t response[resp_size];
-
-    received_cpt = my_serial.read(response, resp_size);
-    if(received_cpt != resp_size){
-        ROS_ERROR("getStateOfCharge::Expected %d bytes but got %d", resp_size, received_cpt);
-        return -1;
-    }
-    if(response[6] == 0xFF){
-        ROS_ERROR("getStateOfCharge::This is a Request Error frame!");
-        return -2;
-    }
-    charge = response[8];
-    return 1;
-}
-
-
-int getEngineTemperature(serial::Serial& my_serial, double& temp){
-    size_t req_size = 17;
-    uint8_t request[req_size];
-    int16_t rcv_temp;
-
-    initGetRequest(request);
-
-    request[11] = 0x00; // Data address
-    request[12] = 0x00; // Data address
-    request[13] = 0x01; // Data address
-    request[14] = 0x05; // Data address
-
-    request[15] = 0x02; // Data Size
-
-    addCRC(request, req_size);
-
-    my_serial.write(request, req_size);
-
-    size_t resp_size = 11; // 7 + 2 + 2
-    size_t received_cpt;
-    uint8_t response[resp_size];
-
-    received_cpt = my_serial.read(response, resp_size);
-    if(received_cpt != resp_size){
-        ROS_ERROR("getEngineTemperature::Expected %d bytes but got %d", resp_size, received_cpt);
-        return -1;
-    }
-    if(response[6] == 0xFF){
-        ROS_ERROR("getEngineTemperature::This is a Request Error frame!");
-        return -2;
-    }
-
-    memcpy(&rcv_temp, &response[8], sizeof(int16_t));
-    temp = rcv_temp / 10.0;
-
-    return 1;
-}
-
-int getWheelStatus(serial::Serial& my_serial, WheelStatus& wheelstatus){
-    size_t req_size = 17;
-    uint8_t request[req_size];
-
-    initGetRequest(request);
-
-    request[11] = 0x00; // Data address
-    request[12] = 0x00; // Data address
-    request[13] = 0x04; // Data address
-    request[14] = 0x07; // Data address
-
-    request[15] = 0x04; // Data Size
-
-    addCRC(request, req_size);
-
-    my_serial.write(request, req_size);
-
-    size_t resp_size = 13; // 7 + 2 + 4
-    size_t received_cpt;
-    uint8_t response[resp_size];
-
-    received_cpt = my_serial.read(response, resp_size);
-    if(received_cpt != resp_size){
-        ROS_ERROR("getWheelStatus::Expected %d bytes but got %d", resp_size, received_cpt);
-        return -1;
-    }
-    if(response[6] == 0xFF){
-        ROS_ERROR("getWheelStatus::This is a Request Error frame!");
-        return -2;
-    }
-
-    wheelstatus.direction     = (response[8] & 0xC0) >> 6;
-    wheelstatus.control_mode  = (response[8] & 0x20) >> 5;
-    wheelstatus.brake_mode    = (response[8] & 0x08) >> 3;
-    wheelstatus.tork_estimate =  response[9] + (((uint16_t)response[8] & 0x0003) << 8);
-    wheelstatus.speed         = ((uint16_t)response[10] << 2) + ((response[11] & 0xC0) >> 6);
-    wheelstatus.error         = (response[11] & 0x20) >> 5;
-    wheelstatus.charge_status = (response[11] & 0x18) >> 3;
-    wheelstatus.power_status  = (response[11] & 0x06) >> 1;
-    
-    return 1;
-}
-
-int setWheelSpeed(serial::Serial& my_serial, uint16_t speed, uint8_t direction){
-    size_t req_size = 21; // 17 + 4
-    uint8_t request[req_size];
-
-    initSetRequest(request, 4); // 4 bytes are needed to set the speed
-
-    request[11] = 0x01; // Data address
-    request[12] = 0x00; // Data address
-    request[13] = 0x09; // Data address
-    request[14] = 0x10; // Data address
-
-    request[15] = 0x04; // Data Size
-
-    // set direction
-    request[16] = direction << 6;
-    // set speed mode
-    request[16] |= 0x20;
-    // set not used bits
-    request[16] &= 0xEB;
-    
-    // set Tork to 0, not used in speed mode...
-    request[16] &= 0xFC;
-    request[17] = 0x00;
-    
-    // set speed
-    request[18] = 0x00FF&(speed >> 2); // Data Size
-    request[19] = 0x00FF&(speed << 6); // Data Size
-    // set not used bits
-    request[19] &= 0xC0; // Data Size
-
-    addCRC(request, req_size);
-
-    ROS_WARN("REQUEST");
-    for(int i =0; i< req_size; i++){
-        ROS_WARN("[%d] %x", i, request[i]);
-    }
-
-    my_serial.write(request, req_size);
-
-    size_t resp_size = 9; // 7 + 2 + 4
-    size_t received_cpt;
-    uint8_t response[resp_size];
-
-    received_cpt = my_serial.read(response, resp_size);
-
-    ROS_WARN("RESPONSE");
-    for(int i =0; i< resp_size; i++){
-        ROS_WARN("[%d] %x", i, response[i]);
-    }
-
-    if(received_cpt != resp_size){
-        ROS_ERROR("setWheelSpeed::Expected %d bytes but got %d", resp_size, received_cpt);
-        return -1;
-    }
-    if(response[6] == 0xFF){
-        ROS_ERROR("setWheelSpeed::This is a Request Error frame!");
-        return -2;
-    }
-
-    return 1;
-}
-
 int main(int argc, char **argv){
     ros::init(argc, argv, "motor_node");
     ros::NodeHandle node;
+
+    // ********************************************************************
+    // Initialization of the node parameters
 
     std::string port_name = "/dev/ttyUSBX";
     if(node.getParam("port_name", port_name)){
@@ -317,6 +71,9 @@ int main(int argc, char **argv){
                              serial::stopbits_t(stop_bit),
                              serial::flowcontrol_t(flowctrl));
 
+    // end of the initialization
+    // ********************************************************************
+
     if(my_serial.isOpen()){
         ROS_INFO("\n ******** \n \tSerial port named %s is oppened \n ********", port_name.c_str());
     }
@@ -325,32 +82,27 @@ int main(int argc, char **argv){
         return 1;
     }
     uint8_t charge;
-    while(getStateOfCharge(my_serial, charge) != 1){
-        ros::Duration(2).sleep();
-    }
+    while(getStateOfCharge(my_serial, charge) != 1);
     ROS_INFO("State of charge (percent): %d", charge);
 
     double temp;
     if(getEngineTemperature(my_serial, temp)== 1){
-        ROS_INFO("Temperature  (0.1 deg C): %2.2f", temp);
+        ROS_INFO("Temperature  (deg C): %2.2f", temp);
     }
 
     WheelStatus wheelstatus;
     if(getWheelStatus(my_serial, wheelstatus)==1){
-        ROS_INFO("WheelStatus direction:        %d", wheelstatus.direction);
-        ROS_INFO("WheelStatus control_mode:     %d", wheelstatus.control_mode);
-        ROS_INFO("WheelStatus brake_mode:       %d", wheelstatus.brake_mode);
-        ROS_INFO("WheelStatus tork_estimate:    %d", wheelstatus.tork_estimate);
-        ROS_INFO("WheelStatus speed:            %d", wheelstatus.speed);
-        ROS_INFO("WheelStatus error:            %d", wheelstatus.error);
-        ROS_INFO("WheelStatus charge_status:    %d", wheelstatus.charge_status);
-        ROS_INFO("WheelStatus power_status:     %d", wheelstatus.power_status);
+        display_status(wheelstatus);
     }
 
     int cpt_tmp = 0;
     while(setWheelSpeed(my_serial, 20, 1)==1 && cpt_tmp < 50){
         cpt_tmp ++;
         ros::Duration(0.1).sleep();
+    }
+
+    if(getWheelStatus(my_serial, wheelstatus)==1){
+        display_status(wheelstatus);
     }
 
 

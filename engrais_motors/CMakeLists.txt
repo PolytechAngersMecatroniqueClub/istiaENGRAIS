@@ -25,6 +25,7 @@ catkin_package(
 
 add_executable(motor_node
     motor_node.cpp
+    src/ezwheel_serial.cpp
 )
 
 target_link_libraries(motor_node ${catkin_LIBRARIES})
