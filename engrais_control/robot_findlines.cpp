@@ -138,11 +138,11 @@ int main(int argc, char **argv){
     Utility::printInColor("Initializing Robot Control Ros Node", CYAN);
 
     if(!node.getParam(node_name + "/subscribe_topic", sub_topic) || !node.getParam(node_name + "/publish_topic", pub_topic)){
-        ROS_ERROR_STREAM("Argument missing in node " << node_name << ", expected 'subscribe_topic', 'publish_topic' and [optional: 'rviz_frame']\n\n");
+        ROS_ERROR_STREAM("Argument missing in node " << node_name << ", expected 'subscribe_topic', 'publish_topic' and [optional: 'frame_name']\n\n");
         return -1;
     }
 
-    node.param<string>(node_name + "/rviz_frame", mapName, "world");
+    node.param<string>(node_name + "/frame_name", mapName, "world");
 
     ros::Subscriber sub = node.subscribe(sub_topic, 10, OnRosMsg); // /engrais/laser_front/scan or /engrais/laser_back/scan
     pubLineNode = node.advertise<visualization_msgs::Marker>(pub_topic, 10);// /engrais/laser_front/lines or /engrais/laser_back/lines

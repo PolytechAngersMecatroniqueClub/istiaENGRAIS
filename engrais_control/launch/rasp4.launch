@@ -1,0 +1,27 @@
+<?xml version="1.6" ?>
+<launch>
+
+	<!--> Sick Tim Arguments <-->
+	<arg name="sick2_node_name" value="sick_2_rpi_4"/>
+	<arg name="sick2_scan_topic" value="scan2"/>
+	<arg name="laser2_rviz_frame" value="laser2"/>
+
+	<!--> Find Lines Arguments <-->
+	<arg name="lines2_topic" value="lines2"/>
+	<arg name="findlines_node_name" value="engrais_findlines_2"/>
+
+
+	<include file="$(find sick_tim)/launch/engrais.launch">
+		<arg name="node_name" value="$(arg sick1_node_name)"/>
+		<arg name="publish_topic" value="$(arg sick1_scan_topic)"/>
+		<arg name="frame_name" value="$(arg laser1_rviz_frame)"/>
+	</include>
+
+
+	<node name="$(arg findlines_node_name)" pkg="engrais_control" type="robot_findlines">
+		<param name="subscribe_topic" type="string" value="$(arg sick1_scan_topic)"/>
+		<param name="publish_topic" type="string" value="$(arg lines1_topic)"/>
+		<param name="frame_name" type="string" value="$(arg laser1_rviz_frame)"/>
+	</node>
+
+</launch>
