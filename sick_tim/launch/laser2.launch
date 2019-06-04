@@ -7,6 +7,8 @@
     <arg name="frame_name" default="laser2"/>
     <arg name="node_name" default="sick_rpi"/>
 
+    <arg name="lidar_IP" default="192.168.10.112"/>
+
     <node name="$(arg node_name)" pkg="sick_tim" type="sick_tim551_2050001" respawn="false" output="screen">
         <!-- default values: -->
         <!--
@@ -27,7 +29,7 @@
 
         <!-- Uncomment this to enable TCP instead of USB connection; 'hostname' is the host name or IP address of the laser scanner
         In cases where a race condition exists and the computer boots up before the TIM is ready, increase 'timelimit.'-->
-        <param name="hostname" type="string" value="192.168.10.112" />
+        <param name="hostname" type="string" value="$(arg lidar_IP)" />
         <param name="lidar_topic_name" type="string" value="$(arg publish_topic)" />
         <param name="port" type="string" value="2112" />
         <param name="timelimit" type="int" value="5" />
