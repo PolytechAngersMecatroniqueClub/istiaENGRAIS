@@ -26,7 +26,7 @@
 
 using namespace std;
 	
-RubyGeneticOnePointPosNeg rubyGenOPPN;
+RubyGenetic rubyGenOPPN;
 
 string mapName;
 
@@ -100,7 +100,7 @@ void sendLine(const vector<Model> & models, const Pearl & pearl){
 
 //--------------------------------------------------------------------------------------------------------
 void OnRosMsg(const sensor_msgs::LaserScan & msg){
-    static int msgCont = 0;
+    /*static int msgCont = 0;
     const static auto firstMsgTime = std::chrono::system_clock::now();
 
     auto start = std::chrono::system_clock::now();
@@ -108,23 +108,23 @@ void OnRosMsg(const sensor_msgs::LaserScan & msg){
     std::chrono::duration<double> total_time = start - firstMsgTime;
     std::chrono::duration<double> elapsed_seconds = std::chrono::duration<double>::zero();
 
-    const double msgPeriod = msgCont == 0 ? 0 : total_time.count() / msgCont;
+    const double msgPeriod = msgCont == 0 ? 0 : total_time.count() / msgCont;*/
 
-    while(ros::ok() && elapsed_seconds.count() <= msgPeriod * 0.8){
+   // while(ros::ok() && elapsed_seconds.count() <= msgPeriod * 0.8){
 
         rubyGenOPPN.populateOutliers(msg);
 
         vector <Model> lines = rubyGenOPPN.findLines();
-        //cout << rubyGenOPPN << endl << endl;
+        cout << rubyGenOPPN << endl << endl;
 
         sendLine(lines, rubyGenOPPN);
 
         auto end = std::chrono::system_clock::now();
 
-        elapsed_seconds = end - start;
-    }
+        //elapsed_seconds = end - start;
+    //}
     
-    msgCont++;
+    //msgCont++;
 }
 //--------------------------------------------------------------------------------------------------------
 int main(int argc, char **argv){
@@ -149,7 +149,7 @@ int main(int argc, char **argv){
 
     Utility::printInColor("Code Running, press Control+C to end", CYAN);
     ros::spin();
-    Utility::printInColor("Shitting down...", CYAN);
+    Utility::printInColor("Shutting down...", CYAN);
 
     sub.shutdown();
     pubLineNode.shutdown();

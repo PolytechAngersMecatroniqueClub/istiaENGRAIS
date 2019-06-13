@@ -12,28 +12,29 @@
 #include <Model.h>
 #include <Pearl.h>
 
-class RubyPure : public Pearl{
+class RubyPure : public Pearl{ //Class to implement Ruby pure. This algorithm is a modified version of Pearl, boosting models that have parallel lines and keeping models that were found in the previous execution
 	public:
 		//------------------------------------------------------------------------------------------------
-		RubyPure(); //Checked
+		RubyPure(); //Default constructor
 		//------------------------------------------------------------------------------------------------
-		void populateOutliers(const sensor_msgs::LaserScan & ); //Checked
+		void populateOutliers(const sensor_msgs::LaserScan & msg); //Populate outliers vector with laser scan message
 
 
 	private:
 		//################################################################################################
 		
 		//------------------------------------------------------------------------------------------------
-		void countParallelLines(); //Checked
+		void countParallelLines(); //Calculates parallel count for each model
 		//------------------------------------------------------------------------------------------------
-		void eraseBadModels(const double ); //Checked
+		void eraseBadModels(const double threshRatio); //Erases models that are considered bad, using Energy / (nPoints * parallel count)
+
 		//################################################################################################
 		
-		friend std::ostream & operator << (std::ostream &out, const RubyPure &r); //Checked
+		friend std::ostream & operator << (std::ostream &out, const RubyPure &r); //Print ruby
 };
 
 //--------------------------------------------------------------------------------------------------------
-inline RubyPure::RubyPure(){} //Checked
+inline RubyPure::RubyPure(){} //Default constructor
 
 
 #endif

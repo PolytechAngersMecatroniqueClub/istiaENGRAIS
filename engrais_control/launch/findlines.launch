@@ -11,7 +11,7 @@
 	<arg name="rviz_frame_back" default="sick_back_link"/>
 
 
-	<node name="engrais_findlines_front" pkg="engrais_control" type="robot_findlines">
+	<node name="engrais_findlines_front" pkg="engrais_control" type="robot_findlines" output="screen">
 		<param name="subscribe_topic" type="string" value="$(arg subscribe_topic_front)"/>
 		<param name="publish_topic" type="string" value="$(arg publish_topic_front)"/>
 		<param name="rviz_frame" type="string" value="$(arg rviz_frame_front)"/>

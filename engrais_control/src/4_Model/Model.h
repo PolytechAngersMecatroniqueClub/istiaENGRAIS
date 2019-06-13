@@ -75,9 +75,9 @@ class Model{ //Class to store models (lines)
 
 
         //------------------------------------------------------------------------------------------------
-        bool operator < (const Model & ) const; //Compare two models fitness
+        bool operator < (const Model & m) const; //Compare two models fitness
         //------------------------------------------------------------------------------------------------
-        friend std::ostream & operator << (std::ostream & , const Model & ); //Print model 
+        friend std::ostream & operator << (std::ostream & out, const Model & m); //Print model 
 };
 
 
