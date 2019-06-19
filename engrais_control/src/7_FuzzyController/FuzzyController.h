@@ -31,6 +31,7 @@
 #include <cmath>
 #include <iostream>
 #include <fl/Headers.h>
+#include <Model.h>
 
 #ifndef PI 
 #define PI 3.1415926535 //Define PI
@@ -49,13 +50,16 @@ class FuzzyController{ //Class to encapsulate the fuzzy controller
 
     public:
     	//------------------------------------------------------------------------------------------------
-        FuzzyController(fl::TNorm* AndMethod = new fl::Minimum, fl::SNorm* OrMethod = new fl::Maximum, fl::TNorm* ImplicationMethod = new fl::AlgebraicProduct, 
-                        fl::SNorm* AggregationMethod = new fl::Maximum, fl::Defuzzifier* defuzzMethod = new fl::Centroid(100)); //Fuzzy controller constructor to default operators
+        FuzzyController(fl::TNorm* AndMethod = new fl::Minimum, 
+        				fl::SNorm* OrMethod = new fl::Maximum, 
+        				fl::TNorm* ImplicationMethod = new fl::AlgebraicProduct, 
+                        fl::SNorm* AggregationMethod = new fl::Maximum, 
+                        fl::Defuzzifier* defuzzMethod = new fl::Centroid(100)
+		); //Fuzzy controller constructor to default operators
         //------------------------------------------------------------------------------------------------
         std::pair<double, double> getOutputValues(const double ratio, const double ang); //Use the inputs passed as parameters to calculate the output
-
         //------------------------------------------------------------------------------------------------
-        friend std::ostream & operator << (std::ostream & , const FuzzyController & ); //Print Fuzzy Controller
+        friend std::ostream & operator << (std::ostream & out, const FuzzyController & fz); //Print Fuzzy Controller
         
 };
 

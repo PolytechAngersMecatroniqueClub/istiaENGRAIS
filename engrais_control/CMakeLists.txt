@@ -201,15 +201,6 @@ add_executable(robot_findlines robot_findlines.cpp
 target_link_libraries(robot_findlines ${catkin_LIBRARIES})
 #add_dependencies(robot_findlines engrais_control_gencpp)
 
-
-
-add_executable(robot_keyboard_move robot_keyboard_move.cpp
-)
-target_link_libraries(robot_keyboard_move ${catkin_LIBRARIES})
-#add_dependencies(robot_keyboard_move engrais_control_gencpp)
-
-
-
 add_executable(robot_control robot_control.cpp
     src/1_Point/Point.cpp
     src/2_WeightedPoint/WeightedPoint.cpp

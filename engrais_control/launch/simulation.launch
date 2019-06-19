@@ -29,12 +29,12 @@
 		<arg name="rviz_frame_back" value="$(arg back_rviz_frame)"/>
 	</include>
 
-	<!--><include file="$(find engrais_control)/launch/central.launch">
+	<include file="$(find engrais_control)/launch/central.launch">
 		<arg name="subscribe_topic_front" value="$(arg front_lines_topic)"/>
 		<arg name="subscribe_topic_back" value="$(arg back_lines_topic)"/>
 		
 		<arg name="publish_topic_left" value="$(arg left_weel_topic)"/>
 		<arg name="publish_topic_right" value="$(arg right_weel_topic)"/>
-	</include><-->
+	</include>
 
 </launch>

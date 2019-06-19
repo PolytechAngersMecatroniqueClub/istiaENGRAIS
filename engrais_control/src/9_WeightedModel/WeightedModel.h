@@ -16,57 +16,57 @@
 #include <5_RubyGeneticOnePointPosNegInfinite.h>
 
 
-class WeightedModel{ 
+class WeightedModel{ //Class to combine models into a "Center Of Mass" model 
     private:
-        int cont = 1;
+        int cont = 1; //Counter to calculate the final model
 
-        double a = MAX_DBL;
-        double b = MAX_DBL;
+        double a = MAX_DBL; //Final slope
+        double b = MAX_DBL; //Final intercept
 
-        std::pair<Point, Point> positivePoints;
-        std::pair<Point, Point> negativePoints;
+        std::pair<Point, Point> positivePoints; //Initial and final point to 
+        std::pair<Point, Point> negativePoints; //Initial and final point to 
 
     public:
         //------------------------------------------------------------------------------------------------
-        WeightedModel();
+        WeightedModel(); //Default Constructor
         //------------------------------------------------------------------------------------------------
-        WeightedModel(const Model & m);
+        WeightedModel(const Model & m); //Constructor using a model
         //------------------------------------------------------------------------------------------------
-        WeightedModel(const double aa, const double bb);
+        WeightedModel(const double aa, const double bb); //Constructor to assign slope and intercept
         //------------------------------------------------------------------------------------------------
-        double getSlope();
+        double getSlope() const; //Get slope
         //------------------------------------------------------------------------------------------------
-        double getIntercept();
+        double getIntercept() const; //Get intercept
         //------------------------------------------------------------------------------------------------
-        int getCounter();
+        int getCounter() const; //Get counter
         //------------------------------------------------------------------------------------------------
-        void assignPoints(const Model & m);
+        void assignPoints(const Model & m); //Assign points to weighted model
         //------------------------------------------------------------------------------------------------
-        bool checkIfSameModel(const Model & m);
+        bool checkIfSameModel(const Model & m) const; //Check if the two models are approximately the same
         //------------------------------------------------------------------------------------------------
-        void fuseModels(const Model & m);
+        void fuseModels(const Model & m); //Fuse two models
         //------------------------------------------------------------------------------------------------
-        Model toModel();
+        Model toModel() const; //Converts to regular model
 
         
         //------------------------------------------------------------------------------------------------
-        friend std::ostream & operator << (std::ostream & out, const WeightedModel & wm);
+        friend std::ostream & operator << (std::ostream & out, const WeightedModel & wm); //Print object
 };
 
 //--------------------------------------------------------------------------------------------------------
-inline WeightedModel::WeightedModel() {}
+inline WeightedModel::WeightedModel() {} //Default Constructor
 //--------------------------------------------------------------------------------------------------------
-inline WeightedModel::WeightedModel(const Model & m) : a(m.getSlope()), b(m.getIntercept()) { this->assignPoints(m); }
+inline WeightedModel::WeightedModel(const Model & m) : a(m.getSlope()), b(m.getIntercept()) { this->assignPoints(m); } //Constructor using a model
 //--------------------------------------------------------------------------------------------------------
-inline WeightedModel::WeightedModel(const double aa, const double bb) : a(aa), b(bb) {}
+inline WeightedModel::WeightedModel(const double aa, const double bb) : a(aa), b(bb) {} //Constructor to assign slope and intercept
 
 
 //--------------------------------------------------------------------------------------------------------
-inline double WeightedModel::getSlope() { return a; }
+inline double WeightedModel::getSlope() const { return a; } //Get slope
 //--------------------------------------------------------------------------------------------------------
-inline double WeightedModel::getIntercept() { return b; }
+inline double WeightedModel::getIntercept() const { return b; } //Get intercept
 //--------------------------------------------------------------------------------------------------------
-inline int WeightedModel::getCounter() { return cont; }
+inline int WeightedModel::getCounter() const { return cont; } //Get counter
 
 #endif
 //********************************************************************************************************

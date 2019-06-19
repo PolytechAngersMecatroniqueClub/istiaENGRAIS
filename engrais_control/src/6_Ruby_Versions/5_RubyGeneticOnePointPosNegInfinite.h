@@ -14,7 +14,7 @@
 #include <Model.h>
 #include <Pearl.h>
 
-class RubyGeneticOnePointPosNegInfinite : public Pearl{
+class RubyGeneticOnePointPosNegInfinite : public Pearl{ //This class implements Ruby genetic one point positive/negative infinite, meaning that the points are no longer 'consumable'and can be attached to multiple model
 	private:
 		std::vector<Point> field; //Field of points
 		
