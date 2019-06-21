@@ -9,7 +9,7 @@
     <param name="stop_bit" value="1" /> <!-- 1:One, 2:Two, 3:One point five -->
     <param name="data_bits" value="8" /> <!-- 5, 6, 7 or 8 -->
     <param name="hdw_flow_ctrl" value="0" /> <!-- 0:None, 1:software, 2:hardware -->
-    <param name="timeout" value="1000" />
+    <param name="timeout" value="400" />
     
 
     <!-- The motor node -->
