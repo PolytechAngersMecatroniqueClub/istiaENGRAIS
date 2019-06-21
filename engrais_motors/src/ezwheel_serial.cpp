@@ -2,6 +2,8 @@
 
 #include "ros/ros.h"
 
+#include <string>
+
 uint8_t addCRC(uint8_t* frame, size_t size){
     uint8_t crc = 0;
     for(size_t i=2; i<size-1; i++){ // skip the header (first 2 bytes) and the crc (last byte)
@@ -13,7 +15,7 @@ uint8_t addCRC(uint8_t* frame, size_t size){
 }
 
 void initGetRequest(uint8_t* request){
-    static int cpt=0;
+    // static int cpt=0;
     request[0]  = 0xAA; // synchronization
     request[1]  = 0x0F; // frame size (from the following byte)
     request[2]  = 0x08; // Quick session frame type
@@ -25,8 +27,8 @@ void initGetRequest(uint8_t* request){
     request[3]  = 0x10; // Session identification - modify
 
     //The value is incremented in every exchange.
-    request[4]  = 0x00 + cpt; // Frame identification - modify
-    cpt++;
+    request[4]  = 0x01; // + cpt; // Frame identification - modify
+    // cpt++;
 
     request[5]  = 0x0A; // Reserved
     request[6]  = 0x00; // Reserved
@@ -37,7 +39,7 @@ void initGetRequest(uint8_t* request){
 }
 
 void initSetRequest(uint8_t* request, uint8_t data_size){
-    static int cpt=0;
+    // static int cpt=0;
     request[0]  = 0xAA; // synchronization
     request[1]  = 0x0F + data_size; // frame size (from the following byte)
     request[2]  = 0x08; // Quick session frame type
@@ -46,11 +48,11 @@ void initSetRequest(uint8_t* request, uint8_t data_size){
     // the 4 MSB must be 0x1 (USB application)
     // the 4 LSB should count from 0x0 to 0xF and loop back
     // In every session, the value is incremented. After 0xF is 0x0
-    request[3]  = 0x11; // Session identification - modify
+    request[3]  = 0x10; // Session identification - modify
 
     //The value is incremented in every exchange.
-    request[4]  = 0x00 + cpt; // Frame identification - modify
-    cpt++;
+    request[4]  = 0x01; // + cpt; // Frame identification - modify
+    // cpt++;
 
     request[5]  = 0x0A + data_size; // Reserved
     request[6]  = 0x00; // Reserved
@@ -183,11 +185,12 @@ int getWheelStatus(serial::Serial& my_serial, WheelStatus& wheelstatus){
     return 1;
 }
 
-int setWheelSpeed(serial::Serial& my_serial, uint16_t speed, uint8_t direction){
+int setWheelSpeed(serial::Serial& my_serial, uint16_t speed, uint8_t direction, uint8_t sess_id){
     size_t req_size = 21; // 17 + 4
     uint8_t request[req_size];
 
     initSetRequest(request, 4); // 4 bytes are needed to set the speed
+    request[3] = sess_id;
 
     request[11] = 0x01; // Data address
     request[12] = 0x00; // Data address
@@ -210,10 +213,19 @@ int setWheelSpeed(serial::Serial& my_serial, uint16_t speed, uint8_t direction){
     request[17] = 0x00;
     
     // set speed
-    request[18] = 0x00FF&(speed >> 2); // Data Size
-    request[19] = 0x00FF&(speed << 6); // Data Size
+    request[18] = 0x00FF&(speed >> 2);
+    request[19] = 0x00FF&(speed << 6);
     // set not used bits
-    request[19] &= 0xC0; // Data Size
+    request[19] &= 0xC0;
+
+    //change endiens for tests
+    /*uint8_t tmp = request[19];
+    request[19] = request[16];
+    request[16] = tmp;
+    tmp = request[18];
+    request[18] = request[17];
+    request[17] = tmp;*/
+
 
     addCRC(request, req_size);
 
@@ -221,6 +233,8 @@ int setWheelSpeed(serial::Serial& my_serial, uint16_t speed, uint8_t direction){
     for(int i =0; i< req_size; i++){
         ROS_WARN("[%d] %x", i, request[i]);
     }*/
+
+    print_frame(request, req_size);
 
     my_serial.write(request, req_size);
 
@@ -257,6 +271,15 @@ void display_status(const WheelStatus& wheelstatus){
     ROS_INFO("WheelStatus error:            %d", wheelstatus.error);
     ROS_INFO("WheelStatus charge_status:    %d", wheelstatus.charge_status);
     ROS_INFO("WheelStatus power_status:     %d", wheelstatus.power_status);
+}
+
+
+void print_frame(const uint8_t * frame, uint8_t size){
+
+    printf("\n");
+    for(int i=0; i<size; i++){
+        printf("frame[%d] = %2.2x\n", i, frame[i]);
+    }
 }
 
 

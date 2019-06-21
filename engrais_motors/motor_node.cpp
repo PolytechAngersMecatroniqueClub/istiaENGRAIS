@@ -52,9 +52,8 @@ int main(int argc, char **argv){
     ROS_INFO("State of charge (percent): %d", charge);*/
 
     double temp;
-    if(getEngineTemperature(my_serial, temp)== 1){
-        ROS_INFO("Temperature  (deg C): %2.2f", temp);
-    }
+    while(getEngineTemperature(my_serial, temp)!= 1);
+    ROS_INFO("Temperature  (deg C): %2.2f", temp);
 
     WheelStatus wheelstatus;
     if(getWheelStatus(my_serial, wheelstatus)==1){
@@ -62,9 +61,10 @@ int main(int argc, char **argv){
     }
 
     int cpt_tmp = 0;
-    while(setWheelSpeed(my_serial, 20, 1)==1 && cpt_tmp < 50){
-        cpt_tmp ++;
-        ros::Duration(0.1).sleep();
+
+    for(uint8_t i = 0; i < 0x30; i++){
+        ROS_INFO("session id: %x", i);
+            setWheelSpeed(my_serial, 20, 1, i);
     }
 
     if(getWheelStatus(my_serial, wheelstatus)==1){
