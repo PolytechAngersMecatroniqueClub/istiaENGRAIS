@@ -62,10 +62,10 @@ int main(int argc, char **argv){
 
     int cpt_tmp = 0;
 
-    for(uint8_t i = 0; i < 0x30; i++){
+    /*for(uint8_t i = 0; i < 0x30; i++){
         ROS_INFO("session id: %x", i);
-            setWheelSpeed(my_serial, 20, 1, i);
-    }
+            //setWheelSpeed(my_serial, 0, 1, i);
+    }*/
 
     if(getWheelStatus(my_serial, wheelstatus)==1){
         display_status(wheelstatus);
