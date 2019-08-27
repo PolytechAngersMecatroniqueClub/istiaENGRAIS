@@ -47,11 +47,22 @@ int main(int argc, char **argv){
         ROS_ERROR("Serial port named %s can not be oppened", port_name.c_str());
         return 1;
     }
+
+    size_t resp_size = 90;
+    size_t received_cpt;
+    uint8_t response[resp_size];
+
+    while (1){
+        received_cpt = my_serial.read(response, resp_size);
+        print_frame(response, received_cpt);
+    }
+
+
     /*uint8_t charge;
     while(getStateOfCharge(my_serial, charge) != 1);
     ROS_INFO("State of charge (percent): %d", charge);*/
 
-    double temp;
+   /* double temp;
     while(getEngineTemperature(my_serial, temp)!= 1);
     ROS_INFO("Temperature  (deg C): %2.2f", temp);
 
@@ -69,7 +80,7 @@ int main(int argc, char **argv){
 
     if(getWheelStatus(my_serial, wheelstatus)==1){
         display_status(wheelstatus);
-    }
+    }*/
 
 
     /*size_t req_size = 17;

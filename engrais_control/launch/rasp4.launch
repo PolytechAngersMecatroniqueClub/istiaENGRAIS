@@ -5,7 +5,7 @@
 	<arg name="sick_node_name" value="sick_2_rpi_4"/>
 	<arg name="scan_topic" value="scan2"/>
 	<arg name="rviz_frame" value="laser2"/>
-	<arg name="IP_lidar" default="192.168.10.112"/>
+	<arg name="IP_Lidar" default="192.168.10.112"/>
 
 	<!--> Find Lines Arguments <-->
 	<arg name="lines_topic" value="lines2"/>
