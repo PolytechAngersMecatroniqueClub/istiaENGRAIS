@@ -2,21 +2,21 @@
 <launch>
 
 	<!--> Sick Tim Arguments <-->
+	<arg name="IP_Lidar" value="192.168.10.112"/>
 	<arg name="sick_node_name" value="sick_2_rpi_4"/>
 	<arg name="scan_topic" value="scan2"/>
 	<arg name="rviz_frame" value="laser2"/>
-	<arg name="IP_Lidar" default="192.168.10.112"/>
-
+	
 	<!--> Find Lines Arguments <-->
 	<arg name="lines_topic" value="lines2"/>
 	<arg name="findlines_node_name" value="engrais_findlines_2"/>
 
 
-	<include file="$(find sick_tim)/launch/$(arg rviz_frame).launch">
+	<include file="$(find sick_tim)/launch/laser2.launch">
+		<arg name="lidar_IP" value="$(arg IP_Lidar)"/>
 		<arg name="node_name" value="$(arg sick_node_name)"/>
 		<arg name="publish_topic" value="$(arg scan_topic)"/>
 		<arg name="frame_name" value="$(arg rviz_frame)"/>
-		<arg name="lidar_IP" value="$(arg IP_Lidar)"/>
 	</include>
 
 

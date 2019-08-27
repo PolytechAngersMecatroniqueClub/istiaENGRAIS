@@ -12,11 +12,11 @@
 	<arg name="findlines_node_name" value="engrais_findlines_1"/>
 
 
-	<include file="$(find sick_tim)/launch/$(arg rviz_frame).launch">
+	<include file="$(find sick_tim)/launch/laser1.launch">
+		<arg name="lidar_IP" value="$(arg IP_Lidar)"/>
 		<arg name="node_name" value="$(arg sick_node_name)"/>
 		<arg name="publish_topic" value="$(arg scan_topic)"/>
 		<arg name="frame_name" value="$(arg rviz_frame)"/>
-		<arg name="lidar_IP" value="$(arg IP_Lidar)"/>
 	</include>
 
 
