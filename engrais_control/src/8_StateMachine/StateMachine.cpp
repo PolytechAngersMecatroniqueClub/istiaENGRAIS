@@ -132,19 +132,19 @@ StateMachine::Transition StateMachine::backwardStateRoutine(const std::pair<Mode
 StateMachine::Transition StateMachine::linearStopStateRoutine(const std::pair<Model, Model> & models){ //Linear Stop State 
     //cout << "linear stop state" << endl;
 
-    static std::chrono::time_point<std::chrono::system_clock> oldTime = std::chrono::system_clock::now(); //Initialize last iteration time
+    static ros::Time oldTime; //Initialize last iteration time
     static double oldDistance = 0; //Initialize last iteration distance
     static bool first = true; //Flag to first Iteration
 
     if(models.first.isPopulated() || models.second.isPopulated()){ //Something was found
 
-        std::chrono::time_point<std::chrono::system_clock> time = std::chrono::system_clock::now(); //Gets current time
+        ros::Time time = ros::Time::now(); //Gets current time
         double distance = calculateDistance(models); //Calculates distance to models
 
-        std::chrono::duration<double> elapsed_seconds = time - oldTime; //Elapsed time between now and the last iteration
+        ros::Duration elapsed_seconds = time - oldTime; //Elapsed time between now and the last iteration
         double deltaDist = distance - oldDistance; //Variation in the distance during that time
 
-        double x_vel = deltaDist / elapsed_seconds.count(); // Δx / Δt to calculate average velocity in x-coordinate
+        double x_vel = deltaDist / elapsed_seconds.toSec(); // Δx / Δt to calculate average velocity in x-coordinate
 
         oldDistance = distance; //Stores current distance for next iteration
         oldTime = time; //Stores current time for next iteration
@@ -172,18 +172,18 @@ StateMachine::Transition StateMachine::linearStopStateRoutine(const std::pair<Mo
 StateMachine::Transition StateMachine::angularStopStateRoutine(const std::pair<Model, Model> & models){ //Angular Stop State 
     //cout << "angular stop state" << endl;
 
-    static std::chrono::time_point<std::chrono::system_clock> oldTime; //Initialize last iteration time
-    static double oldAngle; //Initialize last iteration angle
+    static ros::Time oldTime; //Initialize last iteration time
+    static double oldAngle = 0; //Initialize last iteration angle
     static bool first = true; //Flag to first Iteration
 
     if(models.first.isPopulated() || models.second.isPopulated()){ //Something was found
-        std::chrono::time_point<std::chrono::system_clock> time = std::chrono::system_clock::now(); //Gets current time
+        ros::Time time = ros::Time::now(); //Gets current time
         double angle = calculateAngle(models); //Calculates angle
 
-        std::chrono::duration<double> elapsed_seconds = time - oldTime; //Elapsed time between now and the last iteration
+        ros::Duration elapsed_seconds = time - oldTime; //Elapsed time between now and the last iteration
         double angDist = angle - oldAngle; //Variation in the angle during that time
 
-        double a_vel = angDist / elapsed_seconds.count(); // Δθ/ Δt to calculate average angular velocity
+        double a_vel = angDist / elapsed_seconds.toSec(); // Δθ/ Δt to calculate average angular velocity
 
         oldAngle = angle; //Stores current angle for next iteration
         oldTime = time; //Stores current time for next iteration

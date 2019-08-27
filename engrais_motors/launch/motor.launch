@@ -3,17 +3,37 @@
 <launch>
 
     <!-- PARAMETERS -->
-    <param name="port_name" value="/dev/ttyUSB0" />
-    <param name="baud" value="57600" />
-    <param name="parity" value="0" /> <!-- 0:None, 1:odd, 2:even -->
-    <param name="stop_bit" value="1" /> <!-- 1:One, 2:Two, 3:One point five -->
-    <param name="data_bits" value="8" /> <!-- 5, 6, 7 or 8 -->
-    <param name="hdw_flow_ctrl" value="0" /> <!-- 0:None, 1:software, 2:hardware -->
-    <param name="timeout" value="400" />
-    
+    <arg name="motor_node_name" default="left_side_wheels" />
+    <arg name="sub_topic_name" default="leftCommand" />
 
+    <arg name="back_port" default="/dev/ttyUSB0" />
+    <arg name="front_port" default="/dev/ttyUSB1" />
+
+    <arg name="robot_side" default="left" />
+
+    <arg name="serial_baud" default="57600" />
+    <arg name="serial_parity" default="0" /> <!-- 0:None, 1:odd, 2:even -->
+    <arg name="serial_stop_bit" default="1" /> <!-- 1:One, 2:Two, 3:One point five -->
+    <arg name="serial_data_bits" default="8" /> <!-- 5, 6, 7 or 8 -->
+    <arg name="serial_hdw_flow_ctrl" default="0" /> <!-- 0:None, 1:software, 2:hardware -->
+    <arg name="serial_timeout" default="400" />
+    
+    
     <!-- The motor node -->
-    <node name="motor0" type= "motor_node" pkg="engrais_motors" output="screen" />
+    <node name="$(arg motor_node_name)" type= "motor_node" pkg="engrais_motors" output="screen" >
+        <param name="sub_topic" type="string" value="$(arg sub_topic_name)" />
+
+        <param name="back_port_name" type="string" value="$(arg back_port)" />
+        <param name="front_port_name" type="string" value="$(arg front_port)" />
+
+        <param name="side" type="string" value="$(arg robot_side)" />
+        <param name="baud" type="int" value="$(arg serial_baud)" />
+        <param name="parity" type="int" value="$(arg serial_parity)" /> <!-- 0:None, 1:odd, 2:even -->
+        <param name="stop_bit" type="int" value="$(arg serial_stop_bit)" /> <!-- 1:One, 2:Two, 3:One point five -->
+        <param name="data_bits" type="int" value="$(arg serial_data_bits)" /> <!-- 5, 6, 7 or 8 -->
+        <param name="hdw_flow_ctrl" type="int" value="$(arg serial_hdw_flow_ctrl)" /> <!-- 0:None, 1:software, 2:hardware -->
+        <param name="timeout" type="int" value="$(arg serial_timeout)" />
+    </node>
 
 </launch>
 

@@ -1,6 +1,7 @@
 #ifndef EZWHEEL_SERIAL
 #define EZWHEEL_SERIAL
 
+#include <iostream>
 #include "serial/serial.h"
 
 typedef struct{
@@ -72,8 +73,7 @@ int getWheelStatus(serial::Serial& my_serial, WheelStatus& wheelstatus);
            -1 if the received data do not have the right size
            -2 if the received data are an error frame
 */
-int setWheelSpeed(serial::Serial& my_serial, uint16_t speed, uint8_t direction, uint8_t sess_id = 0);
-
+int setWheelSpeed(serial::Serial& my_serial, double speed, bool isClockwise);
 
 void print_frame(const uint8_t * frame, uint8_t size);
 
