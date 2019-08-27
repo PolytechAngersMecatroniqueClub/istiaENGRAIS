@@ -10,6 +10,8 @@
 #include <vector>
 #include <chrono>
 
+#include <ros/ros.h>
+
 #include <FuzzyController.h>
 
 #ifndef MAX_VEL

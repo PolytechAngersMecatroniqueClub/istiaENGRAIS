@@ -18,7 +18,7 @@ int main(int argc, char **argv){
     node.getParam("port_name", port_name);
     int baud = 57600;
     node.getParam("baud", baud);
-    int timeout = 100;
+    int timeout = 10;
     node.getParam("timeout", timeout);
     int bytesize = 8;
     node.getParam("data_bits", bytesize);
@@ -47,13 +47,13 @@ int main(int argc, char **argv){
         ROS_ERROR("Serial port named %s can not be oppened", port_name.c_str());
         return 1;
     }
-    WheelStatus wheelstatus;
+
+    double charge;
 
     while(ros::ok()){
-        if(getWheelStatus(my_serial, wheelstatus) == 1){
-            //ROS_INFO("State of charge (percent): %f", charge);
-            display_status(wheelstatus);
-            ros::Duration(0.5).sleep();
+        if(setWheelSpeed(my_serial, 1.5, 0) == 1){
+            ROS_INFO("Message sent");
+            ros::Duration(0.05).sleep();
         }
     }
 
