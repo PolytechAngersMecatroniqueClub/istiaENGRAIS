@@ -23,16 +23,16 @@
     <!-- Caster wheel Back -->
     <!-- mu1 and mu2 must be updated... -->
     <gazebo reference="caster_wheel_back">
-        <mu1>0</mu1>
-        <mu2>0</mu2>
+        <mu1>0.72</mu1>
+        <mu2>0.5</mu2>
         <material>Gazebo/Black</material>
         <turnGravityOff>false</turnGravityOff>
     </gazebo>
     <!-- Caster wheel Front -->
     <!-- mu1 and mu2 must be updated... -->
     <gazebo reference="caster_wheel_front">
-        <mu1>0</mu1>
-        <mu2>0</mu2>
+        <mu1>0.72</mu1>
+        <mu2>0.5</mu2>
         <material>Gazebo/Black</material>
         <turnGravityOff>false</turnGravityOff>
     </gazebo>

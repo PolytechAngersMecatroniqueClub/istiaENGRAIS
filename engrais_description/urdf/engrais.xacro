@@ -66,8 +66,9 @@
         <inertial name="body_inertial">
             <origin xyz="0 0 0" rpy="0 0 0"/>
             <mass value="${body_mass}"/>
-            <box_inertia m="${body_mass}" x="${body_width_x}" y="${body_width_y}" z="${body_mass}"/>
+            <box_inertia m="${body_mass}" x="${body_width_x}" y="${body_width_y}" z="${body_height}"/>
         </inertial>
+
     </link>
 
     <!-- Back caster wheel Link -->

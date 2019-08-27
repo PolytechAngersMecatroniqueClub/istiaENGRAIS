@@ -166,7 +166,7 @@ int main(int argc, char **argv){ //Main function
 
     Utility::printInColor("Code Running, press Control+C to end", CYAN);
     ros::spin(); //SPin to receive messages
-    Utility::printInColor("Shitting down...", CYAN);
+    Utility::printInColor("Shutting down...", CYAN);
 
     endProgram = true; //Set to end program
     control_t.join(); //Wait thread to finish
