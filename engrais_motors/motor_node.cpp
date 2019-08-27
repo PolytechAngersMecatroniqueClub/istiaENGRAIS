@@ -51,24 +51,38 @@ int main(int argc, char **argv){
     while(getStateOfCharge(my_serial, charge) != 1);
     ROS_INFO("State of charge (percent): %d", charge);*/
 
-    double temp;
+    /*double temp;
     while(getEngineTemperature(my_serial, temp)!= 1);
     ROS_INFO("Temperature  (deg C): %2.2f", temp);
 
     WheelStatus wheelstatus;
-    if(getWheelStatus(my_serial, wheelstatus)==1){
-        display_status(wheelstatus);
+
+
+    for(uint8_t i = 0; i < 0x60; i++){
+        if(getWheelStatus(my_serial, wheelstatus)==1){
+            display_status(wheelstatus);
+        }
     }
 
-    int cpt_tmp = 0;
+    
 
-    for(uint8_t i = 0; i < 0x30; i++){
+    int cpt_tmp = 0;*/
+
+    /*for(uint8_t i = 0; i < 0x30; i++){
         ROS_INFO("session id: %x", i);
-            setWheelSpeed(my_serial, 20, 1, i);
+            setWheelSpeed(my_serial, 0, 0, i);
     }
 
     if(getWheelStatus(my_serial, wheelstatus)==1){
         display_status(wheelstatus);
+    }*/
+    size_t resp_size = 200; // 7 + 2 + 1
+    size_t received_cpt;
+    uint8_t response[resp_size];
+
+    while(ros::ok()){
+        received_cpt = my_serial.read(response, resp_size);
+        print_frame(response, received_cpt);
     }
 
 

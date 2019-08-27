@@ -234,7 +234,7 @@ int setWheelSpeed(serial::Serial& my_serial, uint16_t speed, uint8_t direction, 
         ROS_WARN("[%d] %x", i, request[i]);
     }*/
 
-    print_frame(request, req_size);
+    // print_frame(request, req_size);
 
     my_serial.write(request, req_size);
 
@@ -270,15 +270,16 @@ void display_status(const WheelStatus& wheelstatus){
     ROS_INFO("WheelStatus speed:            %d", wheelstatus.speed);
     ROS_INFO("WheelStatus error:            %d", wheelstatus.error);
     ROS_INFO("WheelStatus charge_status:    %d", wheelstatus.charge_status);
-    ROS_INFO("WheelStatus power_status:     %d", wheelstatus.power_status);
+    ROS_INFO("WheelStatus power_status:     %d\n\n", wheelstatus.power_status);
 }
 
 
 void print_frame(const uint8_t * frame, uint8_t size){
-
-    printf("\n");
+    std::cout.fill('0');
     for(int i=0; i<size; i++){
-        printf("frame[%d] = %2.2x\n", i, frame[i]);
+        //printf("frame[%d] = %2.2x\n", i, frame[i]);
+        std::cout << "frame[" << std::setw(2) << i << "] ; 0x" << std::hex << std::uppercase << std::setw(2) << (int)frame[i] << std::dec << std::endl;
+        //cout << "\t[" << setw(2) << i << "]: 0x" << hex << uppercase << setw(2) << (int)msg[i] << dec << endl;
     }
 }
 

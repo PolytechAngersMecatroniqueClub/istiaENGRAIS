@@ -1,6 +1,7 @@
 #ifndef EZWHEEL_SERIAL
 #define EZWHEEL_SERIAL
 
+#include <iostream>
 #include "serial/serial.h"
 
 typedef struct{
