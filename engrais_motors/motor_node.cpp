@@ -100,7 +100,6 @@ void initializeSerialPorts(string back_port_name, string front_port_name, int ba
         ROS_ERROR("Serial port named %s can not be oppened", back_port_name.c_str());
         exit(1);
     }
-
     if(front_wheel->isOpen()){
         ROS_INFO("\n ******** \n \tSerial port named %s is oppened \n ********", front_port_name.c_str());
     }
@@ -114,7 +113,7 @@ void initializeSerialPorts(string back_port_name, string front_port_name, int ba
 void closeConexion(){
     back_wheel->close();
     front_wheel->close();
-
+    
     delete back_wheel;
     delete front_wheel;
 }
