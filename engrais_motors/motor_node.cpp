@@ -36,6 +36,8 @@ struct Message{
 Message message;
 
 void sendSpeed(){ 
+    ros::Rate loop_rate(50);
+
 	while(!endProgram){
         critSec.lock();
 
@@ -60,8 +62,7 @@ void sendSpeed(){
                 ROS_ERROR("ERROR SENDING COMMAND TO FRONT WHEEL");
         }
 
-
-        ros::Duration(0.05).sleep();
+        loop_rate.sleep();
 	}
 }
 
@@ -69,7 +70,7 @@ void OnRosMsg(const std_msgs::Float64 & msg){ //Front node message received
     critSec.lock(); 
 
 	message.data = fabs(msg.data);
-	message.isClockwise = msg.data < 0 && side == "left" ? false : true;
+	message.isClockwise = (msg.data < 0 && side == "left") || (msg.data >= 0 && side == "right") ? false : true;
 	message.timeStamp = ros::Time::now();
 
     critSec.unlock(); 
@@ -137,24 +138,24 @@ int main(int argc, char **argv){
         return -1;
     }
 
-    /*initializeSerialPorts(back_port_name, front_port_name, baud, timeout, bytesize, parity, stop_bit, flowctrl);
+    initializeSerialPorts(back_port_name, front_port_name, baud, timeout, bytesize, parity, stop_bit, flowctrl);
 
     ros::Subscriber sub = node.subscribe(sub_topic, 10, OnRosMsg);
 
     thread wheelThread(sendSpeed);
 
+    ROS_INFO("Code Running, press Control+C to end");
     ros::spin();
+    ROS_INFO("Shutting down...");
 
     endProgram = true;
 
     wheelThread.join();
 
-    closeConexion();*/
+    closeConexion();
 
-    cout << "sub_topic: " << sub_topic << ", back_port_name: " << back_port_name << ", front_port_name: " << front_port_name;
-    cout << ", side: " << side << ", baud: " << baud << ", parity: " << parity << ", stop_bit: " << stop_bit;
-    cout << ", data_bits: " << bytesize << ", hdw_flow_ctrl: " << flowctrl << ", timeout: " << timeout << endl << endl;
-
+    ROS_INFO("Code ended without errors");
+    
     return 0;
 }
 

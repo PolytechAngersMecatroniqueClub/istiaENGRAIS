@@ -27,13 +27,13 @@ add_executable(motor_node
     motor_node.cpp
     src/ezwheel_serial.cpp
 )
+target_link_libraries(motor_node ${catkin_LIBRARIES})
+
 
 add_executable(keep_motor_alive_node
     keep_motor_alive_node.cpp
     src/ezwheel_serial.cpp
 )
-
-target_link_libraries(motor_node ${catkin_LIBRARIES})
 target_link_libraries(keep_motor_alive_node ${catkin_LIBRARIES})
 
 ###########
