@@ -154,11 +154,8 @@ int main(int argc, char **argv){
     wheelThread.join();
 
     closeConexion();
-<<<<<<< HEAD
-=======
 
     ROS_INFO("Code ended without errors");
->>>>>>> 116b322df5f3bfa2ac2e79ead07bdbce62708604
     
     return 0;
 }
