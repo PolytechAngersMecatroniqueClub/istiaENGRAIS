@@ -36,6 +36,8 @@ struct Message{
 Message message;
 
 void sendSpeed(){ 
+    ros::Rate loop_rate(50);
+
 	while(!endProgram){
         critSec.lock();
 
@@ -60,8 +62,7 @@ void sendSpeed(){
                 ROS_ERROR("ERROR SENDING COMMAND TO FRONT WHEEL");
         }
 
-
-        ros::Duration(0.05).sleep();
+        loop_rate.sleep();
 	}
 }
 
@@ -69,7 +70,9 @@ void OnRosMsg(const std_msgs::Float64 & msg){ //Front node message received
     critSec.lock(); 
 
 	message.data = fabs(msg.data);
-    message.isClockwise = (msg.data < 0 && side == "left") || (msg.data >= 0 && side == "right") ? false : true;
+
+	message.isClockwise = (msg.data < 0 && side == "left") || (msg.data >= 0 && side == "right") ? false : true;
+
 	message.timeStamp = ros::Time::now();
 
     critSec.unlock(); 
@@ -99,20 +102,20 @@ void initializeSerialPorts(string back_port_name, string front_port_name, int ba
         ROS_ERROR("Serial port named %s can not be oppened", back_port_name.c_str());
         exit(1);
     }
-
     if(front_wheel->isOpen()){
         ROS_INFO("\n ******** \n \tSerial port named %s is oppened \n ********", front_port_name.c_str());
     }
     else{
         ROS_ERROR("Serial port named %s can not be oppened", front_port_name.c_str());
         exit(1);
+
     }
 }
 
 void closeConexion(){
     back_wheel->close();
     front_wheel->close();
-
+    
     delete back_wheel;
     delete front_wheel;
 }
@@ -142,13 +145,20 @@ int main(int argc, char **argv){
 
     thread wheelThread(sendSpeed);
 
+    ROS_INFO("Code Running, press Control+C to end");
     ros::spin();
+    ROS_INFO("Shutting down...");
 
     endProgram = true;
 
     wheelThread.join();
 
     closeConexion();
+<<<<<<< HEAD
+=======
+
+    ROS_INFO("Code ended without errors");
+>>>>>>> 116b322df5f3bfa2ac2e79ead07bdbce62708604
     
     return 0;
 }

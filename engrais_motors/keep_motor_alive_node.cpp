@@ -47,6 +47,7 @@ int main(int argc, char **argv){
         ROS_ERROR("Serial port named %s can not be oppened", port_name.c_str());
         return 1;
     }
+
     double charge;
 
     while(ros::ok()){

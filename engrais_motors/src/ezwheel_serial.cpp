@@ -219,8 +219,7 @@ int setWheelSpeed(serial::Serial& my_serial, double speed, bool isClockwise){
     request[20] = 0x00;
 
     addCRC(request, req_size);
-
-    //print_frame(request, req_size);
+    
     my_serial.write(request, req_size);
 
     return 1;
