@@ -147,14 +147,16 @@ int main(int argc, char **argv){
     ros::Subscriber sub = node.subscribe(sub_topic, 10, OnRosMsg); // /engrais/laser_front/scan or /engrais/laser_back/scan
     pubLineNode = node.advertise<visualization_msgs::Marker>(pub_topic, 10);// /engrais/laser_front/lines or /engrais/laser_back/lines
 
-    Utility::printInColor("Code Running, press Control+C to end", CYAN);
+    ROS_INFO("Code Running, press Control+C to end");
     ros::spin();
-    Utility::printInColor("Shitting down...", CYAN);
+    ROS_INFO("Shutting down...");
 
     sub.shutdown();
     pubLineNode.shutdown();
     resultsPubNode.shutdown();
     ros::shutdown();
+
+    ROS_INFO("Code ended without errors");
 
     return 0;
 }
