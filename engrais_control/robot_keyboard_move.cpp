@@ -59,7 +59,7 @@ int main(int argc, char **argv){
     ROS_INFO("Controlling Robot with keyboard, please use the arrows to control it, and Ctrl+C to stop");
 
     while(true){
-        rightCmd.data = leftCmd.data = 0;
+        rightCmd.data = leftCmd.data = 2;
         if((c = getchar()) != -1 && c == '\033'){
             if(int(c) == 3)
                 break;

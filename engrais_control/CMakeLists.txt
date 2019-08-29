@@ -233,5 +233,4 @@ target_link_libraries(robot_control
 	${catkin_LIBRARIES} 
 	fuzzylite-static
 )
-
 #add_dependencies(robot_control engrais_control_gencpp)
