@@ -36,6 +36,8 @@ struct Message{
 Message message;
 
 void sendSpeed(){ 
+    ros::Rate loop_rate(50);
+
 	while(!endProgram){
         critSec.lock();
 
@@ -60,8 +62,7 @@ void sendSpeed(){
                 ROS_ERROR("ERROR SENDING COMMAND TO FRONT WHEEL");
         }
 
-
-        ros::Duration(0.05).sleep();
+        loop_rate.sleep();
 	}
 }
 
@@ -69,7 +70,9 @@ void OnRosMsg(const std_msgs::Float64 & msg){ //Front node message received
     critSec.lock(); 
 
 	message.data = fabs(msg.data);
-	message.isClockwise = msg.data < 0 && side == "left" ? false : true;
+
+	message.isClockwise = (msg.data < 0 && side == "left") || (msg.data >= 0 && side == "right") ? false : true;
+
 	message.timeStamp = ros::Time::now();
 
     critSec.unlock(); 
@@ -155,7 +158,7 @@ int main(int argc, char **argv){
     ros::shutdown();
 
     ROS_INFO("Code ended without errors");
-
+    
     return 0;
 }
 
