@@ -38,6 +38,7 @@ ros::Publisher pubSelectedLines;
 
 RobotControl control;
 
+
 //--------------------------------------------------------------------------------------------------------
 void sendLine(const pair<Model, Model> & models){ 
     visualization_msgs::Marker line_list;
@@ -111,7 +112,7 @@ void controlThread(){
         pubLeftControl.publish(wheels.first);
         pubRightControl.publish(wheels.second);
 
-        cout << "Left: " << wheels.first.data <<  ", Right: " << wheels.second.data << endl << endl << endl << endl << endl;
+        //cout << "Left: " << wheels.first.data <<  ", Right: " << wheels.second.data << endl << endl << endl << endl << endl;
 
     }
 }
@@ -165,9 +166,9 @@ int main(int argc, char **argv){
 
     thread control_t(controlThread);
 
-    Utility::printInColor("Code Running, press Control+C to end", CYAN);
+    ROS_INFO("Code Running, press Control+C to end");
     ros::spin();
-    Utility::printInColor("Shitting down...", CYAN);
+    ROS_INFO("Shutting down...");
 
     endProgram = true;
     control_t.join();
@@ -180,8 +181,9 @@ int main(int argc, char **argv){
     pubSelectedLines.shutdown();
     ros::shutdown();
 
-    Utility::printInColor("Code ended without errors", BLUE);
+    ROS_INFO("Code ended without errors");
 
+    return 0;
 }
 
 //********************************************************************************************************

@@ -136,23 +136,25 @@ int main(int argc, char **argv){
         return -1;
     }
 
-    /*initializeSerialPorts(back_port_name, front_port_name, baud, timeout, bytesize, parity, stop_bit, flowctrl);
+    initializeSerialPorts(back_port_name, front_port_name, baud, timeout, bytesize, parity, stop_bit, flowctrl);
 
     ros::Subscriber sub = node.subscribe(sub_topic, 10, OnRosMsg);
 
     thread wheelThread(sendSpeed);
 
+    ROS_INFO("Code Running, press Control+C to end");
     ros::spin();
+    ROS_INFO("Shutting down...");
 
     endProgram = true;
 
     wheelThread.join();
 
-    closeConexion();*/
+    closeConexion();
 
-    cout << "sub_topic: " << sub_topic << ", back_port_name: " << back_port_name << ", front_port_name: " << front_port_name;
-    cout << ", side: " << side << ", baud: " << baud << ", parity: " << parity << ", stop_bit: " << stop_bit;
-    cout << ", data_bits: " << bytesize << ", hdw_flow_ctrl: " << flowctrl << ", timeout: " << timeout << endl << endl;
+    ros::shutdown();
+
+    ROS_INFO("Code ended without errors");
 
     return 0;
 }

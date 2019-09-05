@@ -1,0 +1,108 @@
+<?xml version="1.6" ?>
+<launch>
+
+    <!-- IP Values -->
+    <arg name="rasp1_IP" default="192.168.10.101" />
+    <arg name="rasp2_IP" default="192.168.10.102" />
+
+
+    <!--Node Names -->
+    <arg name="right_motor_node_name" default="right_side_wheels" />
+    <arg name="left_motor_node_name" default="left_side_wheels" />
+
+
+    <!-- ROS Topics -->
+    <arg name="right_wheel_control_signal" default="rightCommand" />
+    <arg name="left_wheel_control_signal" default="leftCommand" />
+
+
+    <!-- USB Names -->
+    <arg name="right_serial_back_port" default="/dev/ttyUSB0" />
+    <arg name="right_serial_front_port" default="/dev/ttyUSB1" />
+
+    <arg name="left_serial_back_port" default="/dev/ttyUSB0" />
+    <arg name="left_serial_front_port" default="/dev/ttyUSB1" />
+
+
+    <!-- Robot Side -->
+	<arg name="right_robot_side" default="right" />
+	<arg name="left_robot_side" default="left" />
+	
+
+	<!-- Common Serial Arguments -->
+    <arg name="serial_baud" default="57600" />
+    <arg name="serial_parity" default="0" /> <!-- 0:None, 1:odd, 2:even -->
+    <arg name="serial_stop_bit" default="1" /> <!-- 1:One, 2:Two, 3:One point five -->
+    <arg name="serial_data_bits" default="8" /> <!-- 5, 6, 7 or 8 -->
+    <arg name="serial_hdw_flow_ctrl" default="0" /> <!-- 0:None, 1:software, 2:hardware -->
+    <arg name="serial_timeout" default="400" />
+
+
+    <!-- Connect to Rasp1 -->
+ 	<machine name="rasp1" address="$(arg rasp1_IP)" user="engrais" password="engrais" env-loader="~/catkin_ws/src/istiaENGRAIS/config/config.sh" default="true"/>
+
+ 	<include file="$(find engrais_control)/launch/rasp1.launch">
+	    <arg name="motor_node" value="$(arg right_motor_node_name)" />
+	    <arg name="sub_topic" value="$(arg right_wheel_control_signal)" />
+
+	    <arg name="serial_back_port" value="$(arg right_serial_back_port)" />
+	    <arg name="serial_front_port" value="$(arg right_serial_front_port)" />
+
+	    <arg name="robot_side_value" value="$(arg right_robot_side)" />
+
+	    <arg name="serial_baud_value" value="$(arg serial_baud)" />
+	    <arg name="serial_parity_value" value="$(arg serial_parity)" />
+	    <arg name="serial_stop_bit_value" value="$(arg serial_stop_bit)" />
+	    <arg name="serial_data_bits_value" value="$(arg serial_data_bits)" />
+	    <arg name="serial_hdw_flow_ctrl_value" value="$(arg serial_hdw_flow_ctrl)" />
+	    <arg name="serial_timeout_value" value="$(arg serial_timeout)" />
+ 	</include>
+
+
+ 	<!-- Connect to Rasp2 -->
+ 	<machine name="rasp2" address="$(arg rasp2_IP)" user="engrais" password="engrais" env-loader="~/catkin_ws/src/istiaENGRAIS/config/config.sh" default="true"/>
+
+ 	<include file="$(find engrais_control)/launch/rasp2.launch">
+	    <arg name="motor_node" value="$(arg left_motor_node_name)" />
+	    <arg name="sub_topic" value="$(arg left_wheel_control_signal)" />
+
+	    <arg name="serial_back_port" value="$(arg left_serial_back_port)" />
+	    <arg name="serial_front_port" value="$(arg left_serial_front_port)" />
+
+	    <arg name="robot_side_value" value="$(arg left_robot_side)" />
+
+	    <arg name="serial_baud_value" value="$(arg serial_baud)" />
+	    <arg name="serial_parity_value" value="$(arg serial_parity)" />
+	    <arg name="serial_stop_bit_value" value="$(arg serial_stop_bit)" />
+	    <arg name="serial_data_bits_value" value="$(arg serial_data_bits)" />
+	    <arg name="serial_hdw_flow_ctrl_value" value="$(arg serial_hdw_flow_ctrl)" />
+	    <arg name="serial_timeout_value" value="$(arg serial_timeout)" />
+ 	</include>
+
+
+	<!-- Connect to Rasp3 -->
+ 	<machine name="rasp3" address="$(arg rasp3_IP)" user="engrais" password="engrais" env-loader="~/catkin_ws/src/istiaENGRAIS/config/config.sh" default="true"/>
+
+ 	<include file="$(find engrais_control)/launch/rasp3.launch">
+	    <arg name="IP_Lidar" value="$(arg front_Lidar_IP)" />
+	    <arg name="sick_node_name" value="$(arg front_sick_node_name)" />
+	    <arg name="scan_topic" value="$(arg front_scan_topic)" />
+	    <arg name="rviz_frame" value="$(arg front_rviz_frame)" />
+	    <arg name="lines_topic" value="$(arg front_lines_topic)" />
+	    <arg name="findlines_node_name" value="$(arg front_findlines_node_name)" />
+ 	</include>
+
+
+ 	<!-- Connect to Rasp4 -->
+ 	<machine name="rasp4" address="$(arg rasp4_IP)" user="engrais" password="engrais" env-loader="~/catkin_ws/src/istiaENGRAIS/config/config.sh" default="true"/>
+
+ 	<include file="$(find engrais_control)/launch/rasp4.launch">
+	    <arg name="IP_Lidar" value="$(arg back_Lidar_IP)" />
+	    <arg name="sick_node_name" value="$(arg back_sick_node_name)" />
+	    <arg name="scan_topic" value="$(arg back_scan_topic)" />
+	    <arg name="rviz_frame" value="$(arg back_rviz_frame)" />
+	    <arg name="lines_topic" value="$(arg back_lines_topic)" />
+	    <arg name="findlines_node_name" value="$(arg back_findlines_node_name)" />
+ 	</include>
+
+</launch>

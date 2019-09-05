@@ -89,7 +89,7 @@ int main(int argc, char **argv){
     			}
     		}
         }
-        cout << "Left: " << leftCmd.data << ", Right: " << rightCmd.data << endl;
+        //cout << "Left: " << leftCmd.data << ", Right: " << rightCmd.data << endl;
         if(int(c) == 3)
             break;
 

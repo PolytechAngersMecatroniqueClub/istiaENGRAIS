@@ -57,6 +57,10 @@ int main(int argc, char **argv){
         }
     }
 
+    ros::shutdown();
+
+    ROS_INFO("Code ended without errors");
+
     return 0;
 }
 
