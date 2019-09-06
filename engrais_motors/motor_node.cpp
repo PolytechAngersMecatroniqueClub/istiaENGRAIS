@@ -155,6 +155,8 @@ int main(int argc, char **argv){
 
     closeConexion();
 
+    ros::shutdown();
+
     ROS_INFO("Code ended without errors");
     
     return 0;

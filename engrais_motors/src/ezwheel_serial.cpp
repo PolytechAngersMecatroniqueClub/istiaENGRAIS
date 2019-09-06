@@ -96,7 +96,7 @@ int getStateOfCharge(serial::Serial& my_serial, uint8_t& charge){
         return -2;
     }
     else if(received_cpt != resp_size){
-        ROS_ERROR("getStateOfCharge::Expected %d bytes but got %d", resp_size, received_cpt);
+        ROS_ERROR("getStateOfCharge::Expected %zu bytes but got %zu", resp_size, received_cpt);
         return -1;
     }
     charge = response[8];
@@ -133,7 +133,7 @@ int getEngineTemperature(serial::Serial& my_serial, double& temp){
         return -2;
     }
     else if(received_cpt != resp_size){
-        ROS_ERROR("getEngineTemperature::Expected %d bytes but got %d", resp_size, received_cpt);
+        ROS_ERROR("getEngineTemperature::Expected %zu bytes but got %zu", resp_size, received_cpt);
         return -1;
     }
 
@@ -196,7 +196,7 @@ int setWheelSpeed(serial::Serial& my_serial, double speed, bool isClockwise){
     unsigned int speedBytes = speed * 10;
 
     if(speedBytes > 1023){
-        ROS_ERROR("Set speed error: Speed limit is 102.3 km/h, received %f\n", speed);
+        //ROS_ERROR("Set speed error: Speed limit is 102.3 km/h, received %lf\n", speed);
         return -1;
     }
 
@@ -227,15 +227,16 @@ int setWheelSpeed(serial::Serial& my_serial, double speed, bool isClockwise){
 
 void display_status(const WheelStatus& wheelstatus){
     // function to display a status
-    ROS_INFO("WheelStatus direction:        %d", wheelstatus.direction);
-    ROS_INFO("WheelStatus control_mode:     %d", wheelstatus.control_mode);
-    ROS_INFO("WheelStatus brake_mode:       %d", wheelstatus.brake_mode);
-    ROS_INFO("WheelStatus tork_estimate:    %d", wheelstatus.tork_estimate);
-    ROS_INFO("WheelStatus speed:            %d", wheelstatus.speed);
-    ROS_INFO("WheelStatus error:            %d", wheelstatus.error);
-    ROS_INFO("WheelStatus charge_status:    %d", wheelstatus.charge_status);
-    ROS_INFO("WheelStatus power_status:     %d\n\n", wheelstatus.power_status);
+    ROS_INFO("WheelStatus direction:        %u", wheelstatus.direction);
+    ROS_INFO("WheelStatus control_mode:     %u", wheelstatus.control_mode);
+    ROS_INFO("WheelStatus brake_mode:       %u", wheelstatus.brake_mode);
+    ROS_INFO("WheelStatus tork_estimate:    %u", wheelstatus.tork_estimate);
+    ROS_INFO("WheelStatus speed:            %u", wheelstatus.speed);
+    ROS_INFO("WheelStatus error:            %u", wheelstatus.error);
+    ROS_INFO("WheelStatus charge_status:    %u", wheelstatus.charge_status);
+    ROS_INFO("WheelStatus power_status:     %u\n\n", wheelstatus.power_status);
 }
+
 
 void print_frame(const uint8_t * frame, uint8_t size){
     std::cout.fill('0');
@@ -246,5 +247,3 @@ void print_frame(const uint8_t * frame, uint8_t size){
     }
     std::cout << std::endl << std::endl;
 }
-
-

@@ -1,4 +1,4 @@
-<?xml version="1.0" ?>
+<?xml version="1.6" ?>
 
 <launch>
 
@@ -20,7 +20,7 @@
     
     
     <!-- The motor node -->
-    <node name="$(arg motor_node_name)" type= "motor_node" pkg="engrais_motors" output="screen" >
+    <node name="$(arg motor_node_name)" type= "motor_node" pkg="engrais_motors">
         <param name="sub_topic" type="string" value="$(arg sub_topic_name)" />
 
         <param name="back_port_name" type="string" value="$(arg back_port)" />
