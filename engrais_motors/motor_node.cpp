@@ -35,7 +35,7 @@ struct Message{
 
 Message message;
 
-void sendSpeed(){ 
+/*void sendSpeed(){ 
     ros::Rate loop_rate(50);
 
 	while(!endProgram){
@@ -118,17 +118,18 @@ void closeConexion(){
     
     delete back_wheel;
     delete front_wheel;
-}
+}*/
 
 int main(int argc, char **argv){
+    cout << "AAA" << endl;
     ros::init(argc, argv, "motor_node");
     ros::NodeHandle node;
 
-	int baud, timeout, bytesize, parity, flowctrl, stop_bit;
+	/*int baud, timeout, bytesize, parity, flowctrl, stop_bit;
 
     string sub_topic, back_port_name, front_port_name, node_name = ros::this_node::getName();
 
-    if(!node.getParam(node_name + "/back_port_name", back_port_name) || !node.getParam(node_name + "/front_port_name", front_port_name) ||
+    if(!node.getParam(node_name + "/back_port", back_port_name) || !node.getParam(node_name + "/front_port", front_port_name) ||
        !node.getParam(node_name + "/side", side) || !node.getParam(node_name + "/baud", baud) || !node.getParam(node_name + "/timeout", timeout) || 
        !node.getParam(node_name + "/data_bits", bytesize) || !node.getParam(node_name + "/parity", parity) || !node.getParam(node_name + "/timeout", timeout) ||
        !node.getParam(node_name + "/hdw_flow_ctrl", flowctrl) || !node.getParam(node_name + "/stop_bit", stop_bit) || !node.getParam(node_name + "/sub_topic", sub_topic)){ //Get mandatory parameters
@@ -153,11 +154,13 @@ int main(int argc, char **argv){
 
     wheelThread.join();
 
-    closeConexion();
+    closeConexion();*/
 
-    ros::shutdown();
+    ros::spin();
 
     ROS_INFO("Code ended without errors");
+
+    ros::shutdown();
     
     return 0;
 }
