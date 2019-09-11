@@ -52,14 +52,17 @@ int main(int argc, char **argv){
     ros::Publisher pubLeftControl = node.advertise<std_msgs::Float64>(pub_topic_left, 10);
     ros::Publisher pubRightControl = node.advertise<std_msgs::Float64>(pub_topic_right, 10);
 
-    std_msgs::Float64 rightCmd, leftCmd;
+    std_msgs::Float64 rightCmd, leftCmd, lastRightCmd, lastLeftCmd;
 
     ros::Rate loop_rate(30);
 
     ROS_INFO("Controlling Robot with keyboard, please use the arrows to control it, and Ctrl+C to stop");
 
+    bool wasZero = true;
+    int notZeroCount = 0;
+
     while(true){
-        rightCmd.data = leftCmd.data = 2;
+        rightCmd.data = leftCmd.data = 0;
         if((c = getchar()) != -1 && c == '\033'){
             if(int(c) == 3)
                 break;
@@ -74,29 +77,63 @@ int main(int argc, char **argv){
                     break;
                 else if(c == 'A'){
                     //cout << "up" << endl;
-                    leftCmd.data = 2;
-                    rightCmd.data = 2;
+                    leftCmd.data = 1;
+                    rightCmd.data = 1;
                 }
                 else if(c == 'B'){
                     //cout << "down" << endl;
-                    leftCmd.data = -2;
-                    rightCmd.data = -2;
+                    leftCmd.data = -1;
+                    rightCmd.data = -1;
                 }
                 else if(c == 'C'){
                     //cout << "right" << endl;
-                    leftCmd.data = 2;
-                    rightCmd.data = -2;
+                    leftCmd.data = 1;
+                    rightCmd.data = -1;
                 }
                 else if(c == 'D'){
                     //cout << "left" << endl;
-                    leftCmd.data = -2;
-                    rightCmd.data = 2;
+                    leftCmd.data = -1;
+                    rightCmd.data = 1;
                 }
             }
         }
         //cout << "Left: " << leftCmd.data << ", Right: " << rightCmd.data << endl;
         if(int(c) == 3)
             break;
+        
+        
+        if(leftCmd.data != 0 && rightCmd.data != 0 && wasZero == true){
+            wasZero = false;
+
+            lastLeftCmd.data = leftCmd.data;
+            lastRightCmd.data = rightCmd.data;
+        }
+
+        else if(leftCmd.data == 0 && rightCmd.data == 0 && wasZero == false && notZeroCount < 14){          
+            leftCmd.data = lastLeftCmd.data;
+            rightCmd.data = lastRightCmd.data;
+
+            notZeroCount++;
+        }
+
+        else if(leftCmd.data == 0 && rightCmd.data == 0 && wasZero == false &&  notZeroCount >= 14){          
+            lastLeftCmd.data = leftCmd.data;
+            lastRightCmd.data = rightCmd.data;
+
+            wasZero = true;
+            notZeroCount = 0;
+        }
+
+        else if(leftCmd.data != lastLeftCmd.data || rightCmd.data != lastRightCmd.data){
+            lastLeftCmd.data = leftCmd.data;
+            lastRightCmd.data = rightCmd.data;
+
+            notZeroCount = 0;
+            wasZero == false;
+        }
+
+        leftCmd.data *= 1.5;
+        rightCmd.data *= 1.5;
 
         pubLeftControl.publish(leftCmd);
         pubRightControl.publish(rightCmd);
