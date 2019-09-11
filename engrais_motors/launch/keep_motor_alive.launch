@@ -1,19 +1,19 @@
-<?xml version="1.0" ?>
+<?xml version="1.6" ?>
 
 <launch>
 
     <!-- PARAMETERS -->
-    <param name="port_name" value="/dev/ttyUSB0" />
-    <param name="baud" value="57600" />
-    <param name="parity" value="0" /> <!-- 0:None, 1:odd, 2:even -->
-    <param name="stop_bit" value="1" /> <!-- 1:One, 2:Two, 3:One point five -->
-    <param name="data_bits" value="8" /> <!-- 5, 6, 7 or 8 -->
-    <param name="hdw_flow_ctrl" value="0" /> <!-- 0:None, 1:software, 2:hardware -->
-    <param name="timeout" value="400" />
+    <param name="port_name" default="/dev/ttyUSB0" />
+    <param name="baud" default="57600" />
+    <param name="parity" default="0" /> <!-- 0:None, 1:odd, 2:even -->
+    <param name="stop_bit" default="1" /> <!-- 1:One, 2:Two, 3:One point five -->
+    <param name="data_bits" default="8" /> <!-- 5, 6, 7 or 8 -->
+    <param name="hdw_flow_ctrl" default="0" /> <!-- 0:None, 1:software, 2:hardware -->
+    <param name="timeout" default="400" />
     
 
     <!-- The motor node -->
-    <node name="keep_motors_alive" type= "keep_motor_alive_node" pkg="engrais_motors" output="screen" />
+    <node name="keep_motors_alive" type= "keep_motor_alive_node" pkg="engrais_motors" />
 
 </launch>
 

@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(engrais_control)
+project(engrais)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++11)
+# add_compile_options(-std=c++11)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -46,6 +46,33 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * uncomment the generate_messages entry below
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
+## Generate messages in the 'msg' folder
+# add_message_files(
+#   FILES
+#   Message1.msg
+#   Message2.msg
+# )
+
+## Generate services in the 'srv' folder
+# add_service_files(
+#   FILES
+#   Service1.srv
+#   Service2.srv
+# )
+
+## Generate actions in the 'action' folder
+# add_action_files(
+#   FILES
+#   Action1.action
+#   Action2.action
+# )
+
+## Generate added messages and services with any dependencies listed here
+# generate_messages(
+#   DEPENDENCIES
+#   std_msgs
+# )
+
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
 ################################################
@@ -77,8 +104,8 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES engrais_control
-#  CATKIN_DEPENDS other_catkin_pkg message_runtime
+#  LIBRARIES engrais
+#  CATKIN_DEPENDS roscpp rospy std_msgs
 #  DEPENDS system_lib
 )
 
@@ -89,28 +116,13 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-    include ${catkin_INCLUDE_DIRS}
-
-    include src/1_Point/
-    include src/2_WeightedPoint/
-    include src/3_Utility/
-    include src/4_Model/
-
-    include src/5_Pearl/
-    include src/6_Ruby_Versions/
-
-    include src/7_FuzzyController
-    include src/8_StateMachine/
-    include src/9_WeightedModel/
-    include src/10_RobotControl/
-    include src/.fuzzylite-6.0/
+# include
+  ${catkin_INCLUDE_DIRS}
 )
-
-link_directories(~/catkin_ws/src/istiaENGRAIS/engrais_control/src/.fuzzylite-6.0/bin/)
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/engrais_control.cpp
+#   src/${PROJECT_NAME}/engrais.cpp
 # )
 
 ## Add cmake target dependencies of the library
@@ -121,7 +133,7 @@ link_directories(~/catkin_ws/src/istiaENGRAIS/engrais_control/src/.fuzzylite-6.0
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/engrais_control_node.cpp)
+# add_executable(${PROJECT_NAME}_node src/engrais_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -178,65 +190,10 @@ link_directories(~/catkin_ws/src/istiaENGRAIS/engrais_control/src/.fuzzylite-6.0
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_engrais_control.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_engrais.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
-
-
-add_executable(robot_findlines robot_findlines.cpp
-    src/1_Point/Point.cpp
-    src/2_WeightedPoint/WeightedPoint.cpp
-    src/3_Utility/Utility.cpp
-    src/4_Model/Model.cpp
-
-    src/5_Pearl/Pearl.cpp
-    src/6_Ruby_Versions/1_RubyPure.cpp
-    src/6_Ruby_Versions/2_RubyGenetic.cpp
-    src/6_Ruby_Versions/3_RubyGeneticOnePoint.cpp
-    src/6_Ruby_Versions/4_RubyGeneticOnePointPosNeg.cpp
-    src/6_Ruby_Versions/5_RubyGeneticOnePointPosNegInfinite.cpp
-)
-target_link_libraries(robot_findlines ${catkin_LIBRARIES})
-#add_dependencies(robot_findlines engrais_control_gencpp)
-
-
-add_executable(robot_keyboard_move robot_keyboard_move.cpp
-)
-target_link_libraries(robot_keyboard_move ${catkin_LIBRARIES})
-#add_dependencies(robot_keyboard_move engrais_control_gencp
-
-
-add_executable(robot_control robot_control.cpp
-    src/1_Point/Point.cpp
-    src/2_WeightedPoint/WeightedPoint.cpp
-    src/3_Utility/Utility.cpp
-    src/4_Model/Model.cpp
-
-    src/5_Pearl/Pearl.cpp
-    src/6_Ruby_Versions/1_RubyPure.cpp
-    src/6_Ruby_Versions/2_RubyGenetic.cpp
-    src/6_Ruby_Versions/3_RubyGeneticOnePoint.cpp
-    src/6_Ruby_Versions/4_RubyGeneticOnePointPosNeg.cpp
-    src/6_Ruby_Versions/5_RubyGeneticOnePointPosNegInfinite.cpp
-
-    src/7_FuzzyController/FuzzyController.cpp
-    src/8_StateMachine/StateMachine.cpp
-    src/9_WeightedModel/WeightedModel.cpp
-    src/10_RobotControl/RobotControl.cpp
-)
-
-target_link_libraries(robot_control 
-	${catkin_LIBRARIES} 
-	fuzzylite-static
-)
-#add_dependencies(robot_control engrais_control_gencpp)
-
-add_executable(teste teste.cpp
-)
-target_link_libraries(teste 
-    ${catkin_LIBRARIES} 
-)

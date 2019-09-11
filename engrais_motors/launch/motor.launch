@@ -1,4 +1,4 @@
-<?xml version="1.0" ?>
+<?xml version="1.6" ?>
 
 <launch>
 
@@ -6,8 +6,8 @@
     <arg name="motor_node_name" default="left_side_wheels" />
     <arg name="sub_topic_name" default="leftCommand" />
 
-    <arg name="back_port" default="/dev/ttyUSB0" />
-    <arg name="front_port" default="/dev/ttyUSB1" />
+    <arg name="back_port_name" default="/dev/ttyUSB0" />
+    <arg name="front_port_name" default="/dev/ttyUSB1" />
 
     <arg name="robot_side" default="left" />
 
@@ -16,15 +16,15 @@
     <arg name="serial_stop_bit" default="1" /> <!-- 1:One, 2:Two, 3:One point five -->
     <arg name="serial_data_bits" default="8" /> <!-- 5, 6, 7 or 8 -->
     <arg name="serial_hdw_flow_ctrl" default="0" /> <!-- 0:None, 1:software, 2:hardware -->
-    <arg name="serial_timeout" default="400" />
+    <arg name="serial_timeout" default="10" />
     
     
     <!-- The motor node -->
-    <node name="$(arg motor_node_name)" type= "motor_node" pkg="engrais_motors" output="screen" >
+    <node name="$(arg motor_node_name)" type= "motor_node" pkg="engrais_motors">
         <param name="sub_topic" type="string" value="$(arg sub_topic_name)" />
 
-        <param name="back_port_name" type="string" value="$(arg back_port)" />
-        <param name="front_port_name" type="string" value="$(arg front_port)" />
+        <param name="back_port" type="string" value="$(arg back_port_name)" />
+        <param name="front_port" type="string" value="$(arg front_port_name)" />
 
         <param name="side" type="string" value="$(arg robot_side)" />
         <param name="baud" type="int" value="$(arg serial_baud)" />
