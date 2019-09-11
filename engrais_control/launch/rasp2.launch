@@ -2,20 +2,20 @@
 <launch>
 	
     <!-- PARAMETERS -->
-    <arg name="motor_node" value="left_side_wheels" />
-    <arg name="sub_topic" value="leftCommand" />
+    <arg name="motor_node" default="left_side_wheels" />
+    <arg name="sub_topic" default="leftCommand" />
 
-    <arg name="serial_back_port" value="/dev/ttyUSB0" />
-    <arg name="serial_front_port" value="/dev/ttyUSB1" />
+    <arg name="serial_back_port" default="/dev/ttyUSB0" />
+    <arg name="serial_front_port" default="/dev/ttyUSB1" />
 
-    <arg name="robot_side_value" value="left" />
+    <arg name="robot_side_value" default="left" />
 
-    <arg name="serial_baud_value" value="57600" />
-    <arg name="serial_parity_value" value="0" /> <!-- 0:None, 1:odd, 2:even -->
-    <arg name="serial_stop_bit_value" value="1" /> <!-- 1:One, 2:Two, 3:One point five -->
-    <arg name="serial_data_bits_value" value="8" /> <!-- 5, 6, 7 or 8 -->
-    <arg name="serial_hdw_flow_ctrl_value" value="0" /> <!-- 0:None, 1:software, 2:hardware -->
-    <arg name="serial_timeout_value" value="400" />
+    <arg name="serial_baud_value" default="57600" />
+    <arg name="serial_parity_value" default="0" /> <!-- 0:None, 1:odd, 2:even -->
+    <arg name="serial_stop_bit_value" default="1" /> <!-- 1:One, 2:Two, 3:One point five -->
+    <arg name="serial_data_bits_value" default="8" /> <!-- 5, 6, 7 or 8 -->
+    <arg name="serial_hdw_flow_ctrl_value" default="0" /> <!-- 0:None, 1:software, 2:hardware -->
+    <arg name="serial_timeout_value" default="400" />
 
     <include file="$(find engrais_motors)/launch/motor.launch">
 	    <arg name="motor_node_name" value="$(arg motor_node)" />
