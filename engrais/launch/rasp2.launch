@@ -1,0 +1,44 @@
+<?xml version="1.6" ?>
+<launch>
+	
+    <!-- PARAMETERS -->
+    <arg name="rasp2_IP" default="192.168.10.102" />
+
+    <arg name="motor_node" default="left_side_wheels" />
+    <arg name="sub_topic" default="leftCommand" />
+
+    <arg name="serial_back_port" default="/dev/ttyUSB0" />
+    <arg name="serial_front_port" default="/dev/ttyUSB1" />
+
+    <arg name="robot_side_value" default="left" />
+
+    <arg name="serial_baud_value" default="57600" />
+    <arg name="serial_parity_value" default="0" /> <!-- 0:None, 1:odd, 2:even -->
+    <arg name="serial_stop_bit_value" default="1" /> <!-- 1:One, 2:Two, 3:One point five -->
+    <arg name="serial_data_bits_value" default="8" /> <!-- 5, 6, 7 or 8 -->
+    <arg name="serial_hdw_flow_ctrl_value" default="0" /> <!-- 0:None, 1:software, 2:hardware -->
+    <arg name="serial_timeout_value" default="400" />
+
+
+ 	<machine name="rasp2" address="$(arg rasp2_IP)" user="engrais" password="engrais" env-loader="~/catkin_ws/src/istiaENGRAIS/config/config.sh" default="true"/>
+
+    <include file="$(find engrais_motors)/launch/motor.launch">
+	    <arg name="motor_node_name" value="$(arg motor_node)" />
+	    <arg name="sub_topic_name" value="$(arg sub_topic)" />
+
+	    <arg name="back_port_name" value="$(arg serial_back_port)" />
+	    <arg name="front_port_name" value="$(arg serial_front_port)" />
+
+	    <arg name="robot_side" value="$(arg robot_side_value)" />
+
+	    <arg name="serial_baud" value="$(arg serial_baud_value)" />
+	    <arg name="serial_parity" value="$(arg serial_parity_value)" />
+	    <arg name="serial_stop_bit" value="$(arg serial_stop_bit_value)" />
+	    <arg name="serial_data_bits" value="$(arg serial_data_bits_value)" />
+	    <arg name="serial_hdw_flow_ctrl" value="$(arg serial_hdw_flow_ctrl_value)" />
+
+	    <arg name="serial_timeout" value="$(arg serial_timeout_value)" />
+
+    </include>
+
+</launch>
