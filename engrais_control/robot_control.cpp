@@ -38,6 +38,7 @@ ros::Publisher pubSelectedLines;
 
 RobotControl control;
 
+
 //--------------------------------------------------------------------------------------------------------
 void sendLine(const pair<Model, Model> & models){ 
     visualization_msgs::Marker line_list;
@@ -182,6 +183,7 @@ int main(int argc, char **argv){
 
     ROS_INFO("Code ended without errors");
 
+    return 0;
 }
 
 //********************************************************************************************************

@@ -40,6 +40,6 @@
         pkg = "tf"
         type = "static_transform_publisher"
         name = "$(arg frame_name)_body_broadcaster"
-        args="0.7 0 0 0 0 0 body $(arg frame_name) 100"
+        args="-0.7 0 0 3.141592 0 0 body $(arg frame_name) 100"
     />
 </launch>
