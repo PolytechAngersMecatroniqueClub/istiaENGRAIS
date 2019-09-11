@@ -24,7 +24,7 @@
     <arg name="right_motor_node_name" default="right_side_wheels" />
     <arg name="left_motor_node_name" default="left_side_wheels" />
 
-    <arg name="central_node_name" value="engrais_central"/>
+    <arg name="central_node_name" default="engrais_central"/>
 
 
     <!-- ROS Topics -->
