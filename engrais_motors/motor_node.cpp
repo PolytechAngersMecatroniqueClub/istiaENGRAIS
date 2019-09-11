@@ -35,7 +35,7 @@ struct Message{
 
 Message message;
 
-/*void sendSpeed(){ 
+void sendSpeed(){ 
     ros::Rate loop_rate(50);
 
 	while(!endProgram){
@@ -118,14 +118,14 @@ void closeConexion(){
     
     delete back_wheel;
     delete front_wheel;
-}*/
+}
 
 int main(int argc, char **argv){
     cout << "AAA" << endl;
     ros::init(argc, argv, "motor_node");
     ros::NodeHandle node;
 
-	/*int baud, timeout, bytesize, parity, flowctrl, stop_bit;
+	int baud, timeout, bytesize, parity, flowctrl, stop_bit;
 
     string sub_topic, back_port_name, front_port_name, node_name = ros::this_node::getName();
 
@@ -154,7 +154,7 @@ int main(int argc, char **argv){
 
     wheelThread.join();
 
-    closeConexion();*/
+    closeConexion();
 
     ros::spin();
 
