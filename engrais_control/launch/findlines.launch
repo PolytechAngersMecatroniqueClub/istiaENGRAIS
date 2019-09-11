@@ -12,7 +12,7 @@
 	<arg name="findlines_node_name" default="engrais_findlines_1"/>
 
 
-	<include file="$(find sick_tim)/launch/laser1.launch">
+	<include file="$(find sick_tim)/launch/$(arg rviz_frame).launch">
 		<arg name="lidar_IP" value="$(arg IP_Lidar)"/>
 		<arg name="node_name" value="$(arg sick_node_name)"/>
 		<arg name="publish_topic" value="$(arg scan_topic)"/>
@@ -20,7 +20,7 @@
 	</include>
 
 
-	<node name="$(arg findlines_node_name)" pkg="engrais_control" type="robot_findlines" output="screen">
+	<node name="$(arg findlines_node_name)" pkg="engrais_control" type="robot_findlines">
 		<param name="subscribe_topic" type="string" value="$(arg scan_topic)"/>
 		<param name="publish_topic" type="string" value="$(arg lines_topic)"/>
 		<param name="frame_name" type="string" value="$(arg rviz_frame)"/>
