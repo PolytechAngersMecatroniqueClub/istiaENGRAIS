@@ -53,7 +53,7 @@ std::pair<double, double> StateMachine::makeTransition(const std::pair<Model, Mo
     }
 
     this->currentState = stateTransition.nextState; //Goes to next state
-    return std::pair<double, double> (stateTransition.output.first * MAX_VEL, stateTransition.output.second * MAX_VEL); //Returns wheels command
+    return std::pair<double, double> (stateTransition.output.first * this->MAX_VEL, stateTransition.output.second * this->MAX_VEL); //Returns wheels command
 }
 //--------------------------------------------------------------------------------------------------------
 StateMachine::Transition StateMachine::initialStateRoutine(const std::pair<Model, Model> & models){ //Initial State 
@@ -85,7 +85,7 @@ StateMachine::Transition StateMachine::forwardStateRoutine(const std::pair<Model
         std::vector<Point> lPoints = models.first.getPointsInModel(); //Left model points
         std::vector<Point> rPoints = models.second.getPointsInModel(); //Left model points
 
-        if((lPoints.size() >= 2 && lPoints[1].getX() + BODY_SIZE/2.0 <= -0.5) || (rPoints.size() >= 2 && rPoints[1].getX() + BODY_SIZE/2.0 <= -0.5)){ //If positive-most point is smaller than -50cm, robot is at the end of the rows and needs to turn
+        if((lPoints.size() >= 2 && lPoints[1].getX() + this->BODY_SIZE/2.0 <= -0.5) || (rPoints.size() >= 2 && rPoints[1].getX() + this->BODY_SIZE/2.0 <= -0.5)){ //If positive-most point is smaller than -50cm, robot is at the end of the rows and needs to turn
             
             if(this->toTurn == LEFT) //If it needs to go Left
                 this->tAfterStop = Transition(LEFT_TURN_BEGIN, std::pair<double, double> (-0.25, 0.25)); //Sets Stop State transition
@@ -112,7 +112,7 @@ StateMachine::Transition StateMachine::backwardStateRoutine(const std::pair<Mode
         std::vector<Point> lPoints = models.first.getPointsInModel(); //Left model points
         std::vector<Point> rPoints = models.second.getPointsInModel(); //Left model points
 
-        if((lPoints.size() >= 2 && lPoints[0].getX() - BODY_SIZE/2.0 >= 0.5) || (rPoints.size() >= 2 && rPoints[0].getX() - BODY_SIZE/2.0 >= 0.5)){ //If negative-most point is bigger than 50cm, robot is at the end of the rows and needs to turn
+        if((lPoints.size() >= 2 && lPoints[0].getX() - this->BODY_SIZE/2.0 >= 0.5) || (rPoints.size() >= 2 && rPoints[0].getX() - this->BODY_SIZE/2.0 >= 0.5)){ //If negative-most point is bigger than 50cm, robot is at the end of the rows and needs to turn
             
             if(this->toTurn == LEFT) //If it needs to go Left
                 this->tAfterStop = Transition(LEFT_TURN_BEGIN, std::pair<double, double> (-0.25, 0.25)); //Sets Stop State transition
@@ -312,8 +312,8 @@ StateMachine::Transition StateMachine::impossibleStateRoutine(const std::pair<Mo
 
 //--------------------------------------------------------------------------------------------------------
 double StateMachine::calculateRatio(const std::pair<Model, Model> & m){ //Calculate fuzzy ratio input 
-    double lAbs = m.first.isPopulated() ? fabs(m.first.getIntercept()) : DISTANCE_REFERENCE; //|b_left| or 1.5
-    double rAbs = m.second.isPopulated() ? fabs(m.second.getIntercept()) : DISTANCE_REFERENCE; //|b_right| or 1.5
+    double lAbs = m.first.isPopulated() ? fabs(m.first.getIntercept()) : this->DISTANCE_REFERENCE; //|b_left| or 1.5
+    double rAbs = m.second.isPopulated() ? fabs(m.second.getIntercept()) : this->DISTANCE_REFERENCE; //|b_right| or 1.5
 
     double ratio = lAbs <= rAbs ? lAbs / rAbs - 1.0 : (rAbs / lAbs - 1.0) * (-1.0) ; //(|b_min| / |b_max| - 1) [* -1.0 if right from center]
 

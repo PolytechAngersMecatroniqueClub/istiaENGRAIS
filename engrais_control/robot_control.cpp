@@ -18,12 +18,8 @@
 #include <visualization_msgs/Marker.h>
 #include <std_msgs/Float64.h>
 
-
-#define BODY_SIZE 2.0
-#define SLEEP_TIME 500
 #define PI 3.1415926535
 #define TO_MILLISECOND 1000
-#define DISTANCE_REFERENCE 1.5
 
 using namespace std;
 
@@ -32,11 +28,13 @@ mutex critSec;
 string mapName;
 bool endProgram = false;
 
+int SLEEP_TIME;
+
 ros::Publisher pubLeftControl;
 ros::Publisher pubRightControl;
 ros::Publisher pubSelectedLines;
 
-RobotControl control;
+RobotControl* control;
 
 
 //--------------------------------------------------------------------------------------------------------
@@ -95,16 +93,16 @@ void controlThread(){
     while(!endProgram){
 
         critSec.lock();
-        control.clearModels();
+        control->clearModels();
         critSec.unlock();
 
         usleep(SLEEP_TIME * TO_MILLISECOND);
 
         critSec.lock();  
 
-        pair<Model, Model> selectedModels = control.selectModels();
+        pair<Model, Model> selectedModels = control->selectModels();
         sendLine(selectedModels);
-        pair<std_msgs::Float64, std_msgs::Float64> wheels = control.getWheelsCommand(selectedModels);
+        pair<std_msgs::Float64, std_msgs::Float64> wheels = control->getWheelsCommand(selectedModels);
 
         //cout << control << endl;
         critSec.unlock();
@@ -122,7 +120,7 @@ void BackLinesMsg(const visualization_msgs::Marker & msg){
         return;
 
     critSec.lock();
-    control.backMessage(msg);
+    control->backMessage(msg);
     critSec.unlock();
 }
 //--------------------------------------------------------------------------------------------------------
@@ -131,7 +129,7 @@ void FrontLinesMsg(const visualization_msgs::Marker & msg){
         return;
     
     critSec.lock();
-    control.frontMessage(msg);
+    control->frontMessage(msg);
     critSec.unlock();
 }
 
@@ -142,18 +140,24 @@ int main(int argc, char **argv){
     ros::init(argc, argv, "robot_move_node");
     ros::NodeHandle node;
 
+    double MAX_VEL, BODY_SIZE, DISTANCE_REFERENCE;
+
     string subTopicFront, subTopicBack, pubTopicLeft, pubTopicRight, pubTopicSelected, node_name = ros::this_node::getName();
 
     if(!node.getParam(node_name + "/subscribe_topic_front", subTopicFront) || !node.getParam(node_name + "/subscribe_topic_back", subTopicBack) || 
-       !node.getParam(node_name + "/publish_topic_left", pubTopicLeft) || !node.getParam(node_name + "/publish_topic_right", pubTopicRight)){
+       !node.getParam(node_name + "/publish_topic_left", pubTopicLeft) || !node.getParam(node_name + "/publish_topic_right", pubTopicRight) ||
+       !node.getParam(node_name + "/max_velocity", MAX_VEL) || !node.getParam(node_name + "/body_size", BODY_SIZE) || 
+       !node.getParam(node_name + "/distance_reference", DISTANCE_REFERENCE) || !node.getParam(node_name + "/sleep_time_ms", SLEEP_TIME)) {
 
         ROS_ERROR_STREAM("Argument missing in node " << node_name << ", expected 'subscribe_topic_front', 'subscribe_topic_back', " <<
-                         "'publish_topic_left', 'publish_topic_right' and [optional: 'rviz_topic' and 'rviz_frame']\n\n");
+                         "'publish_topic_left', 'publish_topic_right', 'robot_max_velocity', 'robot_body_size', 'robot_distance_reference' and [optional: 'rviz_topic' and 'rviz_frame']\n\n");
         return -1;
     }
 
     node.param<string>(node_name + "/rviz_frame", mapName, "world");
     node.param<string>(node_name + "/rviz_topic", pubTopicSelected, "/engrais/robot_move/selected_lines");
+
+    control = new RobotControl(MAX_VEL, BODY_SIZE, DISTANCE_REFERENCE);
 
     ros::Subscriber subFront = node.subscribe(subTopicFront, 10, FrontLinesMsg);
     ros::Subscriber subBack = node.subscribe(subTopicBack, 10, BackLinesMsg);
@@ -172,6 +176,8 @@ int main(int argc, char **argv){
 
     endProgram = true;
     control_t.join();
+
+    delete control;
 
     subFront.shutdown();
     subBack.shutdown();

@@ -58,6 +58,16 @@
     <!-- Robot Side -->
 	<arg name="right_robot_side" default="right" />
 	<arg name="left_robot_side" default="left" />
+
+
+	<!-- Robot's Infos -->
+	<arg name="robot_max_velocity" default="4.0"/>
+	<arg name="robot_body_size" default="2.0"/>
+	<arg name="robot_distance_reference" default="1.5"/>
+	
+
+	<!-- Control Period -->
+	<arg name="control_sleep_time_ms" default="500"/>
 	
 
 	<!-- Common Serial Arguments -->
@@ -143,6 +153,12 @@
  	<machine name="central" address="$(arg central_IP)" user="usrlocal" password="usrlocal2019" env-loader="~/catkin_ws/src/istiaENGRAIS/config/config.sh" default="true"/>
 
  	<include file="$(find engrais_control)/launch/control.launch">
+		<arg name="robot_max_velocity" value="$(arg max_velocity)"/>
+		<arg name="robot_body_size" value="$(arg body_size)"/>
+		<arg name="robot_distance_reference" value="$(arg distance_reference)"/>
+
+		<arg name="control_sleep_time_ms" value="$(arg sleep_time_ms)"/>
+
 		<arg name="control_node_name" value="$(arg central_node_name)"/>
 		<arg name="subscribe_topic_1" value="$(arg front_lines_topic)"/>
 		<arg name="subscribe_topic_2" value="$(arg back_lines_topic)"/>

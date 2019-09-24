@@ -10,9 +10,8 @@
 #include <ros/ros.h>
 #include <std_msgs/Float64.h>
 
-#define MESSAGE_FREQUENCY 30.0
-
 using namespace std;
+
 
 //--------------------------------------------------------------------------------------------------------
 void RestoreKeyboardBlocking(struct termios *initial_settings){
@@ -143,11 +142,11 @@ int main(int argc, char **argv){
 
     ROS_INFO("Shutting down...");
 
+    RestoreKeyboardBlocking(&term_settings);
+
     pubLeftControl.shutdown();
     pubRightControl.shutdown();
     ros::shutdown();
-
-    RestoreKeyboardBlocking(&term_settings);
 
     ROS_INFO("Code ended without errors");
 

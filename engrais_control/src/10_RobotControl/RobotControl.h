@@ -26,12 +26,17 @@
 
 class RobotControl{ 
     private:
+
+        const double MAX_VEL;
+        const double BODY_SIZE;
+        const double DISTANCE_REFERENCE;
+
         StateMachine robotFSM;
         std::vector<WeightedModel> models;
 
     public:
         //------------------------------------------------------------------------------------------------
-        RobotControl();
+        RobotControl(double MVel, double BSize, double DReference);
         //------------------------------------------------------------------------------------------------
         void clearModels();
         //------------------------------------------------------------------------------------------------
@@ -58,8 +63,8 @@ class RobotControl{
 };
 
 //--------------------------------------------------------------------------------------------------------
-inline RobotControl::RobotControl(){}
-//--------------------------------------------------------------------------------------------------------
+inline RobotControl::RobotControl(double MVel, double BSize, double DReference) : MAX_VEL(MVel), BODY_SIZE(BSize), DISTANCE_REFERENCE(DReference), robotFSM(MVel, BSize, DReference) {}
+//----------------------------------------------------------------------------- ---------------------------
 inline void RobotControl::clearModels(){ models.clear(); }
 
 #endif

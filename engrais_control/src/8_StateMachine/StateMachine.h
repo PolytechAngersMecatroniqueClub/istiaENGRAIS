@@ -14,20 +14,14 @@
 
 #include <FuzzyController.h>
 
-#ifndef MAX_VEL
-#define MAX_VEL 4.0 //Maximum robot velocity
-#endif
-
-#ifndef BODY_SIZE
-#define BODY_SIZE 2.0 //Robot's body size
-#endif
-
-#ifndef DISTANCE_REFERENCE
-#define DISTANCE_REFERENCE 1.5 //Distance to be from a line if just 1 is found
-#endif
 
 class StateMachine{ //Class to implement a state machine 
     private:
+
+        const double MAX_VEL;
+        const double BODY_SIZE;
+        const double DISTANCE_REFERENCE;
+
         //------------------------------------------------------------------------------------------------
         enum States { BACKWARD = -1, INITIAL = 0, FORWARD = 1, LINEAR_STOP, ANGULAR_STOP, LEFT_TURN_BEGIN, LEFT_TURN_MID, LEFT_TURN_MERGE, IMPOSSIBLE }; //All possible states
         //------------------------------------------------------------------------------------------------
@@ -53,7 +47,7 @@ class StateMachine{ //Class to implement a state machine
 
     public:
         //------------------------------------------------------------------------------------------------
-        StateMachine(); //Default Constructor
+        StateMachine(double MVel, double BSize, double DReference); //Default Constructor
         //------------------------------------------------------------------------------------------------
         std::pair<double, double> makeTransition(const std::pair<Model, Model> & models); //Compute a transition from the State machine, imagine this as a way to make this machine without a clock, and the user calls this function as a way to customize the clock frequency 
 
@@ -88,7 +82,7 @@ class StateMachine{ //Class to implement a state machine
 };
 
 //--------------------------------------------------------------------------------------------------------
-inline StateMachine::StateMachine() : tAfterStop(INITIAL, std::pair<double, double> (0,0)) {} //Initialize class members
+inline StateMachine::StateMachine(double MVel, double BSize, double DReference) : tAfterStop(INITIAL, std::pair<double, double> (0,0)), MAX_VEL(MVel), BODY_SIZE(BSize), DISTANCE_REFERENCE(DReference) {} //Initialize class members
 
 #endif
 //********************************************************************************************************
