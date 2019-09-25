@@ -33,7 +33,8 @@ int main(int argc, char **argv){
     int stop_bit = 1;
     //node.getParam("stop_bit", stop_bit);
 
-    ofstream arq("sent");
+    ofstream com("communication.txt");
+    ofstream arq("sent.txt");
 
     serial::Serial my_serial_0(port_name_0,
                              baud,
@@ -80,7 +81,7 @@ int main(int argc, char **argv){
     tramme_1[ 0] = 0xAA;
     tramme_1[ 1] = 0x0F;
     tramme_1[ 2] = 0x08;
-    tramme_1[ 3] = 0x00;  //+CONT
+    tramme_1[ 3] = 0x00 + cont; 
     tramme_1[ 4] = 0x00;
     tramme_1[ 5] = 0x0A;
     tramme_1[ 6] = 0x00;
@@ -102,7 +103,7 @@ int main(int argc, char **argv){
     tramme_2[ 0] = 0xAA;
     tramme_2[ 1] = 0x14;
     tramme_2[ 2] = 0x08;
-    tramme_2[ 3] = 0x00;
+    tramme_2[ 3] = 0x00 + cont;
     tramme_2[ 4] = 0x00;
     tramme_2[ 5] = 0x0F;
     tramme_2[ 6] = 0x00;
@@ -127,13 +128,17 @@ int main(int argc, char **argv){
     int response = 0;
 
     cout.fill('0');
+    com.fill('0');
+    arq.fill('0');
 
-    my_serial_1.write(tramme_2, tramme_2_size);
+    //my_serial_1.write(tramme_2, tramme_2_size);
 
     int vel = 0;
 
-    tramme_2[18] = 0x08;
+    tramme_2[18] = 0x00;
     addCRC(tramme_2, tramme_2_size);
+
+    int requestCont = 1;
 
     while(ros::ok()){
 
@@ -141,13 +146,17 @@ int main(int argc, char **argv){
 
 	    ros::Duration(0.05).sleep();
 
-	    cout << "Send 1: " << endl;
+	    cout << "Send Question " << requestCont << ": " << endl;
+	    com << "Send Question " << requestCont << ": " << endl;
 
 	    for(int i = 0; i < tramme_1_size; i++){
 	    	cout << "\t[" << setw(2) << i << "]:\t" << "0x" << uppercase << hex << setw(2) << (int)tramme_1[i]  << dec << endl;
+	    	arq << "\t[" << setw(2) << i << "]:\t" << "0x" << uppercase << hex << setw(2) << (int)tramme_1[i]  << dec << endl;
+	    	com << "\t[" << setw(2) << i << "]:\t" << "0x" << uppercase << hex << setw(2) << (int)tramme_1[i]  << dec << endl;
 	    }
 
 	    cout << endl << endl;
+	    com << endl << endl;
 
 	    
 	    for(int i = 0; i < sniff_size; i++){
@@ -158,31 +167,37 @@ int main(int argc, char **argv){
 
         response = my_serial_1.read(sniff, sniff_size);
 
-        cout << "Reponse 1: " << response << endl;
+        cout << "Question Reponse " << requestCont << ": " << response << endl;
+        com << "Question Reponse " << requestCont << ": " << response << endl;
 
 	    for(int i = 0; i < response; i++){
 	    	cout << "\t[" << setw(2) << i << "]:\t" << "0x" << uppercase << hex << setw(2) << (int)sniff[i] << dec << endl;
+	    	com << "\t[" << setw(2) << i << "]:\t" << "0x" << uppercase << hex << setw(2) << (int)sniff[i] << dec << endl;
 	    }
 
 	    cout << endl << endl;
+	    com << endl << endl;
 
-	    ros::Duration(0.05).sleep();
+	    ros::Duration(0.01).sleep();
 
-	    //tramme_2[3] = ++cont;
-        //tramme_2[18] = vel/10 >= 0x1E ? 0x1E : (++vel)/10;
-        //addCRC(tramme_2, tramme_2_size);
+	    tramme_2[3] = ++cont;
+        tramme_2[18] = vel/10 >= 0x1E ? 0x1E : (++vel)/10;
+        addCRC(tramme_2, tramme_2_size);
 
 
 	    my_serial_1.write(tramme_2, tramme_2_size);
 
-	    cout << "Send 2: " << endl;
+	    cout << "Send Control Signal " << requestCont << ": " << endl;
+	    com << "Send Control Signal " << requestCont << ": " << endl;
 
 	    for(int i = 0; i < tramme_2_size; i++){
 	    	cout << "\t[" << setw(2) << i << "]:\t" << "0x" << uppercase << hex << setw(2) << (int)tramme_2[i]  << dec << endl;
+	    	arq << "\t[" << setw(2) << i << "]:\t" << "0x" << uppercase << hex << setw(2) << (int)tramme_2[i]  << dec << endl;
+	    	com << "\t[" << setw(2) << i << "]:\t" << "0x" << uppercase << hex << setw(2) << (int)tramme_2[i]  << dec << endl;
 	    }
 
 	    cout << endl << endl;
-
+	    com << endl << endl;
 
 	    for(int i = 0; i < sniff_size; i++){
 	    	sniff[i] = 0;
@@ -192,18 +207,21 @@ int main(int argc, char **argv){
 
         response = my_serial_1.read(sniff, sniff_size);
 
-        cout << "Reponse 2: " << response << endl;
+        cout << "Control Signal Reponse " << requestCont << ": " << response << endl;
+        com << "Control Signal Reponse " << requestCont << ": " << response << endl;
 
 	    for(int i = 0; i < response; i++){
 	    	cout << "\t[" << setw(2) << i << "]:\t" << "0x" << uppercase << hex << setw(2) << (int)sniff[i] << dec << endl;
+	    	com << "\t[" << setw(2) << i << "]:\t" << "0x" << uppercase << hex << setw(2) << (int)sniff[i] << dec << endl;
 	    }
 
 	    cout << endl << endl;
+	    com << endl << endl;
 
-	    ros::Duration(0.05).sleep();
+	    ros::Duration(0.01).sleep();
 
-	    //tramme_1[3] = ++cont;
-        //addCRC(tramme_1, tramme_1_size);
+	    tramme_1[3] = ++cont;
+        addCRC(tramme_1, tramme_1_size);
 
     }
 
