@@ -2,6 +2,7 @@
 #include <cmath>
 #include <chrono>
 #include <time.h>  
+#include <thread>
 #include <stdio.h> 
 #include <stdlib.h>   
 #include <iostream>
@@ -9,6 +10,7 @@
 
 #include <ros/ros.h>
 #include <ros/console.h>
+#include <std_msgs/Bool.h>
 #include <sensor_msgs/LaserScan.h>
 #include <visualization_msgs/Marker.h>
 
@@ -26,13 +28,16 @@
 
 using namespace std;
 	
+
+string mapName, node_name, emergecy_topic;
+
 RubyGeneticOnePointPosNeg rubyGenOPPN;
 
-string mapName;
+
+ros::NodeHandle* node;
 
 ros::Publisher pubLineNode;
 ros::Publisher resultsPubNode;
-
 
 //--------------------------------------------------------------------------------------------------------
 void sendLine(const vector<Model> & models, const Pearl & pearl){ 
@@ -98,6 +103,40 @@ void sendLine(const vector<Model> & models, const Pearl & pearl){
 }
 
 
+ros::Time lastMsg;
+//--------------------------------------------------------------------------------------------------------
+void OnEmergencyBrake(const std_msgs::Bool & msg){
+    lastMsg = ros::Time::now();
+
+    if(msg.data == true){
+        Utility::printInColor(node_name + ": Emergency Shutdown Called", RED);
+        ros::shutdown();
+    }
+}
+//--------------------------------------------------------------------------------------------------------
+void emergencyThread(){
+    lastMsg = ros::Time::now();
+    ros::Subscriber emergencySub = node->subscribe(emergecy_topic, 10, OnEmergencyBrake);
+    
+    ros::Duration(0.5).sleep();
+
+    while(ros::ok()){
+        ros::Duration(0.05).sleep();
+
+        ros::Time now = ros::Time::now();
+        
+        ros::Duration delta_t = now - lastMsg;
+
+        if(ros::ok() && delta_t.toSec() > 0.2){
+            Utility::printInColor(node_name + ": Emergency Timeout Shutdown", RED);
+            ros::shutdown();
+        }
+    }
+
+    emergencySub.shutdown();
+}
+
+
 //--------------------------------------------------------------------------------------------------------
 void OnRosMsg(const sensor_msgs::LaserScan & msg){
     static int msgCont = 0;
@@ -131,32 +170,49 @@ int main(int argc, char **argv){
 
     srand (time(NULL));
     ros::init(argc, argv, "engrais_findlines");
-    ros::NodeHandle node;
+    
+    node = new ros::NodeHandle();
 
-    string sub_topic, pub_topic, node_name = ros::this_node::getName();
+    string sub_topic, pub_topic;
 
-    Utility::printInColor("Initializing Robot Control Ros Node", CYAN);
+    node_name = ros::this_node::getName();
 
-    if(!node.getParam(node_name + "/subscribe_topic", sub_topic) || !node.getParam(node_name + "/publish_topic", pub_topic)){
+    if(!node->getParam(node_name + "/subscribe_topic", sub_topic) || !node->getParam(node_name + "/publish_topic", pub_topic)){
+
         ROS_ERROR_STREAM("Argument missing in node " << node_name << ", expected 'subscribe_topic', 'publish_topic' and [optional: 'frame_name']\n\n");
         return -1;
     }
+    
+    node->param<string>(node_name + "/emergency_topic", emergecy_topic, "none");
 
-    node.param<string>(node_name + "/frame_name", mapName, "world");
+    node->param<string>(node_name + "/frame_name", mapName, "world");
 
-    ros::Subscriber sub = node.subscribe(sub_topic, 10, OnRosMsg); // /engrais/laser_front/scan or /engrais/laser_back/scan
-    pubLineNode = node.advertise<visualization_msgs::Marker>(pub_topic, 10);// /engrais/laser_front/lines or /engrais/laser_back/lines
+    ros::Subscriber sub = node->subscribe(sub_topic, 10, OnRosMsg); // /engrais/laser_front/scan or /engrais/laser_back/scan
+    
+    thread* emergency_t;
+    if(emergecy_topic != "none")
+        emergency_t = new thread(emergencyThread);
 
-    ROS_INFO("Code Running, press Control+C to end");
+    pubLineNode = node->advertise<visualization_msgs::Marker>(pub_topic, 10);// /engrais/laser_front/lines or /engrais/laser_back/lines
+
+    Utility::printInColor(node_name + ": Code Running, press Control+C to end", CYAN);
     ros::spin();
-    ROS_INFO("Shutting down...");
+    Utility::printInColor(node_name + ": Shutting down...", CYAN);
+    
+    if(emergecy_topic != "none"){
+        emergency_t->join();
+        delete emergency_t;
+    }
 
-    sub.shutdown();
+    sub.shutdown(); 
     pubLineNode.shutdown();
     resultsPubNode.shutdown();
-    ros::shutdown();
 
-    ROS_INFO("Code ended without errors");
+    ros::shutdown();
+       
+    delete node;
+
+    Utility::printInColor(node_name + ": Code ended without errors", BLUE);
 
     return 0;
 }

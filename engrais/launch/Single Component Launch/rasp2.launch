@@ -7,6 +7,8 @@
     <arg name="motor_node" default="left_side_wheels" />
     <arg name="sub_topic" default="leftCommand" />
 
+    <arg name="emerg_topic" default="none"/>
+
     <arg name="serial_back_port" default="/dev/ttyUSB0" />
     <arg name="serial_front_port" default="/dev/ttyUSB1" />
 
@@ -28,6 +30,8 @@
 
 	    <arg name="back_port_name" value="$(arg serial_back_port)" />
 	    <arg name="front_port_name" value="$(arg serial_front_port)" />
+
+        <arg name="emer_topic" value="$(arg emerg_topic)"/>
 
 	    <arg name="robot_side" value="$(arg robot_side_value)" />
 

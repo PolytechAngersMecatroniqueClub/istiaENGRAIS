@@ -7,6 +7,8 @@
     <arg name="motor_node" default="right_side_wheels" />
     <arg name="sub_topic" default="rightCommand" />
 
+    <arg name="emerg_topic" default="none"/>
+
     <arg name="serial_back_port" default="/dev/ttyUSB0" />
     <arg name="serial_front_port" default="/dev/ttyUSB1" />
 
@@ -25,6 +27,7 @@
     <include file="$(find engrais_motors)/launch/motor.launch">
 	    <arg name="motor_node_name" value="$(arg motor_node)" />
 	    <arg name="sub_topic_name" value="$(arg sub_topic)" />
+        <arg name="emer_topic" value="$(arg emerg_topic)"/>
 
 	    <arg name="back_port_name" value="$(arg serial_back_port)" />
 	    <arg name="front_port_name" value="$(arg serial_front_port)" />

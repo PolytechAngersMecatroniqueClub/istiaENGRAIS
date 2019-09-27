@@ -3,25 +3,27 @@
 
 	<!--> Sick Tim Arguments <-->
 	<arg name="IP_Lidar" default="192.168.10.111"/>
-	<arg name="sick_node_name" default="sick_1_rpi_3"/>
+	<arg name="sick_node" default="sick_1_rpi_3"/>
 	<arg name="scan_topic" default="scan1"/>
 	<arg name="rviz_frame" default="laser1"/>
 
 	<!--> Find Lines Arguments <-->
 	<arg name="lines_topic" default="lines1"/>
-	<arg name="findlines_node_name" default="engrais_findlines_1"/>
+    <arg name="emer_topic" default="none"/>
+	<arg name="findlines_node" default="engrais_findlines_1"/>
 
 
 	<include file="$(find sick_tim)/launch/$(arg rviz_frame).launch">
 		<arg name="lidar_IP" value="$(arg IP_Lidar)"/>
-		<arg name="node_name" value="$(arg sick_node_name)"/>
+		<arg name="node_name" value="$(arg sick_node)"/>
 		<arg name="publish_topic" value="$(arg scan_topic)"/>
 		<arg name="frame_name" value="$(arg rviz_frame)"/>
 	</include>
 
 
-	<node name="$(arg findlines_node_name)" pkg="engrais_control" type="robot_findlines">
+	<node name="$(arg findlines_node)" pkg="engrais_control" type="robot_findlines" output="screen">
 		<param name="subscribe_topic" type="string" value="$(arg scan_topic)"/>
+        <param name="emergency_topic" type="string" value="$(arg emer_topic)"/>
 		<param name="publish_topic" type="string" value="$(arg lines_topic)"/>
 		<param name="frame_name" type="string" value="$(arg rviz_frame)"/>
 	</node>

@@ -24,6 +24,8 @@
 	<arg name="front_rviz_frame" default="laser1"/>
 	<arg name="back_rviz_frame" default="laser2"/>
 
+    <arg name="emer_topic_name" default="none"/>
+
 
 	<!-- Rviz Frame Names -->
 	<arg name="front_lines_topic" default="lines1"/>
@@ -38,8 +40,10 @@
 	    <arg name="sick_node_name" value="$(arg front_sick_node_name)" />
 	    <arg name="scan_topic" value="$(arg front_scan_topic)" />
 	    <arg name="rviz_frame" value="$(arg front_rviz_frame)" />
+
 	    <arg name="lines_topic" value="$(arg front_lines_topic)" />
 	    <arg name="findlines_node_name" value="$(arg front_findlines_node_name)" />
+        <arg name="emer_topic" default="$(arg emer_topic_name)"/>
  	</include>
 
 
@@ -51,8 +55,10 @@
 	    <arg name="sick_node_name" value="$(arg back_sick_node_name)" />
 	    <arg name="scan_topic" value="$(arg back_scan_topic)" />
 	    <arg name="rviz_frame" value="$(arg back_rviz_frame)" />
+
 	    <arg name="lines_topic" value="$(arg back_lines_topic)" />
 	    <arg name="findlines_node_name" value="$(arg back_findlines_node_name)" />
+        <arg name="emer_topic" default="$(arg emer_topic_name)"/>
  	</include>
 
 </launch>

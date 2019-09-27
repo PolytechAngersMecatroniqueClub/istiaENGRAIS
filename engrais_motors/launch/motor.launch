@@ -5,6 +5,7 @@
     <!-- PARAMETERS -->
     <arg name="motor_node_name" default="left_side_wheels" />
     <arg name="sub_topic_name" default="leftCommand" />
+    <arg name="emer_topic" default="none"/>
 
     <arg name="back_port_name" default="/dev/ttyUSB0" />
     <arg name="front_port_name" default="/dev/ttyUSB1" />
@@ -25,6 +26,7 @@
 
         <param name="back_port" type="string" value="$(arg back_port_name)" />
         <param name="front_port" type="string" value="$(arg front_port_name)" />
+        <param name="emergency_topic" type="string" value="$(arg emer_topic)"/>
 
         <param name="side" type="string" value="$(arg robot_side)" />
         <param name="baud" type="int" value="$(arg serial_baud)" />

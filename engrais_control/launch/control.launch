@@ -8,27 +8,31 @@
 	<arg name="control_sleep_time_ms" default="500"/>
 
 	<arg name="control_node_name" default="engrais_central"/>
+    <arg name="emer_topic" default="none"/>
 	<arg name="subscribe_topic_1" default="lines1"/>
 	<arg name="subscribe_topic_2" default="lines2"/>
 	<arg name="publish_topic_left" default="leftCommand"/>
 	<arg name="publish_topic_right" default="rightCommand"/>
 
 	<arg name="global_frame" default="body"/>
+    <arg name="robot_mode" default="automatic"/>
 	<arg name="selected_lines_topic" default="selectedLines"/>
 
 
-	<node name="$(arg control_node_name)" pkg="engrais_control" type="robot_control">
+	<node name="$(arg control_node_name)" pkg="engrais_control" type="robot_control" output="screen">
 		<param name="max_velocity" type="double" value="$(arg robot_max_velocity)"/>
 		<param name="body_size" type="double" value="$(arg robot_body_size)"/>
 		<param name="distance_reference" type="double" value="$(arg robot_distance_reference)"/>
 		<param name="sleep_time_ms" type="int" value="$(arg control_sleep_time_ms)"/>
 
+        <param name="emergency_topic" type="string" value="$(arg emer_topic)"/>
 		<param name="subscribe_topic_front" type="string" value="$(arg subscribe_topic_1)"/>
 		<param name="subscribe_topic_back" type="string" value="$(arg subscribe_topic_2)"/>
 		<param name="publish_topic_left" type="string" value="$(arg publish_topic_left)"/>
 		<param name="publish_topic_right" type="string" value="$(arg publish_topic_right)"/>
 
 		<param name="rviz_frame" type="string" value="$(arg global_frame)"/>
+        <param name="mode" type="string" value="$(arg robot_mode)"/>
 		<param name="rviz_topic" type="string" value="$(arg selected_lines_topic)"/>
 	</node>
 

@@ -7,10 +7,18 @@
 #include <signal.h>
 #include <termios.h>
 
+#include <std_msgs/Bool.h>
+
 #include <ros/ros.h>
 #include <std_msgs/Float64.h>
 
 using namespace std;
+
+string node_name, emergecy_topic;
+
+ros::Publisher pubLeftControl;
+ros::Publisher pubRightControl;
+ros::Publisher pubEmergency;
 
 
 //--------------------------------------------------------------------------------------------------------
@@ -31,34 +39,18 @@ void SetKeyboardNonBlock(struct termios *initial_settings){
     tcsetattr(0, TCSANOW, &new_settings);
 }
 //--------------------------------------------------------------------------------------------------------
-int main(int argc, char **argv){
+void sendSpeedCommand(){
     char c;
 
-    ros::init(argc, argv, "robot_keyboard_control_node");
-
-    ros::NodeHandle node;
-
-    string pub_topic_right, pub_topic_left, node_name = ros::this_node::getName();
-
-    if(!node.getParam(node_name + "/pub_topic_right", pub_topic_right) || !node.getParam(node_name + "/pub_topic_left", pub_topic_left)){ //Get mandatory parameters
-        ROS_ERROR_STREAM("Argument missing in node " << node_name << ", expected pub_topic_right, 'pub_topic_left'.\n\n");
-        return -1;
-    }
-    
-    struct termios term_settings;
-    SetKeyboardNonBlock(&term_settings);
-
-    ros::Publisher pubLeftControl = node.advertise<std_msgs::Float64>(pub_topic_left, 10);
-    ros::Publisher pubRightControl = node.advertise<std_msgs::Float64>(pub_topic_right, 10);
-
     std_msgs::Float64 rightCmd, leftCmd, lastRightCmd, lastLeftCmd;
+    std_msgs::Bool emerg;
 
-    ros::Rate loop_rate(30);
-
-    ROS_INFO("Controlling Robot with keyboard, please use the arrows to control it, and Ctrl+C to stop");
-
+    emerg.data = false;
+    
     bool wasZero = true;
     int notZeroCount = 0;
+
+    ros::Rate loop_rate(30);
 
     while(true){
         rightCmd.data = leftCmd.data = 0;
@@ -137,8 +129,44 @@ int main(int argc, char **argv){
         pubLeftControl.publish(leftCmd);
         pubRightControl.publish(rightCmd);
 
+        if (emergecy_topic != "none")
+            pubEmergency.publish(emerg);
+
+        cout << "a" << endl;
+
         loop_rate.sleep();  
     }
+}
+//--------------------------------------------------------------------------------------------------------
+int main(int argc, char **argv){
+    ros::init(argc, argv, "robot_keyboard_control_node");
+
+    ros::NodeHandle node;
+
+    string pub_topic_right, pub_topic_left;
+    
+    node_name = ros::this_node::getName();
+
+    if(!node.getParam(node_name + "/pub_topic_right", pub_topic_right) || !node.getParam(node_name + "/pub_topic_left", pub_topic_left)){ //Get mandatory parameters
+        ROS_ERROR_STREAM("Argument missing in node " << node_name << ", expected pub_topic_right, 'pub_topic_left'.\n\n");
+        return -1;
+    }
+
+    node.param<string>(node_name + "/emergency_topic", emergecy_topic, "none");
+    
+    struct termios term_settings;
+    SetKeyboardNonBlock(&term_settings);
+
+    pubLeftControl = node.advertise<std_msgs::Float64>(pub_topic_left, 10);
+    pubRightControl = node.advertise<std_msgs::Float64>(pub_topic_right, 10);
+    
+    if (emergecy_topic != "none")
+        pubEmergency = node.advertise<std_msgs::Bool>(emergecy_topic, 10);
+
+
+    ROS_INFO("Controlling Robot with keyboard, please use the arrows to control it, and Ctrl+C to stop");
+
+    sendSpeedCommand();
 
     ROS_INFO("Shutting down...");
 
@@ -146,6 +174,10 @@ int main(int argc, char **argv){
 
     pubLeftControl.shutdown();
     pubRightControl.shutdown();
+
+    if (emergecy_topic != "none")
+        pubEmergency.shutdown();
+
     ros::shutdown();
 
     ROS_INFO("Code ended without errors");

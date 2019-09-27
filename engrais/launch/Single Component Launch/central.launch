@@ -11,6 +11,8 @@
     <arg name="right_wheel_control_signal" default="rightCommand" />
     <arg name="left_wheel_control_signal" default="leftCommand" />
 
+    <arg name="emer_topic_name" default="none"/>
+
     <arg name="central_selected_lines_topic" default="selectedLines"/>
 
 	<!-- Rviz Frame Names -->
@@ -20,6 +22,7 @@
 	<arg name="central_global_frame" default="body"/>
 
 	<!-- Robot's Infos -->
+    <arg name="mode" default="automatic"/>
 	<arg name="max_velocity" default="4.0"/>
 	<arg name="body_size" default="2.0"/>
 	<arg name="distance_reference" default="1.5"/>
@@ -35,6 +38,7 @@
 		<arg name="robot_max_velocity" value="$(arg max_velocity)"/>
 		<arg name="robot_body_size" value="$(arg body_size)"/>
 		<arg name="robot_distance_reference" value="$(arg distance_reference)"/>
+        <arg name="emer_topic" value="$(arg emer_topic_name)"/>
 
 		<arg name="control_sleep_time_ms" value="$(arg sleep_time_ms)"/>
 
@@ -45,6 +49,7 @@
 		<arg name="publish_topic_right" value="$(arg right_wheel_control_signal)"/>
 
 		<arg name="global_frame" value="$(arg central_global_frame)"/>
+        <arg name="robot_mode" value="$(arg mode)"/>
 		<arg name="selected_lines_topic" value="$(arg central_selected_lines_topic)"/>
  	</include>
 

@@ -16,6 +16,7 @@
 
 #include <ros/ros.h>
 #include <visualization_msgs/Marker.h>
+#include <std_msgs/Bool.h>
 #include <std_msgs/Float64.h>
 
 #define PI 3.1415926535
@@ -25,8 +26,7 @@ using namespace std;
 
 mutex critSec;
 
-string mapName;
-bool endProgram = false;
+string mapName, node_name, emergecy_topic, mode;
 
 int SLEEP_TIME;
 
@@ -36,6 +36,7 @@ ros::Publisher pubSelectedLines;
 
 RobotControl* control;
 
+ros::NodeHandle* node;
 
 //--------------------------------------------------------------------------------------------------------
 void sendLine(const pair<Model, Model> & models){ 
@@ -88,9 +89,57 @@ void sendLine(const pair<Model, Model> & models){
 }
 
 
+
+ros::Time lastMsg;
+//--------------------------------------------------------------------------------------------------------
+void OnEmergencyBrake(const std_msgs::Bool & msg){
+    lastMsg = ros::Time::now();
+
+    if(msg.data == true){
+        Utility::printInColor(node_name + ": Emergency Shutdown Called", RED);
+        ros::shutdown();
+    }
+}
+//--------------------------------------------------------------------------------------------------------
+void emergencyThread(){
+    lastMsg = ros::Time::now();
+
+    ros::Subscriber emergencySub = node->subscribe(emergecy_topic, 10, OnEmergencyBrake);
+    ros::Publisher emergencyPub = node->advertise<std_msgs::Bool>(emergecy_topic, 10);
+
+    std_msgs::Bool msg;
+    msg.data = false;
+    
+    if(mode != "automatic")
+        ros::Duration(0.5).sleep();
+
+    while(ros::ok()){
+        if(mode != "automatic"){
+            ros::Time now = ros::Time::now();
+            
+            ros::Duration delta_t = now - lastMsg;
+
+            if(ros::ok() && delta_t.toSec() > 0.2){
+                cout << node_name << endl;
+                Utility::printInColor(node_name + ": Emergency Timeout Shutdown", RED);
+                ros::shutdown();
+            }
+
+        }
+        else{
+            emergencyPub.publish(msg);
+        }
+
+        ros::Duration(0.05).sleep();
+    }
+
+    emergencySub.shutdown();
+}
+
+
 //--------------------------------------------------------------------------------------------------------
 void controlThread(){ 
-    while(!endProgram){
+    while(ros::ok()){
 
         critSec.lock();
         control->clearModels();
@@ -106,9 +155,11 @@ void controlThread(){
 
         //cout << control << endl;
         critSec.unlock();
-
-        pubLeftControl.publish(wheels.first);
-        pubRightControl.publish(wheels.second);
+        
+        if(mode == "automatic"){
+            pubLeftControl.publish(wheels.first);
+            pubRightControl.publish(wheels.second);
+        }
 
         //cout << "Left: " << wheels.first.data <<  ", Right: " << wheels.second.data << endl << endl << endl << endl << endl;
 
@@ -138,43 +189,54 @@ void FrontLinesMsg(const visualization_msgs::Marker & msg){
 int main(int argc, char **argv){
 
     ros::init(argc, argv, "robot_move_node");
-    ros::NodeHandle node;
+    node = new ros::NodeHandle();
 
     double MAX_VEL, BODY_SIZE, DISTANCE_REFERENCE;
 
-    string subTopicFront, subTopicBack, pubTopicLeft, pubTopicRight, pubTopicSelected, node_name = ros::this_node::getName();
+    string subTopicFront, subTopicBack, pubTopicLeft, pubTopicRight, pubTopicSelected;
+   
+    node_name = ros::this_node::getName();
 
-    if(!node.getParam(node_name + "/subscribe_topic_front", subTopicFront) || !node.getParam(node_name + "/subscribe_topic_back", subTopicBack) || 
-       !node.getParam(node_name + "/publish_topic_left", pubTopicLeft) || !node.getParam(node_name + "/publish_topic_right", pubTopicRight) ||
-       !node.getParam(node_name + "/max_velocity", MAX_VEL) || !node.getParam(node_name + "/body_size", BODY_SIZE) || 
-       !node.getParam(node_name + "/distance_reference", DISTANCE_REFERENCE) || !node.getParam(node_name + "/sleep_time_ms", SLEEP_TIME)) {
+    if(!node->getParam(node_name + "/subscribe_topic_front", subTopicFront) || !node->getParam(node_name + "/subscribe_topic_back", subTopicBack) || 
+       !node->getParam(node_name + "/publish_topic_left", pubTopicLeft) || !node->getParam(node_name + "/publish_topic_right", pubTopicRight) ||
+       !node->getParam(node_name + "/max_velocity", MAX_VEL) || !node->getParam(node_name + "/body_size", BODY_SIZE) || 
+       !node->getParam(node_name + "/distance_reference", DISTANCE_REFERENCE) || !node->getParam(node_name + "/sleep_time_ms", SLEEP_TIME) || !node->getParam(node_name + "/mode", mode)) {
 
         ROS_ERROR_STREAM("Argument missing in node " << node_name << ", expected 'subscribe_topic_front', 'subscribe_topic_back', " <<
-                         "'publish_topic_left', 'publish_topic_right', 'robot_max_velocity', 'robot_body_size', 'robot_distance_reference' and [optional: 'rviz_topic' and 'rviz_frame']\n\n");
+                         "'publish_topic_left', 'publish_topic_right', 'robot_max_velocity', 'robot_body_size', 'robot_distance_reference', 'mode' and [optional: 'rviz_topic' and 'rviz_frame']\n\n");
         return -1;
     }
 
-    node.param<string>(node_name + "/rviz_frame", mapName, "world");
-    node.param<string>(node_name + "/rviz_topic", pubTopicSelected, "/engrais/robot_move/selected_lines");
+    node->param<string>(node_name + "/rviz_frame", mapName, "world");
+    node->param<string>(node_name + "/rviz_topic", pubTopicSelected, "/engrais/robot_move/selected_lines");
+    node->param<string>(node_name + "/emergency_topic", emergecy_topic, "none");
+
+    thread* emergency_t;
+    if(emergecy_topic != "none")
+        emergency_t = new thread(emergencyThread);
 
     control = new RobotControl(MAX_VEL, BODY_SIZE, DISTANCE_REFERENCE);
 
-    ros::Subscriber subFront = node.subscribe(subTopicFront, 10, FrontLinesMsg);
-    ros::Subscriber subBack = node.subscribe(subTopicBack, 10, BackLinesMsg);
+    ros::Subscriber subFront = node->subscribe(subTopicFront, 10, FrontLinesMsg);
+    ros::Subscriber subBack = node->subscribe(subTopicBack, 10, BackLinesMsg);
 
-    pubLeftControl = node.advertise<std_msgs::Float64>(pubTopicLeft, 10);
-    pubRightControl = node.advertise<std_msgs::Float64>(pubTopicRight, 10);
+    pubLeftControl = node->advertise<std_msgs::Float64>(pubTopicLeft, 10);
+    pubRightControl = node->advertise<std_msgs::Float64>(pubTopicRight, 10);
 
 
-    pubSelectedLines = node.advertise<visualization_msgs::Marker>(pubTopicSelected, 10);
+    pubSelectedLines = node->advertise<visualization_msgs::Marker>(pubTopicSelected, 10);
 
     thread control_t(controlThread);
 
-    ROS_INFO("Code Running, press Control+C to end");
+    Utility::printInColor(node_name + ": Code Running, press Control+C to end", CYAN);
     ros::spin();
-    ROS_INFO("Shutting down...");
+    Utility::printInColor(node_name + ": Shutting down...", CYAN);
 
-    endProgram = true;
+    if(emergecy_topic != "none"){
+        emergency_t->join();
+        delete emergency_t;
+    }
+
     control_t.join();
 
     delete control;
@@ -186,8 +248,10 @@ int main(int argc, char **argv){
 
     pubSelectedLines.shutdown();
     ros::shutdown();
+    
+    delete node;    
 
-    ROS_INFO("Code ended without errors");
+    Utility::printInColor(node_name + ": Code ended without errors", BLUE);
 
     return 0;
 }

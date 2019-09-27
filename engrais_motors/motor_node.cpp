@@ -4,6 +4,7 @@
 #include <thread>
 #include <mutex>
 #include "ros/ros.h"
+#include <std_msgs/Bool.h>
 #include "std_msgs/String.h"
 #include "std_msgs/Float64.h"
 
@@ -22,7 +23,12 @@ string side;
 
 mutex critSec;
 
-bool endProgram = false;
+
+
+string node_name, emergecy_topic;
+
+ros::NodeHandle* node;
+
 
 serial::Serial* back_wheel;
 serial::Serial* front_wheel;
@@ -35,10 +41,44 @@ struct Message{
 
 Message message;
 
+
+ros::Time lastMsg;
+//--------------------------------------------------------------------------------------------------------
+void OnEmergencyBrake(const std_msgs::Bool & msg){
+    lastMsg = ros::Time::now();
+
+    if(msg.data == true){
+        ROS_ERROR("Emergency Shutdown Called");
+        ros::shutdown();
+    }
+}
+//--------------------------------------------------------------------------------------------------------
+void emergencyThread(){
+    lastMsg = ros::Time::now();
+    ros::Subscriber emergencySub = node->subscribe(emergecy_topic, 10, OnEmergencyBrake);
+    
+    ros::Duration(0.5).sleep();
+
+    while(ros::ok()){
+        ros::Duration(0.05).sleep();
+
+        ros::Time now = ros::Time::now();
+        
+        ros::Duration delta_t = now - lastMsg;
+
+        if(ros::ok() && delta_t.toSec() > 0.2){
+            ROS_ERROR("Emergency Timeout Shutdown");
+            ros::shutdown();
+        }
+    }
+
+    emergencySub.shutdown();
+}
+
 void sendSpeed(){ 
     ros::Rate loop_rate(50);
 
-	while(!endProgram){
+	while(ros::ok()){
         critSec.lock();
 
         double data = message.data;
@@ -121,18 +161,20 @@ void closeConexion(){
 }
 
 int main(int argc, char **argv){
-    cout << "AAA" << endl;
+
     ros::init(argc, argv, "motor_node");
-    ros::NodeHandle node;
+    node = new ros::NodeHandle();
 
 	int baud, timeout, bytesize, parity, flowctrl, stop_bit;
 
-    string sub_topic, back_port_name, front_port_name, node_name = ros::this_node::getName();
+    string sub_topic, back_port_name, front_port_name;
 
-    if(!node.getParam(node_name + "/back_port", back_port_name) || !node.getParam(node_name + "/front_port", front_port_name) ||
-       !node.getParam(node_name + "/side", side) || !node.getParam(node_name + "/baud", baud) || !node.getParam(node_name + "/timeout", timeout) || 
-       !node.getParam(node_name + "/data_bits", bytesize) || !node.getParam(node_name + "/parity", parity) || !node.getParam(node_name + "/timeout", timeout) ||
-       !node.getParam(node_name + "/hdw_flow_ctrl", flowctrl) || !node.getParam(node_name + "/stop_bit", stop_bit) || !node.getParam(node_name + "/sub_topic", sub_topic)){ //Get mandatory parameters
+    node_name = ros::this_node::getName();
+
+    if(!node->getParam(node_name + "/back_port", back_port_name) || !node->getParam(node_name + "/front_port", front_port_name) ||
+       !node->getParam(node_name + "/side", side) || !node->getParam(node_name + "/baud", baud) || !node->getParam(node_name + "/timeout", timeout) || 
+       !node->getParam(node_name + "/data_bits", bytesize) || !node->getParam(node_name + "/parity", parity) || !node->getParam(node_name + "/timeout", timeout) ||
+       !node->getParam(node_name + "/hdw_flow_ctrl", flowctrl) || !node->getParam(node_name + "/stop_bit", stop_bit) || !node->getParam(node_name + "/sub_topic", sub_topic)){ //Get mandatory parameters
 
 	    ROS_ERROR_STREAM("Argument missing in node " << node_name << ", expected sub_topic, 'back_port_name', 'front_port_name', " <<
 	             "'side', 'baud', 'timeout', 'data_bits', 'parity', 'timeout', 'hdw_flow_ctrl' and 'stop_bit'.\n\n");
@@ -140,9 +182,15 @@ int main(int argc, char **argv){
         return -1;
     }
 
+    node->param<string>(node_name + "/emergency_topic", emergecy_topic, "none");
+
+    thread* emergency_t;
+    if(emergecy_topic != "none")
+        emergency_t = new thread(emergencyThread);
+
     initializeSerialPorts(back_port_name, front_port_name, baud, timeout, bytesize, parity, stop_bit, flowctrl);
 
-    ros::Subscriber sub = node.subscribe(sub_topic, 10, OnRosMsg);
+    ros::Subscriber sub = node->subscribe(sub_topic, 10, OnRosMsg);
 
     thread wheelThread(sendSpeed);
 
@@ -150,13 +198,14 @@ int main(int argc, char **argv){
     ros::spin();
     ROS_INFO("Shutting down...");
 
-    endProgram = true;
-
     wheelThread.join();
 
     closeConexion();
 
-    ros::spin();
+    if(emergecy_topic != "none"){
+        emergency_t->join();
+        delete emergency_t;
+    }
 
     ROS_INFO("Code ended without errors");
 

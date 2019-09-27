@@ -14,6 +14,7 @@
     <!-- ROS Topics -->
     <arg name="right_wheel_control_signal" default="rightCommand" />
     <arg name="left_wheel_control_signal" default="leftCommand" />
+    <arg name="emer_topic_name" default="none"/>
 
 
     <!-- USB Names -->
@@ -44,6 +45,7 @@
  	<include file="$(find engrais_motors)/launch/motor.launch">
 	    <arg name="motor_node_name" value="$(arg right_motor_node_name)" />
 	    <arg name="sub_topic_name" value="$(arg right_wheel_control_signal)" />
+        <arg name="emer_topic" default="$(arg emer_topic_name)"/>
 
 	    <arg name="back_port_name" value="$(arg right_serial_back_port)" />
 	    <arg name="front_port_name" value="$(arg right_serial_front_port)" />
@@ -65,6 +67,7 @@
  	<include file="$(find engrais_motors)/launch/motor.launch">
 	    <arg name="motor_node_name" value="$(arg left_motor_node_name)" />
 	    <arg name="sub_topic_name" value="$(arg left_wheel_control_signal)" />
+        <arg name="emer_topic" default="$(arg emer_topic_name)"/>
 
 	    <arg name="back_port_name" value="$(arg left_serial_back_port)" />
 	    <arg name="front_port_name" value="$(arg left_serial_front_port)" />

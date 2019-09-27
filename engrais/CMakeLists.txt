@@ -197,3 +197,8 @@ include_directories(
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+
+add_executable(robot_keyboard_move robot_keyboard_move.cpp
+)
+target_link_libraries(robot_keyboard_move ${catkin_LIBRARIES})
+#add_dependencies(robot_keyboard_move engrais_control_gencp

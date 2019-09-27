@@ -4,29 +4,28 @@
 	<!--> Sick Tim Arguments <-->
     <arg name="rasp3_IP" default="192.168.10.103" />
 
-	<arg name="IP_Lidar" default="192.168.10.111"/>
+	<arg name="lidar_IP" default="192.168.10.111"/>
 	<arg name="sick_node_name" default="sick_1_rpi_3"/>
-	<arg name="scan_topic" default="scan1"/>
-	<arg name="rviz_frame" default="laser1"/>
+	<arg name="scan_topic_name" default="scan1"/>
+	<arg name="rviz_frame_name" default="laser1"/>
 
 	<!--> Find Lines Arguments <-->
-	<arg name="lines_topic" default="lines1"/>
+	<arg name="lines_topic_name" default="lines1"/>
 	<arg name="findlines_node_name" default="engrais_findlines_1"/>
+    <arg name="emer_topic_name" default="none"/>
 
 
  	<machine name="rasp3" address="$(arg rasp3_IP)" user="engrais" password="engrais" env-loader="~/catkin_ws/src/istiaENGRAIS/config/config.sh" default="true"/>
 
-	<include file="$(find sick_tim)/launch/$(arg rviz_frame).launch">
-		<arg name="lidar_IP" value="$(arg IP_Lidar)"/>
-		<arg name="node_name" value="$(arg sick_node_name)"/>
-		<arg name="publish_topic" value="$(arg scan_topic)"/>
-		<arg name="frame_name" value="$(arg rviz_frame)"/>
-	</include>
+	<include file="$(find engrais_control)/launch/findlines.launch">
+	    <arg name="IP_Lidar" default="$(arg lidar_IP)"/>
+	    <arg name="sick_node" default="$(arg sick_node_name)"/>
+	    <arg name="scan_topic" default="$(arg scan_topic_name)"/>
+	    <arg name="rviz_frame" default="$(arg rviz_frame_name)"/>
 
-	<node name="$(arg findlines_node_name)" pkg="engrais_control" type="robot_findlines">
-		<param name="subscribe_topic" type="string" value="$(arg scan_topic)"/>
-		<param name="publish_topic" type="string" value="$(arg lines_topic)"/>
-		<param name="frame_name" type="string" value="$(arg rviz_frame)"/>
-	</node>
+	    <arg name="lines_topic" default="$(arg lines_topic_name)"/>
+	    <arg name="findlines_node" default="$(arg findlines_node_name)"/>
+        <arg name="emer_topic" default="$(arg emer_topic_name)"/>
+	</include>
 
 </launch>

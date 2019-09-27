@@ -11,17 +11,78 @@ Since we use ROS TCP/IP architecture, we have to define an IP for each object co
 * Raspberry 2 : 192.168.10.102
 * Raspberry 3 : 192.168.10.103
 * Raspberry 4 : 192.168.10.104
+* Jetson TX2 :  192.168.10.105
 
 * Sick Tim LIDAR 1 : 192.168.10.111
 * Sick Tim LIDAR 2 : 192.168.10.112
 
-* ROS core master : 192.168.10.200
+* ROS core master : 192.168.10.105
 
 To change the default ROS core master, just run: 
 
 -export ROS_MASTER_URI=http://'RosMasterMachineIP':11311
 
 -export ROS_IP='YourMachineIP'
+
+Or change the ~/.bashrc
+
+# ROS Setup
+
+To use all ROS nodes and liberaries created, we have a few settings to make. 
+
+    1) Install ROS using the tutorial in wiki.ros.org/melodic/Installation/Ubuntu (Currently the last version is ROS Melodic)
+
+    2) Create a catkin workspace
+        ~$ mkdir catkin_ws
+        ~$ cd catkin_ws/
+        ~/catkin_ws$ mkdir src 
+        ~/catkin_ws$ catkin_make
+
+    3) Install Git using the commands 
+        ~$ sudo apt-get update
+        ~$ sudo apt-get install git
+
+    4) Clone the git repository inside the workspace and change to the "raspberry_pi" branch
+        ~$ cd catkin_ws/src/
+        ~/catkin_ws/src$ git clone https://github.com/PolytechAngersMecatroniqueClub/istiaENGRAIS.git
+        ~/catkin_ws/src$ git checkout raspberry_pi
+
+    5) In directory ~/catkin_ws/src/istiaENGRAIS/engrais_control/src/.fuzzylite-6.0 copy fuzzylite-6.0-linux64.zip to ~/Downloads and extract it
+
+    6) Build the library
+        ~$ cd Downloads/fuzzylite-6.0-linux64/fuzzylite-6.0/fuzzylite/
+        ~/Downloads/fuzzylite-6.0-linux64/fuzzylite-6.0/fuzzylite$ chmod +x build.sh 
+        ~/Downloads/fuzzylite-6.0-linux64/fuzzylite-6.0/fuzzylite$ ./build.sh
+
+    7) Copy the binaries in folder "~/Downloads/fuzzylite-6.0-linux64/fuzzylite-6.0/fuzzylite/release/bin/" to "~/catkin_ws/src/istiaENGRAIS/engrais_control/src/.fuzzylite-6.0/bin/"
+
+    8) Build everything
+        ~$ cd catkin_ws/
+        ~/catkin_ws$ catkin_make 
+
+    9) Using ~$ gedit .bashrc add the following lines to the end of it :
+        source /opt/ros/melodic/setup.bash
+        source ~/catkin_ws/devel/setup.bash 
+
+        IP=`ifconfig wlo1 | grep "inet " | cut -d' ' -f10`
+        
+        export ROS_MASTER_URI=http://192.168.10.105:11311
+        export ROS_MASTER_IP=192.168.10.105
+        export ROS_IP=$IP
+
+Now your pc should be able to launch ENGRAIS' ROS nodes
+
+# Network Setup
+To be able to launch ROS nodes remotely, some configurations must be made to the ssh.
+
+In your pc, run
+
+    ~$ ssh -oHostKeyAlgorithms='ssh-rsa' username@IP
+
+for each one of the connected devices. In our case it had to be done to all 4 Raspberry Pi and the Jetson TX2.
+
+This proceadure must be repeated in every other device if you want to launch ROS nodes from everywhere.
+
 
 # engrais_control
 

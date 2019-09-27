@@ -33,6 +33,8 @@
 
     <arg name="central_selected_lines_topic" default="selectedLines"/>
 
+    <arg name="emer_topic_name" default="none"/>
+
 
 	<!-- Rviz Frame Names -->
 	<arg name="front_lines_topic" default="lines1"/>
@@ -41,6 +43,7 @@
 	<arg name="central_global_frame" default="body"/>
 
 	<!-- Robot's Infos -->
+    <arg name="mode" default="automatic"/>
 	<arg name="max_velocity" default="4.0"/>
 	<arg name="body_size" default="2.0"/>
 	<arg name="distance_reference" default="1.5"/>
@@ -57,8 +60,10 @@
 	    <arg name="sick_node_name" value="$(arg front_sick_node_name)" />
 	    <arg name="scan_topic" value="$(arg front_scan_topic)" />
 	    <arg name="rviz_frame" value="$(arg front_rviz_frame)" />
+
 	    <arg name="lines_topic" value="$(arg front_lines_topic)" />
 	    <arg name="findlines_node_name" value="$(arg front_findlines_node_name)" />
+        <arg name="emer_topic" default="$(arg emer_topic_name)"/>
  	</include>
 
 
@@ -70,8 +75,10 @@
 	    <arg name="sick_node_name" value="$(arg back_sick_node_name)" />
 	    <arg name="scan_topic" value="$(arg back_scan_topic)" />
 	    <arg name="rviz_frame" value="$(arg back_rviz_frame)" />
+
 	    <arg name="lines_topic" value="$(arg back_lines_topic)" />
 	    <arg name="findlines_node_name" value="$(arg back_findlines_node_name)" />
+        <arg name="emer_topic" default="$(arg emer_topic_name)"/>
  	</include>
 
 
@@ -82,6 +89,7 @@
 		<arg name="robot_max_velocity" value="$(arg max_velocity)"/>
 		<arg name="robot_body_size" value="$(arg body_size)"/>
 		<arg name="robot_distance_reference" value="$(arg distance_reference)"/>
+        <arg name="emer_topic" default="$(arg emer_topic_name)"/>
 
 		<arg name="control_sleep_time_ms" value="$(arg sleep_time_ms)"/>
 
@@ -92,6 +100,7 @@
 		<arg name="publish_topic_right" value="$(arg right_wheel_control_signal)"/>
 
 		<arg name="global_frame" value="$(arg central_global_frame)"/>
+        <arg name="robot_mode" value="$(arg mode)"/>
 		<arg name="selected_lines_topic" value="$(arg central_selected_lines_topic)"/>
  	</include>
 
