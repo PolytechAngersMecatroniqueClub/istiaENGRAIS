@@ -18,6 +18,7 @@
 #include <visualization_msgs/Marker.h>
 #include <std_msgs/Bool.h>
 #include <std_msgs/Float64.h>
+#include <std_msgs/String.h>
 
 #define PI 3.1415926535
 #define TO_MILLISECOND 1000
@@ -26,7 +27,7 @@ using namespace std;
 
 mutex critSec;
 
-string mapName, node_name, emergecy_topic, mode;
+string mapName, node_name, emergecy_topic, mode, changeModeTopic;
 
 int SLEEP_TIME;
 
@@ -37,6 +38,8 @@ ros::Publisher pubSelectedLines;
 RobotControl* control;
 
 ros::NodeHandle* node;
+
+ros::MultiThreadedSpinner spinner(2);
 
 //--------------------------------------------------------------------------------------------------------
 void sendLine(const pair<Model, Model> & models){ 
@@ -89,14 +92,33 @@ void sendLine(const pair<Model, Model> & models){
 }
 
 
+//--------------------------------------------------------------------------------------------------------
+void ModeChangeMsg(const std_msgs::String & msg){ 
+    cout << msg << endl;
+    if(msg.data != "automatic")
+        mode = "manual";
+    else
+        mode = "automatic";
+}
+//--------------------------------------------------------------------------------------------------------
+void changeModeThread(){ 
+    ros::Subscriber subMode = node->subscribe(changeModeTopic, 10, ModeChangeMsg);
+
+    spinner.spin();
+
+    subMode.shutdown();
+}
+
 
 ros::Time lastMsg;
+bool emergencyCalled = false;
 //--------------------------------------------------------------------------------------------------------
 void OnEmergencyBrake(const std_msgs::Bool & msg){
     lastMsg = ros::Time::now();
 
     if(msg.data == true){
         Utility::printInColor(node_name + ": Emergency Shutdown Called", RED);
+        emergencyCalled = true;
         ros::shutdown();
     }
 }
@@ -111,16 +133,15 @@ void emergencyThread(){
     msg.data = false;
     
     if(mode != "automatic")
-        ros::Duration(0.5).sleep();
+        ros::Duration(2.0).sleep();
 
-    while(ros::ok()){
-        if(mode != "automatic"){
+    while(ros::ok() && !emergencyCalled){
+        if(mode != "automatic" && !emergencyCalled){
             ros::Time now = ros::Time::now();
             
             ros::Duration delta_t = now - lastMsg;
 
-            if(ros::ok() && delta_t.toSec() > 0.2){
-                cout << node_name << endl;
+            if(!emergencyCalled && delta_t.toSec() > 0.2){
                 Utility::printInColor(node_name + ": Emergency Timeout Shutdown", RED);
                 ros::shutdown();
             }
@@ -200,20 +221,16 @@ int main(int argc, char **argv){
     if(!node->getParam(node_name + "/subscribe_topic_front", subTopicFront) || !node->getParam(node_name + "/subscribe_topic_back", subTopicBack) || 
        !node->getParam(node_name + "/publish_topic_left", pubTopicLeft) || !node->getParam(node_name + "/publish_topic_right", pubTopicRight) ||
        !node->getParam(node_name + "/max_velocity", MAX_VEL) || !node->getParam(node_name + "/body_size", BODY_SIZE) || 
-       !node->getParam(node_name + "/distance_reference", DISTANCE_REFERENCE) || !node->getParam(node_name + "/sleep_time_ms", SLEEP_TIME) || !node->getParam(node_name + "/mode", mode)) {
+       !node->getParam(node_name + "/distance_reference", DISTANCE_REFERENCE) || !node->getParam(node_name + "/sleep_time_ms", SLEEP_TIME) || !node->getParam(node_name + "/mode", mode) || !node->getParam(node_name + "/change_mode_topic", changeModeTopic)) {
 
         ROS_ERROR_STREAM("Argument missing in node " << node_name << ", expected 'subscribe_topic_front', 'subscribe_topic_back', " <<
-                         "'publish_topic_left', 'publish_topic_right', 'robot_max_velocity', 'robot_body_size', 'robot_distance_reference', 'mode' and [optional: 'rviz_topic' and 'rviz_frame']\n\n");
+                         "'publish_topic_left', 'publish_topic_right', 'robot_max_velocity', 'robot_body_size', 'robot_distance_reference', 'mode', 'change_mode_topic' and [optional: 'rviz_topic' and 'rviz_frame']\n\n");
         return -1;
     }
 
     node->param<string>(node_name + "/rviz_frame", mapName, "world");
     node->param<string>(node_name + "/rviz_topic", pubTopicSelected, "/engrais/robot_move/selected_lines");
     node->param<string>(node_name + "/emergency_topic", emergecy_topic, "none");
-
-    thread* emergency_t;
-    if(emergecy_topic != "none")
-        emergency_t = new thread(emergencyThread);
 
     control = new RobotControl(MAX_VEL, BODY_SIZE, DISTANCE_REFERENCE);
 
@@ -223,13 +240,20 @@ int main(int argc, char **argv){
     pubLeftControl = node->advertise<std_msgs::Float64>(pubTopicLeft, 10);
     pubRightControl = node->advertise<std_msgs::Float64>(pubTopicRight, 10);
 
-
     pubSelectedLines = node->advertise<visualization_msgs::Marker>(pubTopicSelected, 10);
 
     thread control_t(controlThread);
 
+
+    thread* emergency_t;
+    if(emergecy_topic != "none")
+        emergency_t = new thread(emergencyThread);
+
+    thread changeMode_t(changeModeThread);
+
+
     Utility::printInColor(node_name + ": Code Running, press Control+C to end", CYAN);
-    ros::spin();
+    spinner.spin();
     Utility::printInColor(node_name + ": Shutting down...", CYAN);
 
     if(emergecy_topic != "none"){
@@ -238,6 +262,7 @@ int main(int argc, char **argv){
     }
 
     control_t.join();
+    changeMode_t.join();
 
     delete control;
 

@@ -7,38 +7,41 @@
 
     <arg name="central_IP" default="$(optenv ROS_MASTER_IP 192.168.10.105)" />
 
-    <arg name="front_Lidar_IP" default="192.168.10.111"/>
-	<arg name="back_Lidar_IP" default="192.168.10.112"/>
+    <arg name="back_Lidar_IP" default="192.168.10.111"/>
+	<arg name="front_Lidar_IP" default="192.168.10.112"/>
 
 
     <!--Node Names -->
-	<arg name="front_sick_node_name" default="sick_1_rpi_3"/>
-	<arg name="back_sick_node_name" default="sick_2_rpi_4"/>
+	<arg name="back_sick_node_name" default="sick_back_rpi_3"/>
+	<arg name="front_sick_node_name" default="sick_front_rpi_4"/>
 
-	<arg name="front_findlines_node_name" default="engrais_findlines_1"/>
-	<arg name="back_findlines_node_name" default="engrais_findlines_2"/>
+	<arg name="back_findlines_node_name" default="engrais_findlines_back"/>
+	<arg name="front_findlines_node_name" default="engrais_findlines_front"/>
 
-    <arg name="central_node_name" value="engrais_central"/>
+    <arg name="central_node_name" default="engrais_central"/>
 
 
     <!-- ROS Topics -->
-	<arg name="front_scan_topic" default="scan1"/>
-	<arg name="back_scan_topic" default="scan2"/>
+	<arg name="back_scan_topic" default="scan_back"/>
+	<arg name="front_scan_topic" default="scan_front"/>
 
-	<arg name="front_rviz_frame" default="laser1"/>
-	<arg name="back_rviz_frame" default="laser2"/>
+	<arg name="back_rviz_frame" default="laser_back"/>
+	<arg name="front_rviz_frame" default="laser_front"/>
 
-    <arg name="right_wheel_control_signal" default="rightCommand" />
+    <arg name="change_mode_topic" default="mode_control"/>
+
     <arg name="left_wheel_control_signal" default="leftCommand" />
+    <arg name="right_wheel_control_signal" default="rightCommand" />
 
     <arg name="central_selected_lines_topic" default="selectedLines"/>
 
-    <arg name="emer_topic_name" default="none"/>
+    <arg name="emer_topic_name" default="emergency_topic"/>
+    <arg name="change_mode_topic_name" default="mode_control"/>
 
 
 	<!-- Rviz Frame Names -->
-	<arg name="front_lines_topic" default="lines1"/>
-	<arg name="back_lines_topic" default="lines2"/>
+	<arg name="back_lines_topic" default="lines_back"/>
+	<arg name="front_lines_topic" default="lines_front"/>
 	
 	<arg name="central_global_frame" default="body"/>
 
@@ -52,7 +55,8 @@
 	<arg name="sleep_time_ms" default="500"/>
 
 
- 	<!-- Connect to Rasp3 -->
+
+	<!-- Connect to Rasp3 -->
  	<machine name="rasp3" address="$(arg rasp3_IP)" user="engrais" password="engrais" env-loader="~/catkin_ws/src/istiaENGRAIS/config/config.sh" default="true"/>
 
  	<include file="$(find engrais_control)/launch/findlines.launch">
@@ -63,7 +67,7 @@
 
 	    <arg name="lines_topic" value="$(arg front_lines_topic)" />
 	    <arg name="findlines_node_name" value="$(arg front_findlines_node_name)" />
-        <arg name="emer_topic" default="$(arg emer_topic_name)"/>
+        <arg name="emer_topic" value="$(arg emer_topic_name)"/>
  	</include>
 
 
@@ -78,24 +82,26 @@
 
 	    <arg name="lines_topic" value="$(arg back_lines_topic)" />
 	    <arg name="findlines_node_name" value="$(arg back_findlines_node_name)" />
-        <arg name="emer_topic" default="$(arg emer_topic_name)"/>
+        <arg name="emer_topic" value="$(arg emer_topic_name)"/>
  	</include>
 
 
  	<!-- Connect to Central -->
- 	<machine name="central" address="$(arg central_IP)" user="usrlocal" password="usrlocal2019" env-loader="~/catkin_ws/src/istiaENGRAIS/config/config.sh" default="true"/>
+ 	<machine name="central" address="$(arg central_IP)" user="jetson-tx2" password="jetsontx2" env-loader="~/catkin_ws/src/istiaENGRAIS/config/config.sh" default="true"/>
 
  	<include file="$(find engrais_control)/launch/control.launch">
+        <arg name="control_node_name" value="$(arg central_node_name)"/>
+
 		<arg name="robot_max_velocity" value="$(arg max_velocity)"/>
 		<arg name="robot_body_size" value="$(arg body_size)"/>
 		<arg name="robot_distance_reference" value="$(arg distance_reference)"/>
-        <arg name="emer_topic" default="$(arg emer_topic_name)"/>
+        <arg name="control_sleep_time_ms" value="$(arg sleep_time_ms)"/>
 
-		<arg name="control_sleep_time_ms" value="$(arg sleep_time_ms)"/>
-
-		<arg name="control_node_name" value="$(arg central_node_name)"/>
-		<arg name="subscribe_topic_1" value="$(arg front_lines_topic)"/>
-		<arg name="subscribe_topic_2" value="$(arg back_lines_topic)"/>
+        <arg name="emer_topic" value="$(arg emer_topic_name)"/>
+		<arg name="change_mode_topic_name" value="$(arg change_mode_topic)"/>
+		
+		<arg name="subscribe_topic_back" value="$(arg back_lines_topic)"/>
+		<arg name="subscribe_topic_front" value="$(arg front_lines_topic)"/>
 		<arg name="publish_topic_left" value="$(arg left_wheel_control_signal)"/>
 		<arg name="publish_topic_right" value="$(arg right_wheel_control_signal)"/>
 

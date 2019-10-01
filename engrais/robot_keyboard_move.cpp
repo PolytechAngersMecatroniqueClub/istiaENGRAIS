@@ -14,6 +14,7 @@
 
 using namespace std;
 
+double max_vel;
 string node_name, emergecy_topic;
 
 ros::Publisher pubLeftControl;
@@ -123,16 +124,14 @@ void sendSpeedCommand(){
             wasZero == false;
         }
 
-        leftCmd.data *= 1.5;
-        rightCmd.data *= 1.5;
+        leftCmd.data *= max_vel;
+        rightCmd.data *= max_vel;
 
         pubLeftControl.publish(leftCmd);
         pubRightControl.publish(rightCmd);
 
         if (emergecy_topic != "none")
             pubEmergency.publish(emerg);
-
-        cout << "a" << endl;
 
         loop_rate.sleep();  
     }
@@ -147,8 +146,8 @@ int main(int argc, char **argv){
     
     node_name = ros::this_node::getName();
 
-    if(!node.getParam(node_name + "/pub_topic_right", pub_topic_right) || !node.getParam(node_name + "/pub_topic_left", pub_topic_left)){ //Get mandatory parameters
-        ROS_ERROR_STREAM("Argument missing in node " << node_name << ", expected pub_topic_right, 'pub_topic_left'.\n\n");
+    if(!node.getParam(node_name + "/pub_topic_right", pub_topic_right) || !node.getParam(node_name + "/pub_topic_left", pub_topic_left) || !node.getParam(node_name + "/desired_velocity", max_vel)){ //Get mandatory parameters
+        ROS_ERROR_STREAM("Argument missing in node " << node_name << ", expected pub_topic_right, 'pub_topic_left' and 'desired_velocity'.\n\n");
         return -1;
     }
 

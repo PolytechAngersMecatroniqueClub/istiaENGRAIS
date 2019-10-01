@@ -184,15 +184,15 @@ int main(int argc, char **argv){
 
     node->param<string>(node_name + "/emergency_topic", emergecy_topic, "none");
 
-    thread* emergency_t;
-    if(emergecy_topic != "none")
-        emergency_t = new thread(emergencyThread);
-
     initializeSerialPorts(back_port_name, front_port_name, baud, timeout, bytesize, parity, stop_bit, flowctrl);
 
     ros::Subscriber sub = node->subscribe(sub_topic, 10, OnRosMsg);
 
     thread wheelThread(sendSpeed);
+
+    thread* emergency_t;
+    if(emergecy_topic != "none")
+        emergency_t = new thread(emergencyThread);
 
     ROS_INFO("Code Running, press Control+C to end");
     ros::spin();

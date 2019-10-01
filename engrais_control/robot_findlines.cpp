@@ -188,12 +188,13 @@ int main(int argc, char **argv){
     node->param<string>(node_name + "/frame_name", mapName, "world");
 
     ros::Subscriber sub = node->subscribe(sub_topic, 10, OnRosMsg); // /engrais/laser_front/scan or /engrais/laser_back/scan
-    
+
+    pubLineNode = node->advertise<visualization_msgs::Marker>(pub_topic, 10);// /engrais/laser_front/lines or /engrais/laser_back/lines
+ 
     thread* emergency_t;
     if(emergecy_topic != "none")
         emergency_t = new thread(emergencyThread);
 
-    pubLineNode = node->advertise<visualization_msgs::Marker>(pub_topic, 10);// /engrais/laser_front/lines or /engrais/laser_back/lines
 
     Utility::printInColor(node_name + ": Code Running, press Control+C to end", CYAN);
     ros::spin();

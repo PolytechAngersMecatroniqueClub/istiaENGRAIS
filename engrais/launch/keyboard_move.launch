@@ -5,8 +5,11 @@
     <arg name="rasp1_IP" default="192.168.10.101" />
     <arg name="rasp2_IP" default="192.168.10.102" />
 
+    <arg name="central_IP" default="$(optenv ROS_MASTER_IP 192.168.10.105)" />
+
 
     <!--Node Names -->
+    <arg name="keyaboard_move_node_name" default="keyaboard_move_node" />
     <arg name="right_motor_node_name" default="right_side_wheels" />
     <arg name="left_motor_node_name" default="left_side_wheels" />
 
@@ -14,7 +17,7 @@
     <!-- ROS Topics -->
     <arg name="right_wheel_control_signal" default="rightCommand" />
     <arg name="left_wheel_control_signal" default="leftCommand" />
-    <arg name="emer_topic_name" default="none"/>
+    <arg name="emer_topic_name" default="emergency_topic"/>
 
 
     <!-- USB Names -->
@@ -25,9 +28,10 @@
     <arg name="left_serial_front_port" default="/dev/ttyUSB1" />
 
 
-    <!-- Robot Side -->
+    <!-- Robot Infos -->
 	<arg name="right_robot_side" default="right" />
 	<arg name="left_robot_side" default="left" />
+    <arg name="velocity" default="1.5" />
 	
 
 	<!-- Common Serial Arguments -->
@@ -45,7 +49,7 @@
  	<include file="$(find engrais_motors)/launch/motor.launch">
 	    <arg name="motor_node_name" value="$(arg right_motor_node_name)" />
 	    <arg name="sub_topic_name" value="$(arg right_wheel_control_signal)" />
-        <arg name="emer_topic" default="$(arg emer_topic_name)"/>
+        <arg name="emer_topic" value="$(arg emer_topic_name)"/>
 
 	    <arg name="back_port_name" value="$(arg right_serial_back_port)" />
 	    <arg name="front_port_name" value="$(arg right_serial_front_port)" />
@@ -67,7 +71,7 @@
  	<include file="$(find engrais_motors)/launch/motor.launch">
 	    <arg name="motor_node_name" value="$(arg left_motor_node_name)" />
 	    <arg name="sub_topic_name" value="$(arg left_wheel_control_signal)" />
-        <arg name="emer_topic" default="$(arg emer_topic_name)"/>
+        <arg name="emer_topic" value="$(arg emer_topic_name)"/>
 
 	    <arg name="back_port_name" value="$(arg left_serial_back_port)" />
 	    <arg name="front_port_name" value="$(arg left_serial_front_port)" />
@@ -81,5 +85,15 @@
 	    <arg name="serial_hdw_flow_ctrl" value="$(arg serial_hdw_flow_ctrl_value)" />
 	    <arg name="serial_timeout" value="$(arg serial_timeout_value)" />
  	</include>
+
+ 	<!-- Connect to Central -->
+ 	<machine name="central" address="$(arg central_IP)" user="jetson-tx2" password="jetsontx2" env-loader="~/catkin_ws/src/istiaENGRAIS/config/config.sh" default="true"/>
+
+    <node name="$(arg keyaboard_move_node_name)" pkg="engrais" type="robot_keyboard_move" output="screen">
+        <param name="pub_topic_right" type="string" value="$(arg right_wheel_control_signal)"/>
+        <param name="pub_topic_left" type="string" value="$(arg left_wheel_control_signal)"/>
+        <param name="emergency_topic" type="string" value="$(arg emer_topic_name)"/>
+        <param name="desired_velocity" type="string" value="$(arg velocity)"/>
+    </node>
 
 </launch>

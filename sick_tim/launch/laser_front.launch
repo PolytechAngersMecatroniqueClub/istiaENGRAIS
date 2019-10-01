@@ -3,8 +3,8 @@
     <!-- <param name="robot_description" command="$(find xacro)/xacro - - inorder '$(find sick_tim)/urdf/example.urdf.xacro'" />
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" /> -->
 
-    <arg name="publish_topic" default="scan2"/>
-    <arg name="frame_name" default="laser2"/>
+    <arg name="publish_topic" default="scan_front"/>
+    <arg name="frame_name" default="laser_front"/>
     <arg name="node_name" default="sick_rpi"/>
 
     <arg name="lidar_IP" default="192.168.10.112"/>
