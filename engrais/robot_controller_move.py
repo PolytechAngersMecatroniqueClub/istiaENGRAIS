@@ -196,7 +196,7 @@ def main():
     pubRightWheel = rospy.Publisher(pubRight, Float64, queue_size=10)
 
 
-    rate = rospy.Rate(30)
+    rate = rospy.Rate(50)
 
     controller_t = ControllerCom(bluetoothAddr, bluetoothDeviceName, pubMode, pubEmergency)
     controller_t.start()
