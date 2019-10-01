@@ -104,33 +104,40 @@ void sendLine(const vector<Model> & models, const Pearl & pearl){
 
 
 ros::Time lastMsg;
+bool emergencyCalled = false;
 //--------------------------------------------------------------------------------------------------------
 void OnEmergencyBrake(const std_msgs::Bool & msg){
     lastMsg = ros::Time::now();
 
     if(msg.data == true){
         Utility::printInColor(node_name + ": Emergency Shutdown Called", RED);
+        emergencyCalled = true;
         ros::shutdown();
     }
 }
 //--------------------------------------------------------------------------------------------------------
 void emergencyThread(){
     lastMsg = ros::Time::now();
+
     ros::Subscriber emergencySub = node->subscribe(emergecy_topic, 10, OnEmergencyBrake);
+    ros::Publisher emergencyPub = node->advertise<std_msgs::Bool>(emergecy_topic, 10);
+
+    std_msgs::Bool msg;
+    msg.data = false;
     
-    ros::Duration(0.5).sleep();
+    ros::Duration(2.0).sleep();
 
-    while(ros::ok()){
-        ros::Duration(0.05).sleep();
-
+    while(ros::ok() && !emergencyCalled){
         ros::Time now = ros::Time::now();
         
         ros::Duration delta_t = now - lastMsg;
 
-        if(ros::ok() && delta_t.toSec() > 0.2){
+        if(!emergencyCalled && delta_t.toSec() > 0.2){
             Utility::printInColor(node_name + ": Emergency Timeout Shutdown", RED);
             ros::shutdown();
         }
+
+        ros::Duration(0.05).sleep();
     }
 
     emergencySub.shutdown();

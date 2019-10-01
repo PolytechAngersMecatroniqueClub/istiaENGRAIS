@@ -43,38 +43,47 @@ Message message;
 
 
 ros::Time lastMsg;
+bool emergencyCalled = false;
 //--------------------------------------------------------------------------------------------------------
 void OnEmergencyBrake(const std_msgs::Bool & msg){
     lastMsg = ros::Time::now();
 
     if(msg.data == true){
-        ROS_ERROR("Emergency Shutdown Called");
+        ROS_ERROR_STREAM(node_name << ": Emergency Shutdown Called");
+        emergencyCalled = true;
         ros::shutdown();
     }
 }
 //--------------------------------------------------------------------------------------------------------
 void emergencyThread(){
     lastMsg = ros::Time::now();
+
     ros::Subscriber emergencySub = node->subscribe(emergecy_topic, 10, OnEmergencyBrake);
+    ros::Publisher emergencyPub = node->advertise<std_msgs::Bool>(emergecy_topic, 10);
+
+    std_msgs::Bool msg;
+    msg.data = false;
     
-    ros::Duration(0.5).sleep();
+    ros::Duration(2.0).sleep();
 
-    while(ros::ok()){
-        ros::Duration(0.05).sleep();
-
+    while(ros::ok() && !emergencyCalled){
         ros::Time now = ros::Time::now();
         
         ros::Duration delta_t = now - lastMsg;
 
-        if(ros::ok() && delta_t.toSec() > 0.2){
-            ROS_ERROR("Emergency Timeout Shutdown");
+        if(!emergencyCalled && delta_t.toSec() > 0.2){
+            ROS_ERROR_STREAM(node_name << ": Emergency Timeout Shutdown");
             ros::shutdown();
         }
+
+        ros::Duration(0.05).sleep();
     }
 
     emergencySub.shutdown();
 }
 
+
+//--------------------------------------------------------------------------------------------------------
 void sendSpeed(){ 
     ros::Rate loop_rate(50);
 
@@ -105,7 +114,7 @@ void sendSpeed(){
         loop_rate.sleep();
 	}
 }
-
+//--------------------------------------------------------------------------------------------------------
 void OnRosMsg(const std_msgs::Float64 & msg){ //Front node message received 
     critSec.lock(); 
 
@@ -117,7 +126,7 @@ void OnRosMsg(const std_msgs::Float64 & msg){ //Front node message received
 
     critSec.unlock(); 
 }
-
+//--------------------------------------------------------------------------------------------------------
 void initializeSerialPorts(string back_port_name, string front_port_name, int baud, int timeout, int bytesize, int parity, int stop_bit, int flowctrl){
 	back_wheel = new serial::Serial(back_port_name,
 									baud,
@@ -151,7 +160,7 @@ void initializeSerialPorts(string back_port_name, string front_port_name, int ba
 
     }
 }
-
+//--------------------------------------------------------------------------------------------------------
 void closeConexion(){
     back_wheel->close();
     front_wheel->close();
@@ -159,7 +168,7 @@ void closeConexion(){
     delete back_wheel;
     delete front_wheel;
 }
-
+//--------------------------------------------------------------------------------------------------------
 int main(int argc, char **argv){
 
     ros::init(argc, argv, "motor_node");
