@@ -131,7 +131,10 @@ int main(int argc, char **argv){
     com.fill('0');
     arq.fill('0');
 
-    //my_serial_1.write(tramme_2, tramme_2_size);
+    for(int i = 0; i < 40; i++){
+	    my_serial_1.write(tramme_1, tramme_1_size);
+	    ros::Duration(0.05).sleep();
+	}
 
     int vel = 0;
 
@@ -142,7 +145,7 @@ int main(int argc, char **argv){
 
     while(ros::ok()){
 
-	    my_serial_1.write(tramme_1, tramme_1_size);
+	   /* my_serial_1.write(tramme_1, tramme_1_size);
 
 	    ros::Duration(0.05).sleep();
 
@@ -178,7 +181,7 @@ int main(int argc, char **argv){
 	    cout << endl << endl;
 	    com << endl << endl;
 
-	    ros::Duration(0.01).sleep();
+	    ros::Duration(0.01).sleep();*/
 
 	    tramme_2[3] = ++cont;
         tramme_2[18] = vel/10 >= 0x1E ? 0x1E : (++vel)/10;
@@ -223,7 +226,14 @@ int main(int argc, char **argv){
 	    tramme_1[3] = ++cont;
         addCRC(tramme_1, tramme_1_size);
 
+        requestCont++;
+
     }
+
+    for(int i = 0; i < 40; i++){
+	    my_serial_1.write(tramme_1, tramme_1_size);
+	    ros::Duration(0.05).sleep();
+	}
 
     /*while(ros::ok()){
 
