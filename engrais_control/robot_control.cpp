@@ -111,10 +111,14 @@ void changeModeThread(){
 
 
 ros::Time lastMsg;
+bool comReady = false;
 bool emergencyCalled = false;
+
 //--------------------------------------------------------------------------------------------------------
 void OnEmergencyBrake(const std_msgs::Bool & msg){
     lastMsg = ros::Time::now();
+    
+    comReady = true;
 
     if(msg.data == true){
         Utility::printInColor(node_name + ": Emergency Shutdown Called", RED);
@@ -132,8 +136,8 @@ void emergencyThread(){
     std_msgs::Bool msg;
     msg.data = false;
     
-    if(mode != "automatic")
-        ros::Duration(2.0).sleep();
+    while(ros::ok() && !comReady && mode != "automatic")
+        ros::Duration(0.01).sleep();
 
     while(ros::ok() && !emergencyCalled){
         if(mode != "automatic" && !emergencyCalled){
@@ -141,7 +145,7 @@ void emergencyThread(){
             
             ros::Duration delta_t = now - lastMsg;
 
-            if(!emergencyCalled && delta_t.toSec() > 0.2){
+            if(!emergencyCalled && delta_t.toSec() > 1.0){
                 Utility::printInColor(node_name + ": Emergency Timeout Shutdown", RED);
                 ros::shutdown();
             }
