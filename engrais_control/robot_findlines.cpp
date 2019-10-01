@@ -110,7 +110,7 @@ void OnEmergencyBrake(const std_msgs::Bool & msg){
     lastMsg = ros::Time::now();
 
     if(msg.data == true){
-        Utility::printInColor(node_name + ": Emergency Shutdown Called", RED);
+        ROS_ERROR_STREAM(node_name << ": Emergency Shutdown Called");
         emergencyCalled = true;
         ros::shutdown();
     }
@@ -133,7 +133,7 @@ void emergencyThread(){
         ros::Duration delta_t = now - lastMsg;
 
         if(!emergencyCalled && delta_t.toSec() > 0.2){
-            Utility::printInColor(node_name + ": Emergency Timeout Shutdown", RED);
+            ROS_ERROR_STREAM(node_name << ": Emergency Timeout Shutdown");
             ros::shutdown();
         }
 
@@ -203,9 +203,9 @@ int main(int argc, char **argv){
         emergency_t = new thread(emergencyThread);
 
 
-    Utility::printInColor(node_name + ": Code Running, press Control+C to end", CYAN);
+    ROS_INFO_STREAM(node_name << ": Code Running, press Control+C to end");
     ros::spin();
-    Utility::printInColor(node_name + ": Shutting down...", CYAN);
+    ROS_INFO_STREAM(node_name << ": Shutting down...");
     
     if(emergecy_topic != "none"){
         emergency_t->join();
