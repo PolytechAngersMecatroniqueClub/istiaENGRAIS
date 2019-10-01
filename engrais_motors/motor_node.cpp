@@ -43,10 +43,14 @@ Message message;
 
 
 ros::Time lastMsg;
+bool comReady = false;
 bool emergencyCalled = false;
+
 //--------------------------------------------------------------------------------------------------------
 void OnEmergencyBrake(const std_msgs::Bool & msg){
     lastMsg = ros::Time::now();
+
+    comReady = true;
 
     if(msg.data == true){
         ROS_ERROR_STREAM(node_name << ": Emergency Shutdown Called");
@@ -64,14 +68,15 @@ void emergencyThread(){
     std_msgs::Bool msg;
     msg.data = false;
     
-    ros::Duration(2.0).sleep();
+    while(ros::ok() && !comReady)
+        ros::Duration(0.01).sleep();
 
     while(ros::ok() && !emergencyCalled){
         ros::Time now = ros::Time::now();
         
         ros::Duration delta_t = now - lastMsg;
 
-        if(!emergencyCalled && delta_t.toSec() > 0.2){
+        if(!emergencyCalled && delta_t.toSec() > 1.0){
             ROS_ERROR_STREAM(node_name << ": Emergency Timeout Shutdown");
             ros::shutdown();
         }
