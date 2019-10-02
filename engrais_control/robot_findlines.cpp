@@ -137,7 +137,7 @@ void emergencyThread(){
         
         ros::Duration delta_t = now - lastMsg;
 
-        if(!emergencyCalled && delta_t.toSec() > 1.0){
+        if(!emergencyCalled && delta_t.toSec() > 0.2){
             ROS_ERROR_STREAM(node_name << ": Emergency Timeout Shutdown");
             ros::shutdown();
         }

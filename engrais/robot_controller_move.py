@@ -16,6 +16,8 @@ from std_msgs.msg import Bool
 from std_msgs.msg import String
 from std_msgs.msg import Float64
 
+
+#--------------------------------------------------------------------------------------------------------
 class ControllerCom(threading.Thread):
 
     #Type 1 events
@@ -157,7 +159,7 @@ class ControllerCom(threading.Thread):
             y = -int(((event.value - 127)/127.0)*20)/20.0
 
 
-
+#--------------------------------------------------------------------------------------------------------
 def main():
     global x, y, mode, emergency, node_name, controller_ready
 
@@ -241,6 +243,7 @@ def main():
     rospy.loginfo('Code ended without errors')
 
 
+#--------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
     try:
         main()

@@ -94,11 +94,16 @@ void sendLine(const pair<Model, Model> & models){
 
 //--------------------------------------------------------------------------------------------------------
 void ModeChangeMsg(const std_msgs::String & msg){ 
-    cout << msg << endl;
-    if(msg.data != "automatic")
+    if(msg.data != "automatic"){
         mode = "manual";
-    else
+        
+    }
+    else{
         mode = "automatic";
+    }
+
+    Utility::printInColor(node_name + ": Mode changed to " + mode + "\n", CYAN);
+    //ROS_WARN_STREAM(node_name << ": Mode changed to " << mode);
 }
 //--------------------------------------------------------------------------------------------------------
 void changeModeThread(){ 
@@ -138,14 +143,14 @@ void emergencyThread(){
     
     while(ros::ok() && !comReady && mode != "automatic")
         ros::Duration(0.01).sleep();
-
+    
     while(ros::ok() && !emergencyCalled){
         if(mode != "automatic" && !emergencyCalled){
             ros::Time now = ros::Time::now();
             
             ros::Duration delta_t = now - lastMsg;
 
-            if(!emergencyCalled && delta_t.toSec() > 1.0){
+            if(!emergencyCalled && delta_t.toSec() > 0.2){
                 Utility::printInColor(node_name + ": Emergency Timeout Shutdown", RED);
                 ros::shutdown();
             }

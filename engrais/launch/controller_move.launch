@@ -107,7 +107,7 @@
         <param name="mode_change_topic" type="string" value="$(arg change_mode_topic_name)"/>
         <param name="emergency_topic" type="string" value="$(arg emer_topic_name)"/>
 
-        <param name="desired_velocity" type="string" value="$(arg max_velocity)"/>
+        <param name="desired_velocity" type="double" value="$(arg max_velocity)"/>
     </node>
 
 </launch>
