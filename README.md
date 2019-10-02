@@ -112,9 +112,10 @@ engrais_control - package created with catkin_create_pkg
 * package.xml
 * CMakeLists.txt
 * launch
-  * findlines.launch : launch the findlines and the sick_tim node, the sick_tim node gets the points found by the sensor, and send those points through ROS. Then, the findlines node uses this information to detect the 6 most probable lines in the field and sends those lines through ROS. In the launch file, one can change the Lidar IP, node names and ROS topic names
 
-  * control.launch : launch the control node, that receives all lines detected, selects the lines that are the most frequent as the 'real' ones, and calculates the control signal to both wheels. In the launch file, one can change the node name, robot's max speed, robot's dimensions, control signal period and ROS Topic names
+	  findlines.launch : launch the findlines and the sick_tim node, the sick_tim node gets the points found by the sensor, and send those points through ROS. Then, the findlines node uses this information to detect the 6 most probable lines in the field and sends those lines through ROS. In the launch file, one can change the Lidar IP, node names and ROS topic names
+
+	  control.launch : launch the control node, that receives all lines detected, selects the lines that are the most frequent as the 'real' ones, and calculates the control signal to both wheels. In the launch file, one can change the node name, robot's max speed, robot's dimensions, control signal period and ROS Topic names
 
 
 ## How to use
@@ -132,7 +133,8 @@ engrais_motors - package created with catkin_create_pkg
 * package.xml
 * CMakeLists.txt
 * launch
-  * motor.launch : launch the motor node, it connects via USB to 2 wheels and sends a velocity reference every 2ms. In launch file, one can change the node's name, ROS topic names, USB addresses and serial communication configurations. 
+
+	  motor.launch : launch the motor node, it connects via USB to 2 wheels and sends a velocity reference every 2ms. In launch file, one can change the node's name, ROS topic names, USB addresses and serial communication configurations. 
 
 ## How to use
 
@@ -151,8 +153,10 @@ sick_tim - package created with catkin_create_pkg
 * package.xml
 * CMakeLists.txt
 * launch
-  * laser_back.launch : receives information from the back sick tim
-  * laser_front.launch : receives information from the front sick tim
+
+	  laser_back.launch : receives information from the back sick tim
+      
+	  laser_front.launch : receives information from the front sick tim
 
 ## how to use
 
@@ -167,25 +171,29 @@ engrais - package created with catkin_create_pkg
 * package.xml
 * CMakeLists.txt
 * launch
-  1) Single Component Launch
-    * rasp1.launch : Connects using SSH to rasp1, and launches motor.launch to the right side
 
-    * rasp2.launch : Connects using SSH to rasp2, and launches motor.launch to the left side
+	1 ) Single Component Launch
+    
+	  rasp1.launch : Connects using SSH to rasp1, and launches motor.launch to the right side
 
-    * rasp3.launch : Connects using SSH to rasp3, and launches findlines.launch to the back sick tim
+      rasp2.launch : Connects using SSH to rasp2, and launches motor.launch to the left side
 
-    * rasp4.launch : Connects using SSH to rasp4, and launches findlines.launch to the front sick tim
+      rasp3.launch : Connects using SSH to rasp3, and launches findlines.launch to the back sick tim
 
-    * central.launch : Connects using SSH to cental ROS, and launches control.launch
+      rasp4.launch : Connects using SSH to rasp4, and launches findlines.launch to the front sick tim
 
-  2) Fragmented Component Launch
-    * control.launch : Connects using SSH to rasp3, rasp4 and central ROS, and launches findlines.launch on rasp3 for the back sensor, findlines.launch on rasp4 for the front sensor, and control.launch on central.
+      central.launch : Connects using SSH to cental ROS, and launches control.launch
 
-    * findlines.launch : Connects using SSH to rasp3 and rasp4, and launches findlines.launch on rasp3 for the back sensor and findlines.launch on rasp4 for the front sensor.
+	2 ) Fragmented Component Launch
+    
+      control.launch : Connects using SSH to rasp3, rasp4 and central ROS, and launches findlines.launch on rasp3 for the back sensor, findlines.launch on rasp4 for the front sensor, and control.launch on central.
 
-    * motors.launch : Connects using SSH to rasp1 and rasp2, and launches motor.launch on rasp1 for the right side and findlines.launch on rasp2 for the left side.
+	  findlines.launch : Connects using SSH to rasp3 and rasp4, and launches findlines.launch on rasp3 for the back sensor and findlines.launch on rasp4 for the front sensor.
+	
+	  motors.launch : Connects using SSH to rasp1 and rasp2, and launches motor.launch on rasp1 for the right side and findlines.launch on rasp2 for the left side.
 
-  * keyboard_move.launch : Connects using SSH to rasp1 and rasp2, and launches motor.launch on rasp1 for the right side, findlines.launch on rasp2 for the left side and keyboard_move.launch. After this, one can control the robot with the keyboard's arrows. In the launch file one can change the node name, ROS topics name, and robot's velocity
+
+	* keyboard_move.launch : Connects using SSH to rasp1 and rasp2, and launches motor.launch on rasp1 for the right side, findlines.launch on rasp2 for the left side and keyboard_move.launch. After this, one can control the robot with the keyboard's arrows. In the launch file one can change the node name, ROS topics name, and robot's velocity
   
   * controller_move.launch : Connects using SSH to rasp1 and rasp2, and launches motor.launch on rasp1 for the right side, findlines.launch on rasp2 for the left side and controller node. After this, one can control the robot with the PS4 controller. In the launch file one can change the node name, controller's bluetooth and name, ROS topics name, and robot's velocity
 
