@@ -1,7 +1,7 @@
 # ENGRAIS Raspberry
-This repository contains all the packages to install into our 4 raspberry pi
+This repository contains all the packages to install into our 4 raspberry pi and the Nvidia Jetson TX2
 
-This project contains 3 packages.
+This project contains 4 packages.
 
 # Network
 
@@ -83,40 +83,58 @@ for each one of the connected devices. In our case it had to be done to all 4 Ra
 
 This proceadure must be repeated in every other device if you want to launch ROS nodes from everywhere.
 
+# Jetson TX2 Ubuntu Installation
+To install Jetson's OS, you will need to connect your turned off jetson to another PC using the Micro USB port, and connect it to a monitor using the HDMI port. 
+
+    1) In your PC, download Nvidia SDK manager at developer.nvidia.com/nvidia-sdk-manager (you will have to create a developer account, unfortunately).
+    
+    2) Install the .deb file and run 'sdkmanager' at the terminal.
+    
+    3) Log in into your account and change Target Hardware to your product (in our case Jetson TX2 (P3310)) and click continue
+
+    4) Accept the terms, click continue and put the sudo password
+
+    5) When the "SDK Manager is about to flash your Jetson TX2" screen pops up, change to Manual Setup. Click the power up button (4th one from left to right) two leds should show up. Then, hold the 3rd button, click and release the 1st button, then release the 3rd button. Finally, click the Flash button on your PC
+
+    6) After the flash is done, your Jetson Should boot up ubuntu and your PC will ask to Install SDK components on your Jetson TX2. Don't touch your PC and finish Ubuntu setup on your Jetson
+
+    7) After completing Ubuntu's setup, put jetson's Username and Password in your PC.
+
+    8) After installing everything, restart your jetson and it will be done!
 
 # engrais_control
 
-This package has the code to find the lines into the set of points received from sick_tim. The lines found are sent using visualization_marker, making it possible to visualize it in rviz.
+This package has the node to find the lines into the set of points received from sick_tim and the node responsible to get this information to calculate the control signal. The lines found and those selected are sent using visualization_marker, making it possible to visualize it in rviz.
 
-## organisation
+## Organisation
 
 engrais_control - package created with catkin_create_pkg
 * package.xml
 * CMakeLists.txt
 * launch
-  * central.launch : to start the central of processing that will receive all lines found, select 2 models from them, and calculate the control to the wheels
-  * rasp1.launch : to start rasp 1's code, receiving the control and sending the reference to the right wheel
-  * rasp2.launch : to start rasp 2's code, receiving the control and sending the reference to the left wheel
-  * rasp3.launch : to start rasp 3 and sick tim's code, getting all the information sent by the first sick Tim and finding the lines that are in the set of points 
-  * rasp4.launch : to start rasp 4 and sick tim's code, getting all the information sent by the second sick Tim and finding the lines that are in the set of points
+  * findlines.launch : launch the findlines and the sick_tim node, the sick_tim node gets the points found by the sensor, and send those points through ROS. Then, the findlines node uses this information to detect the 6 most probable lines in the field and sends those lines through ROS. In the launch file, one can change the Lidar IP, node names and ROS topic names
 
-## how to use
+  * control.launch : launch the control node, that receives all lines detected, selects the lines that are the most frequent as the 'real' ones, and calculates the control signal to both wheels. In the launch file, one can change the node name, robot's max speed, robot's dimensions, control signal period and ROS Topic names
+
+
+## How to use
 
 None of the launch files contains arguments, meaning that manual modifications are needed if one wants to change the way the nodes work. 
 
+
 # engrais_motors
 
-This package comunicates with the EZ Wheels and send velocity reference
+This package comunicates with the EZ Wheels and periodically send velocity reference using serial communication to keep the wheels on.
 
-## organisation
+## Organisation
 
 engrais_motors - package created with catkin_create_pkg
 * package.xml
 * CMakeLists.txt
 * launch
-  * motor.launch : 
+  * motor.launch : launch the motor node, it connects via USB to 2 wheels and sends a velocity reference every 2ms. In launch file, one can change the node's name, ROS topic names, USB addresses and serial communication configurations. 
 
-## how to use
+## How to use
 
 run motor.launch
 
@@ -125,7 +143,7 @@ run motor.launch
 This package is made by the sick Tim development team and it receives the data from the sensor, sending it through ROS using LaserScan message type 
 
 
-## organisation
+## Organisation
 
 Since it is an extern package, this readme will inclue our modifications, for more information go to https://github.com/uos/sick_tim
 
@@ -133,13 +151,42 @@ sick_tim - package created with catkin_create_pkg
 * package.xml
 * CMakeLists.txt
 * launch
-  * laser1.launch : receives information from the sick tim 1
-  * laser2.launch : receives information from the sick tim 2
+  * laser_back.launch : receives information from the back sick tim
+  * laser_front.launch : receives information from the front sick tim
 
 ## how to use
 
 None of the launch files contains arguments, meaning that manual modifications are needed if one wants to change the way the nodes work. 
 
-# Launching Everyting
 
-First, run raspX.launch for each raspberry, where X is the number described in the network topic. Then, in a computer or central of processing, run central.launch. This will call every launch file needed to run the robot and everything should work if done correctly 
+# engrais
+
+This package aims to make it easier to launch everything. It contais 2 nodes, one that controls the robot using the keyboard's arrows and the other one that controls the robot using the PS4 controller
+
+engrais - package created with catkin_create_pkg
+* package.xml
+* CMakeLists.txt
+* launch
+  1) Single Component Launch
+    * rasp1.launch : Connects using SSH to rasp1, and launches motor.launch to the right side
+
+    * rasp2.launch : Connects using SSH to rasp2, and launches motor.launch to the left side
+
+    * rasp3.launch : Connects using SSH to rasp3, and launches findlines.launch to the back sick tim
+
+    * rasp4.launch : Connects using SSH to rasp4, and launches findlines.launch to the front sick tim
+
+    * central.launch : Connects using SSH to cental ROS, and launches control.launch
+
+  2) Fragmented Component Launch
+    * control.launch : Connects using SSH to rasp3, rasp4 and central ROS, and launches findlines.launch on rasp3 for the back sensor, findlines.launch on rasp4 for the front sensor, and control.launch on central.
+
+    * findlines.launch : Connects using SSH to rasp3 and rasp4, and launches findlines.launch on rasp3 for the back sensor and findlines.launch on rasp4 for the front sensor.
+
+    * motors.launch : Connects using SSH to rasp1 and rasp2, and launches motor.launch on rasp1 for the right side and findlines.launch on rasp2 for the left side.
+
+  * keyboard_move.launch : Connects using SSH to rasp1 and rasp2, and launches motor.launch on rasp1 for the right side, findlines.launch on rasp2 for the left side and keyboard_move.launch. After this, one can control the robot with the keyboard's arrows. In the launch file one can change the node name, ROS topics name, and robot's velocity
+  
+  * controller_move.launch : Connects using SSH to rasp1 and rasp2, and launches motor.launch on rasp1 for the right side, findlines.launch on rasp2 for the left side and controller node. After this, one can control the robot with the PS4 controller. In the launch file one can change the node name, controller's bluetooth and name, ROS topics name, and robot's velocity
+
+  * system.launch : Launches everything. Connects using SSH to rasp1, rasp2, rasp3, rasp4 and central. Launches motor.launch on rasp1 for the right side and findlines.launch on rasp2 for the left side. Launches findlines.launch on rasp3 for the back sensor, findlines.launch on rasp4 for the front sensor and control.launch and controller node on central. The default mode is "manual", meaning that the user can control the robot with the PS4 controller's analog. The "X" button when PRESSED, will change the mode to "automatic" (meaning that the central node will send its control signal to the wheels instead of the controller) and back to "manual" when released. The "Triangle", "Circle" and "Square" buttons will always set the mode to "manual". The "Central" button will change the current state of the system when pressed. Any of the L1, L2, L3, R1, R2, R3 will trigger emergency and shut everything down.

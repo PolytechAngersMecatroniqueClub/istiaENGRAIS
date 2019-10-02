@@ -64,7 +64,7 @@ class ControllerCom(threading.Thread):
         super(ControllerCom, self).__init__()
 
     def run(self):
-        global node_name
+        global node_name, emergency
         
         self.__waitForController()
 
@@ -83,6 +83,7 @@ class ControllerCom(threading.Thread):
                            self.__movementCommand(event)
 
             except IOError:
+                emergency = True
                 rospy.logerr(node_name + ': Shutting Down due to lost communication with the controller')
                 rospy.signal_shutdown('Lost Comunication')
 
@@ -206,7 +207,7 @@ def main():
     rospy.loginfo('Node Running, press CTRL+C to exit')
 
     while not rospy.is_shutdown():
-        if controller_ready and mode != 'automatic' and not emergency:
+        if controller_ready and mode != 'automatic':
 
             r = math.sqrt(x**2 + y**2)
             theta = math.atan2(y, x) * 180.0 / math.pi
@@ -227,9 +228,10 @@ def main():
                 lControl = -r * (-theta/45.0 - 1.0) * max_vel
                 rControl = -r * max_vel
 
-            
-            pubLeftWheel.publish(lControl)
-            pubRightWheel.publish(rControl)
+            if not emergency:
+                pubLeftWheel.publish(lControl)
+                pubRightWheel.publish(rControl)
+
 
         if not emergency:
             pubEmergency.publish(Bool(False))

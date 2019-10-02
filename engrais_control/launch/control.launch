@@ -10,7 +10,7 @@
 	<arg name="control_sleep_time_ms" default="500"/>
 
 
-    <arg name="emer_topic" default="emergency"/>
+    <arg name="emer_topic" default="none"/>
     <arg name="change_mode_topic_name" default="mode_control"/>
 
 	<arg name="subscribe_topic_back" default="lines_back"/>
