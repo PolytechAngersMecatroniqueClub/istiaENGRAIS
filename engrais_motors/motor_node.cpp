@@ -109,10 +109,10 @@ void sendSpeed(){
                 ROS_ERROR("ERROR SENDING COMMAND TO FRONT WHEEL");
         }
         else{
-            if(setWheelSpeed(*back_wheel, 0, isClockwise) != 1)
+            if(setWheelSpeed(*back_wheel, 0.0, isClockwise) != 1)
                 ROS_ERROR("ERROR SENDING COMMAND TO BACK WHEEL");
 
-            if(setWheelSpeed(*front_wheel, 0, isClockwise) != 1)
+            if(setWheelSpeed(*front_wheel, 0.0, isClockwise) != 1)
                 ROS_ERROR("ERROR SENDING COMMAND TO FRONT WHEEL");
         }
 

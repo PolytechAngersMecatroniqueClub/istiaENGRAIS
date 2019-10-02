@@ -145,7 +145,7 @@ int main(int argc, char **argv){
 
     while(ros::ok()){
 
-	   /* my_serial_1.write(tramme_1, tramme_1_size);
+	    my_serial_1.write(tramme_1, tramme_1_size);
 
 	    ros::Duration(0.05).sleep();
 
@@ -181,10 +181,10 @@ int main(int argc, char **argv){
 	    cout << endl << endl;
 	    com << endl << endl;
 
-	    ros::Duration(0.01).sleep();*/
+	    ros::Duration(0.01).sleep();
 
 	    tramme_2[3] = ++cont;
-        tramme_2[18] = vel/10 >= 0x1E ? 0x1E : (++vel)/10;
+        //tramme_2[18] = vel/10 >= 0x1E ? 0x1E : (++vel)/10;
         addCRC(tramme_2, tramme_2_size);
 
 
