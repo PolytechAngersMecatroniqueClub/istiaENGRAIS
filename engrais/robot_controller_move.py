@@ -52,7 +52,13 @@ class ControllerCom(threading.Thread):
 
     __gamepad = None
 
+    __last_horizontal = 0
+    __last_vertical = 0
 
+    __analog_x = 0.0
+    __analog_y = 0.0
+
+    #----------------------------------------------------------------------------------------------------
     def __init__(self, devadd, devname, pubMode, pubEmergency):
 
         self.__DEFAULT_DEVADD = devadd
@@ -63,14 +69,15 @@ class ControllerCom(threading.Thread):
 
         super(ControllerCom, self).__init__()
 
+    #----------------------------------------------------------------------------------------------------
     def run(self):
-        global node_name, emergency
+        global node_name, emergency, x, y
         
         self.__waitForController()
 
         while not rospy.is_shutdown():
             try:
-                r,w,x = select([self.__gamepad.fd], [], [], 0.1)
+                r,w,u = select([self.__gamepad.fd], [], [], 0.1)
                 if r:
                     for event in self.__gamepad.read():
                         if (event.type == ecodes.EV_KEY):
@@ -80,14 +87,14 @@ class ControllerCom(threading.Thread):
                                 self.__buttonActionReleased(event)
 
                         elif event.type == ecodes.EV_ABS: 
-                           self.__movementCommand(event)
+                           x, y = self.__movementCommand(event)
 
             except IOError:
                 emergency = True
                 rospy.logerr(node_name + ': Shutting Down due to lost communication with the controller')
                 rospy.signal_shutdown('Lost Comunication')
 
-
+    #----------------------------------------------------------------------------------------------------
     def __waitForController(self):
         global controller_ready
 
@@ -107,7 +114,7 @@ class ControllerCom(threading.Thread):
                 rospy.loginfo("Not able to connect to the controller, trying again in 1s...")
                 rospy.sleep(1)
 
-
+    #----------------------------------------------------------------------------------------------------
     def __buttonActionPressed(self, event):
         global mode, emergency, node_name
 
@@ -141,7 +148,7 @@ class ControllerCom(threading.Thread):
 
             rospy.signal_shutdown('Emergency')
        
-
+    #----------------------------------------------------------------------------------------------------
     def __buttonActionReleased(self, event):
         global mode
 
@@ -149,16 +156,31 @@ class ControllerCom(threading.Thread):
             mode = "manual"
             self.__pubMode.publish(mode)
 
-
+    #----------------------------------------------------------------------------------------------------
     def __movementCommand(self, event):
-        global x, y
+        if event.code == self.__DPAD_HORIZONTAL:
+            if -1 <= event.value and event.value <= 1: 
+                self.__last_horizontal = event.value
 
-        if event.code == self.__ANALOG_L_X:
-            x = int(((event.value - 127)/127.0)*20)/20.0
+        elif event.code == self.__DPAD_VERTICAL:
+            if -1 <= event.value and event.value <= 1: 
+                self.__last_vertical = event.value
+
+        elif event.code == self.__ANALOG_L_X:
+            self.__analog_x = int(((event.value - 127)/127.0)*20)/20.0
           
         elif event.code == self.__ANALOG_L_Y:
-            y = -int(((event.value - 127)/127.0)*20)/20.0
+            self.__analog_y = -int(((event.value - 127)/127.0)*20)/20.0
 
+        
+        if self.__last_horizontal != 0:
+            return self.__last_horizontal / 1.2, 0.0
+
+        elif self.__last_vertical != 0:
+            return 0.0, self.__last_vertical / -1.2
+        
+        else:
+            return self.__analog_x, self.__analog_y
 
 #--------------------------------------------------------------------------------------------------------
 def main():
@@ -208,7 +230,6 @@ def main():
 
     while not rospy.is_shutdown():
         if controller_ready and mode != 'automatic':
-
             r = math.sqrt(x**2 + y**2)
             theta = math.atan2(y, x) * 180.0 / math.pi
 

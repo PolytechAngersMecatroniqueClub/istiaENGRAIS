@@ -69,7 +69,7 @@
 
 	<!-- Robot's Infos -->
     <arg name="mode" default="manual"/>
-	<arg name="max_velocity" default="4.0"/>
+	<arg name="max_velocity" default="1.0"/>
 	<arg name="body_size" default="2.0"/>
 	<arg name="distance_reference" default="1.5"/>
 

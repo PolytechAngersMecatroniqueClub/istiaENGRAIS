@@ -38,7 +38,7 @@
     <!-- Controller Infos -->
 	<arg name="right_robot_side" default="right" />
 	<arg name="left_robot_side" default="left" />
-    <arg name="max_velocity" default="4.0" />
+    <arg name="max_velocity" default="1.0" />
 
 
 	<!-- Common Serial Arguments -->
