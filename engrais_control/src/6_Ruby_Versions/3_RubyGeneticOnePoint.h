@@ -15,7 +15,7 @@
 
 class RubyGeneticOnePoint : public Pearl{ //Class to implement 3rd version of ruby. It keeps the Genetic approach, but now unites cluster of points into their center of mass, making the algorithm much faster and robust
 	public:
-		static constexpr double distanceToBeConsideredSamePoint = 0.1; //Anything closer than this distance will be 
+		static constexpr double distanceToBeConsideredSamePoint = 0.05; //Anything closer than this distance will be 
 		static constexpr double numberOfModelsToSearch = 40; //Number of individuals each generation
 		static constexpr double factorToDeletePoints = 0.8; //Percentage of the average points to not delete a model
 

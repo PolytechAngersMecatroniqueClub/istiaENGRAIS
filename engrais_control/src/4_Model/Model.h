@@ -49,7 +49,7 @@ class Model{ //Class to store models (lines)
         //------------------------------------------------------------------------------------------------
         int getPointsSize() const; //Get number of points in model
         //------------------------------------------------------------------------------------------------
-        std::pair<Point, Point> getFirstAndLastPoint() const; //Get the negative-most point (first) and the positive-most point (second) using only x-coordinate
+        std::pair<Point, Point> getFirstAndLastPoint(bool isRotated = false) const; //Get the negative-most point (first) and the positive-most point (second) using only x-coordinate
         //------------------------------------------------------------------------------------------------
         std::vector<Point> getPointsInModel() const; //Get points in model 
         //------------------------------------------------------------------------------------------------

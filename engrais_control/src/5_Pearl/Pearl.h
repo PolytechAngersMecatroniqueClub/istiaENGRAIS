@@ -26,13 +26,13 @@ class Pearl{
         static const int divideFactor = 2*INITIAL_NUMBER_OF_POINTS; //To calculate the minumum amount of points in the field
 
         static constexpr double outlierPenalty = 3; //Additional energy for each outlier point
-        static constexpr double distanceForOutlier = 0.5; //Everything farther than 50cm of every model will be considered outlier
+        static constexpr double distanceForOutlier = 0.2; //Everything farther than 50cm of every model will be considered outlier
 
         static constexpr double additionalEnergyLambda = 4; //Lambda to calculate additional energy
         static constexpr double additionalEnergyCsi = 3; //Csi to calculate additional energy
 
-        static constexpr double sameSlopeThreshold = 0.2; //Threshold to determine if 2 models has the same slope
-        static constexpr double sameInterceptThreshold = 0.3; //Threshold to determine if 2 models has the same intercept
+        static constexpr double sameSlopeThreshold = 0.1; //Threshold to determine if 2 models has the same slope
+        static constexpr double sameInterceptThreshold = 0.2; //Threshold to determine if 2 models has the same intercept
 
         static constexpr double worstEnergySizeRatioAllowed = 0.7; //Quantity to know if model has to be deleted
 

@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.6"?>
 <!--Engrais robot description -->
 <robot name="engrais" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
@@ -8,17 +8,17 @@
     <!--  Constants for the robot body -->
     <xacro:property name="body_mass"     value="10"  />                <!-- body mass - kg -->
     <xacro:property name="body_width_x"  value="$(arg body_size_x)" /> <!-- body lenght - m -->
-    <xacro:property name="body_width_y"  value="1"   />                <!-- body width - m -->
-    <xacro:property name="body_height"   value="0.5" />                <!-- body height - m -->
+    <xacro:property name="body_width_y"  value="0.4"   />                <!-- body width - m -->
+    <xacro:property name="body_height"   value="0.2" />                <!-- body height - m -->
 
     <!--  Constants for the caster wheels, front and back -->
-    <xacro:property name="caster_radius" value="0.15"/> <!-- radius of the caster wheel - m -->
+    <xacro:property name="caster_radius" value="0.10"/> <!-- radius of the caster wheel - m -->
     <xacro:property name="caster_mass"   value="0.1"/>  <!-- mass of the caster wheel - m -->
 
     <!--  Constants for the differentials wheels, left and right -->
     <xacro:property name="wheel_mass"   value="1"   />    <!-- wheel mass - kg -->
-    <xacro:property name="wheel_radius" value="0.3" />    <!-- wheel radius - m -->
-    <xacro:property name="wheel_length"    value="0.2" /> <!-- wheel length -->
+    <xacro:property name="wheel_radius" value="0.22" />    <!-- wheel radius - m -->
+    <xacro:property name="wheel_length"    value="0.15" /> <!-- wheel length -->
 
     <!--  Constants for the LiDAR -->
     <xacro:property name="sick_size"      value="0.1" />      <!-- The LiDAR is represented by a box with sick_size size - m -->
@@ -38,7 +38,9 @@
     <!--    ****************** LINKS ****************** -->
 
     <!-- artificial base link -->
-    <link name="footprint" />
+    <link name="footprint">
+
+    </link>
 
     <!-- Fixed joint between the artificial based link and the body -->
     <joint name="base_joint" type="fixed">
@@ -107,7 +109,7 @@
         <collision>
             <origin xyz="0 0 0" rpy="0 0 0"/>
             <geometry>
-            <sphere radius="${caster_radius}"/>
+                <sphere radius="${caster_radius}"/>
             </geometry>
         </collision>
 

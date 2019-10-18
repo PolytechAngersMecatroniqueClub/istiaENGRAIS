@@ -19,7 +19,7 @@ class RubyGeneticOnePointPosNeg : public Pearl{ //Fourth ruby version. This clas
 		int numberOfPositivePointsInOutliers = 0; //Count positive points in outliers
 
 	public:
-		static constexpr double distanceToBeConsideredSamePoint = 0.1; //Anything closer than this distance will be
+		static constexpr double distanceToBeConsideredSamePoint = 0.05; //Anything closer than this distance will be
 		static constexpr double numberOfModelsToSearch = 40; //Number of individuals each generation
 		static constexpr double factorToDeletePoints = 0.8; //Percentage of the average points to not delete a model
 

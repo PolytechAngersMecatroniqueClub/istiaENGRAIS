@@ -52,7 +52,9 @@ void Model::findBestModel(const std::vector<Point> & rPointsInModel){ //Using th
     this->findBestModel();    
 }
 //--------------------------------------------------------------------------------------------------------
-std::pair<Point, Point> Model::getFirstAndLastPoint() const { //Get the closest point (first) and the farthest point (second) using only x-coordinate
+std::pair<Point, Point> Model::getFirstAndLastPoint(bool isRotated) const { //Get the closest point (first) and the farthest point (second) using only x-coordinate
+    int mult = isRotated ? -1 : 1;
+
     std::pair<Point, Point> ret;
 
     if(this->pointsInModel.size() == 0) //Default return to avoid crashes
@@ -61,9 +63,9 @@ std::pair<Point, Point> Model::getFirstAndLastPoint() const { //Get the closest 
     ret.first = ret.second = this->pointsInModel[0]; 
 
     for(Point p : this->pointsInModel){ //For each point
-        if(fabs(p.getX()) < fabs(ret.first.getX())) //Stores closest point
+        if(mult * p.getX() < mult * ret.first.getX()) //Stores closest point
             ret.first = p;
-        if(fabs(p.getX()) > fabs(ret.second.getX())) //Stores farthest point
+        if(mult * p.getX() > mult * ret.second.getX()) //Stores farthest point
             ret.second = p;
     }
 

@@ -1,4 +1,11 @@
 //********************************************************************************************************
+#define BODY_SIZE 1.1
+#define SLEEP_TIME 500
+#define PI 3.1415926535
+#define TO_MILLISECOND 1000
+#define DISTANCE_REFERENCE 1.5
+#define MAX_VEL 0.7
+
 #include <chrono>
 #include <stdio.h> 
 #include <stdlib.h>   
@@ -15,28 +22,23 @@
 #include <RobotControl.h>
 
 #include <ros/ros.h>
+#include <std_msgs/Bool.h>
 #include <visualization_msgs/Marker.h>
 #include <std_msgs/Float64.h>
-
-
-#define BODY_SIZE 2.0
-#define SLEEP_TIME 500
-#define PI 3.1415926535
-#define TO_MILLISECOND 1000
-#define DISTANCE_REFERENCE 1.5
 
 using namespace std;
 
 mutex critSec; //Critical section mutex
 
 string mapName; //rviz name
-bool endProgram = false; //End node
 
 ros::Publisher pubLeftControl; //Publish left wheel command
 ros::Publisher pubRightControl; //Publish right wheel command
 ros::Publisher pubSelectedLines; //Publish selected lines
 
 RobotControl control; //Declare control
+
+std::vector<int> contMsgs(2,0);
 
 //--------------------------------------------------------------------------------------------------------
 void sendLine(const pair<Model, Model> & models){ //Send model's first and last point using the visualization marker 
@@ -90,46 +92,81 @@ void sendLine(const pair<Model, Model> & models){ //Send model's first and last 
 
 
 //--------------------------------------------------------------------------------------------------------
+void exitApp(const std_msgs::Bool & msg){ //ROS message received 
+    if(msg.data)
+        ros::shutdown();
+}
+//--------------------------------------------------------------------------------------------------------
 void controlThread(){ //Control Thread 
-    while(!endProgram){ //While the program runs
+    while(ros::ok()){ //While the program runs
 
         critSec.lock(); //Lock critical section
+
+        contMsgs = {0,0};
+
         control.clearModels(); //Clear all models
+
         critSec.unlock(); //Unlock critical section
+
+
 
         usleep(SLEEP_TIME * TO_MILLISECOND); //Sleep for a time
 
+
+
         critSec.lock();  //Lock critical section
 
-        pair<Model, Model> selectedModels = control.selectModels(); //Select models
+        std::cout << "ContFront: " << contMsgs[1] << ", contBack: " << contMsgs[0] << std::endl << std::endl;
+
+        std::cout << "Before change: " << control << std::endl << std::endl << std::endl << std::endl;
+
+
+        pair<Model, Model> selectedModels = control.selectModels(contMsgs); //Select models
+
+        std::cout << "After change: " << control << std::endl << std::endl << std::endl << std::endl;
+
+        std::cout << "Selected First: " << selectedModels.first << std::endl << std::endl << ", Second: " << selectedModels.second << std::endl << std::endl;
+
+
         sendLine(selectedModels); //Send selected lines
+
         pair<std_msgs::Float64, std_msgs::Float64> wheels = control.getWheelsCommand(selectedModels); //Calculates wheels' commands
 
-        critSec.unlock(); //Unlock
+        cout << "\n---------------------------------------------------------------\n\n";
+        
+        critSec.unlock(); //Unlock*/
 
         pubLeftControl.publish(wheels.first); //Send left wheel command
         pubRightControl.publish(wheels.second); //Send right wheel command
-
-        cout << "Left: " << wheels.first.data <<  ", Right: " << wheels.second.data << endl << endl << endl << endl << endl; //Print commands calculated
 
     }
 }
 //--------------------------------------------------------------------------------------------------------
 void BackLinesMsg(const visualization_msgs::Marker & msg){ //Back node message received 
-    if(msg.type != 5) //Check flag to see if it's line list
-        return;
-
     critSec.lock(); //Lock critical section
-    control.backMessage(msg); //Feed back message to control
+
+    if(msg.type == visualization_msgs::Marker::LINE_LIST){ //Check flag to see if it's line list
+        control.backLinesMessage(msg); //Feed back message to control
+        contMsgs[0]++;
+    }
+    
+    else if(msg.type == visualization_msgs::Marker::POINTS)
+        control.backPointsMessage(msg); //Feed back message to control
+
     critSec.unlock(); //Unlock critical section
 }
 //--------------------------------------------------------------------------------------------------------
 void FrontLinesMsg(const visualization_msgs::Marker & msg){ //Front node message received 
-    if(msg.type != 5) //Check flag to see if it's line list
-        return;
-    
     critSec.lock(); //Lock critical section
-    control.frontMessage(msg); //Feed front message to control
+    
+    if(msg.type == visualization_msgs::Marker::LINE_LIST){ //Check flag to see if it's line list    
+        control.frontLinesMessage(msg); //Feed front message to control
+        contMsgs[1]++;
+    }
+
+    else if(msg.type == visualization_msgs::Marker::POINTS)
+        control.frontPointsMessage(msg); //Feed front message to control
+    
     critSec.unlock(); //Unlock critical section
 }
 
@@ -155,6 +192,7 @@ int main(int argc, char **argv){ //Main function
 
     ros::Subscriber subFront = node.subscribe(subTopicFront, 10, FrontLinesMsg); //Subscribe to topic
     ros::Subscriber subBack = node.subscribe(subTopicBack, 10, BackLinesMsg);
+    ros::Subscriber exitSub = node.subscribe("exit_app_topic", 10, exitApp); // /engrais/laser_front/scan or /engrais/laser_back/scan
 
     pubLeftControl = node.advertise<std_msgs::Float64>(pubTopicLeft, 10); //Publish topics
     pubRightControl = node.advertise<std_msgs::Float64>(pubTopicRight, 10);
@@ -164,11 +202,10 @@ int main(int argc, char **argv){ //Main function
 
     thread control_t(controlThread); //Declare and launch new thread
 
-    Utility::printInColor("Code Running, press Control+C to end", CYAN);
-    ros::spin(); //SPin to receive messages
-    Utility::printInColor("Shutting down...", CYAN);
+    Utility::printInColor(node_name + ": Code Running, press Control+C to end", CYAN);
+    ros::spin(); //Spin to receive messages
+    Utility::printInColor(node_name + ": Shutting down...", CYAN);
 
-    endProgram = true; //Set to end program
     control_t.join(); //Wait thread to finish
 
     subFront.shutdown(); //Shutdown ROS
@@ -179,7 +216,7 @@ int main(int argc, char **argv){ //Main function
     pubSelectedLines.shutdown();
     ros::shutdown();
 
-    Utility::printInColor("Code ended without errors", BLUE);
+    Utility::printInColor(node_name + ": Code ended without errors", BLUE);
 }
 
 //********************************************************************************************************

@@ -20,12 +20,12 @@
           <uri>model://plantgreen</uri>
         </include>
       </model>
-      <pose>4.5 3.0 0 0 0 0</pose>
+      <pose>3 0.0 0 0 0 0</pose>
       <distribution>
         <type>grid</type>
         <rows>4</rows>
-        <cols>30</cols>
-        <step>0.3 3.0 0</step>
+        <cols>20</cols>
+        <step>0.3 1.0 0</step>
       </distribution>
     </population>
     <!-- <population name="vegetablesRED">

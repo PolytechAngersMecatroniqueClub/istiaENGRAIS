@@ -24,6 +24,7 @@
 
 class Utility{
     public:
+        static double distFromPointToLine(const Point & p1, const double a, const double b);
         //------------------------------------------------------------------------------------------------
         static int randomInt(const int min, const int max); //Generates a random integer between "min" and "max", boundaries included
         //------------------------------------------------------------------------------------------------
@@ -63,9 +64,10 @@ class Utility{
 
 
 //--------------------------------------------------------------------------------------------------------
-inline int Utility::randomInt(const int min, const int max){ return (rand() % (max - min + 1)) + min; } //Generates a random integer between "min" and "max", boundaries included
+inline int Utility::randomInt(const int min, const int max) { return (rand() % (max - min + 1)) + min; } //Generates a random integer between "min" and "max", boundaries included
 //--------------------------------------------------------------------------------------------------------
 inline double Utility::distPoints(const Point & p1, const Point & p2) { return sqrt( pow(p1.getX() - p2.getX(), 2) + pow(p1.getY() - p2.getY(), 2) ); } //Calculates the Euclidean distance between 2 points
 
+inline double Utility::distFromPointToLine(const Point & p, const double a, const double b) { return fabs(a * p.getX() - p.getY() + b) / sqrt(pow(a, 2) + 1.0); }
 #endif
 //********************************************************************************************************

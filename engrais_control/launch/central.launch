@@ -8,8 +8,8 @@
 	<arg name="publish_left_wheel" default="leftCommand"/>
 	<arg name="publish_right_wheel" default="rightCommand"/>
 
-	<arg name="global_frame" default="body"/>
-	<arg name="selected_lines_topic" default="selectedLines"/>
+	<arg name="global_frame" default="world"/>
+	<arg name="selected_lines_topic" default="/engrais/robot_move/selected_lines"/>
 
 
 	<node name="$(arg control_node_name)" pkg="engrais_control" type="robot_control" output="screen">

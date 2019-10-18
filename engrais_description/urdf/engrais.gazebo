@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.6"?>
 <robot>
     <!-- note that the xacro parameters are defined in the engrais.xacro file -->
 
@@ -20,19 +20,32 @@
         <turnGravityOff>false</turnGravityOff>
     </gazebo>
 
+    <gazebo>
+        <plugin name="p3d_base_controller" filename="libgazebo_ros_p3d.so">
+            <rpyOffsets>0 0 0</rpyOffsets> 
+            <xyzOffsets>0 0 0</xyzOffsets>  
+            <frameName>world</frameName>  
+            <gaussianNoise>0.01</gaussianNoise>  
+            <topicName>gazebo_robot_pose</topicName>  
+            <bodyName>body</bodyName> 
+            <updateRate>20.0</updateRate> 
+            <alwaysOn>true</alwaysOn>
+        </plugin>
+    </gazebo>
+
     <!-- Caster wheel Back -->
     <!-- mu1 and mu2 must be updated... -->
     <gazebo reference="caster_wheel_back">
-        <mu1>0.72</mu1>
-        <mu2>0.5</mu2>
+        <mu1>0</mu1>
+        <mu2>0</mu2>
         <material>Gazebo/Black</material>
         <turnGravityOff>false</turnGravityOff>
     </gazebo>
     <!-- Caster wheel Front -->
     <!-- mu1 and mu2 must be updated... -->
     <gazebo reference="caster_wheel_front">
-        <mu1>0.72</mu1>
-        <mu2>0.5</mu2>
+        <mu1>0</mu1>
+        <mu2>0</mu2>
         <material>Gazebo/Black</material>
         <turnGravityOff>false</turnGravityOff>
     </gazebo>
@@ -67,7 +80,7 @@
             <!-- plugin needed to publish the data to ROS -->
             <plugin name="laser_front" filename="libgazebo_ros_laser.so">
                 <topicName>/engrais/laser_front/scan</topicName>
-            <frameName>sick_front_link</frameName>
+                <frameName>sick_front_link</frameName>
             </plugin>
         </sensor>
     </gazebo>
@@ -99,6 +112,7 @@
                     <stddev>0.01</stddev>
                 </noise>
             </ray>
+          
             <!-- plugin needed to publish the data to ROS -->
             <plugin name="laser_back" filename="libgazebo_ros_laser.so">
                 <topicName>/engrais/laser_back/scan</topicName>
@@ -106,6 +120,5 @@
             </plugin>
         </sensor>
     </gazebo>
-
-
+    
 </robot>

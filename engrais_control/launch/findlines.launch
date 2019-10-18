@@ -1,6 +1,8 @@
 <?xml version="1.6" ?>
 <launch>
 
+	<arg name="used_algorithm" default="RubyGeneticOnePoint"/>
+
 	<arg name="subscribe_topic_front" default="/engrais/laser_front/scan"/>
 	<arg name="publish_topic_front" default="/engrais/laser_front/lines"/>
 	<arg name="rviz_frame_front" default="sick_front_link"/>
@@ -10,17 +12,20 @@
 	<arg name="publish_topic_back" default="/engrais/laser_back/lines"/>
 	<arg name="rviz_frame_back" default="sick_back_link"/>
 
-
 	<node name="engrais_findlines_front" pkg="engrais_control" type="robot_findlines" output="screen">
 		<param name="subscribe_topic" type="string" value="$(arg subscribe_topic_front)"/>
 		<param name="publish_topic" type="string" value="$(arg publish_topic_front)"/>
 		<param name="rviz_frame" type="string" value="$(arg rviz_frame_front)"/>
+
+		<param name="algorithm" type="string" value="$(arg used_algorithm)"/>
 	</node>
 	
-	<node name="engrais_findlines_back" pkg="engrais_control" type="robot_findlines">
+	<node name="engrais_findlines_back" pkg="engrais_control" type="robot_findlines" output="screen">
 		<param name="subscribe_topic" type="string" value="$(arg subscribe_topic_back)"/>
 		<param name="publish_topic" type="string" value="$(arg publish_topic_back)"/>
 		<param name="rviz_frame" type="string" value="$(arg rviz_frame_back)"/>
+
+		<param name="algorithm" type="string" value="$(arg used_algorithm)"/>
 	</node>
 
 </launch>

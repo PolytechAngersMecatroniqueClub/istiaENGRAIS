@@ -7,17 +7,18 @@
 #include <iostream>
 #include <Point.h>
 #include <Model.h>
+#include <Utility.h>
 #include <vector>
 #include <chrono>
 
 #include <FuzzyController.h>
 
 #ifndef MAX_VEL
-#define MAX_VEL 4.0 //Maximum robot velocity
+#define MAX_VEL 0.7 //Maximum robot velocity
 #endif
 
 #ifndef BODY_SIZE
-#define BODY_SIZE 2.0 //Robot's body size
+#define BODY_SIZE 1.1 //Robot's body size
 #endif
 
 #ifndef DISTANCE_REFERENCE
@@ -27,7 +28,8 @@
 class StateMachine{ //Class to implement a state machine 
     private:
         //------------------------------------------------------------------------------------------------
-        enum States { BACKWARD = -1, INITIAL = 0, FORWARD = 1, LINEAR_STOP, ANGULAR_STOP, LEFT_TURN_BEGIN, LEFT_TURN_MID, LEFT_TURN_MERGE, IMPOSSIBLE }; //All possible states
+        enum States { BACKWARD = -1, INITIAL = 0, FORWARD = 1, LINEAR_STOP = 2, ANGULAR_STOP = 3, LEFT_TURN_BEGIN = 4, LEFT_TURN_MID = 5, 
+                      LEFT_TURN_MERGE = 6, END = 7, IMPOSSIBLE = 8 }; //All possible states
         //------------------------------------------------------------------------------------------------
         enum Turn { LEFT, RIGHT }; //Where to turn
         //------------------------------------------------------------------------------------------------
@@ -48,6 +50,8 @@ class StateMachine{ //Class to implement a state machine
         Transition tAfterStop; //Store the next state to go after stopping
 
         FuzzyController fuzzy; //Fuzzy controller to Backward / Forward motion
+
+        int errorCount = 0;
 
     public:
         //------------------------------------------------------------------------------------------------
@@ -72,6 +76,8 @@ class StateMachine{ //Class to implement a state machine
         Transition leftTurnMidStateRoutine(const std::pair<Model, Model> & models); //Lert Turn Mid State
         //------------------------------------------------------------------------------------------------
         Transition leftTurnMergeStateRoutine(const std::pair<Model, Model> & models); //Lert Turn Merge State
+        //------------------------------------------------------------------------------------------------
+        Transition endStateRoutine(const std::pair<Model, Model> & models); //End State 
         //------------------------------------------------------------------------------------------------
         Transition impossibleStateRoutine(const std::pair<Model, Model> & models); //Impossible State, it shouldn't be here!
 

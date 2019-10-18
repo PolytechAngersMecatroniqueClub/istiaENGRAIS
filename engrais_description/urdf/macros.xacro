@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.6"?>
 <!-- macros used to clean the code -->
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
@@ -50,7 +50,7 @@
 
             <inertial>
                 <mass value="${wheel_mass}" />
-                <origin xyz="0 0 0" rpy="${PI/2} 0 0 " />
+                <origin xyz="0 0 0" rpy="${PI/2} 0 0" />
                 <cylinder_inertia  m="${wheel_mass}" r="${wheel_radius}" h="${wheel_height}" />
             </inertial>
         </link>

@@ -3,8 +3,8 @@
 
 
 //--------------------------------------------------------------------------------------------------------
-void WeightedModel::assignPoints(const Model & m){ //Assign points to weighted model 
-    std::pair<Point, Point> points = m.getFirstAndLastPoint(); //Get closest and farthest point
+void WeightedModel::assignPoints(const Model & m, bool isFrontMsg){ //Assign points to weighted model 
+    std::pair<Point, Point> points = m.getFirstAndLastPoint(!isFrontMsg); //Get closest and farthest point
 
     if(points.first.getX() >= 0){ //If closest point is positive, assign it to closest points
         this->positivePoints.first = points.first;
@@ -33,13 +33,23 @@ bool WeightedModel::checkIfSameModel(const Model & m) const { //Check if the two
     return false; //False otherwise
 }
 //--------------------------------------------------------------------------------------------------------
-void WeightedModel::fuseModels(const Model & m){ //Calculate the final model using center of mass formula 
-    this->a = (this->getSlope() * cont + m.getSlope()) / (double)(cont + 1); //Calculate the final slope
-    this->b = (this->getIntercept() * cont + m.getIntercept()) / (double)(cont + 1); //Calculate the final intercept
+void WeightedModel::fuseModels(const Model & m, bool isFrontMsg){ //Calculate the final model using center of mass formula 
+    this->a = (this->getSlope() * this->getTotalCounter() + m.getSlope()) / (double)(this->getTotalCounter()  + 1); //Calculate the final slope
+    this->b = (this->getIntercept() * this->getTotalCounter() + m.getIntercept()) / (double)(this->getTotalCounter()  + 1); //Calculate the final intercept
 
-    this->assignPoints(m); //Reassign points to the new models 
+    this->assignPoints(m, isFrontMsg); //Reassign points to the new models 
 
-    this->cont++; //Increment counter
+    this->cont[isFrontMsg]++; //Increment counter
+}
+
+void WeightedModel::normalizeModel(const std::vector<int> & maxCounter){
+    int minimum = std::min(maxCounter[0], maxCounter[1]);
+
+    //std::cout << "inside normalize: back: " << maxCounter[0] << ", front: " << maxCounter[1] << ", min: " << minimum << ", cont[0]: " << this->cont[0] << ", cont[1]: " << this->cont[1] << std::endl;
+
+    for(int i = 0; i < this->cont.size(); i++){
+        this->cont[i] = (int)( this->cont[i] * minimum / maxCounter[i]);
+    }
 }
 //--------------------------------------------------------------------------------------------------------
 Model WeightedModel::toModel() const { //Converts to regular model 
@@ -61,7 +71,7 @@ Model WeightedModel::toModel() const { //Converts to regular model
 }
 //--------------------------------------------------------------------------------------------------------
 std::ostream & operator << (std::ostream & out, const WeightedModel & wm){ //Print Object 
-    out << "WeightedModel: [ a: " << wm.a << ", b: " << wm.b << ", cont: " << wm.cont << std::endl;
+    out << "WeightedModel: [ a: " << wm.a << ", b: " << wm.b << ", contFront: " << wm.cont[1] << ", contBack: " << wm.cont[0] << std::endl;
 
     out << wm.positivePoints.first << "    " << wm.positivePoints.second << "]" << std::endl;
     out << wm.negativePoints.first << "    " << wm.negativePoints.second << "]" << std::endl;

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #pyhton code that generates a world with random plants and weeds
 import random as random
 
@@ -7,9 +8,9 @@ myworld = open(outputfile, "w")
 # parameters:
 nb_rows = 4             # nb rows
 nb_plants_rows = 20     # nb plants in a row
-space_between_rows = 3  # space between two rows (from center to center)
-row_width = 0.3         # width of a row
-row_lenght = 10         # length of a row
+space_between_rows = 1  # space between two rows (from center to center)
+row_width = 0.1        # width of a row
+row_lenght = 5         # length of a row
 nb_outliers = 20        # nb of outliers in the all field
 space_min_plants = 0.15 # minimal space between two generated plants
 
@@ -33,7 +34,7 @@ for i in range(0, nb_rows):
     nb_append = 0
     while(nb_append != nb_plants_rows):
         x = random.uniform(0, row_lenght)
-        y = random.uniform(space_between_rows*i-space_between_rows/2-row_width/2, space_between_rows*i-space_between_rows/2+row_width/2)
+        y = random.uniform(space_between_rows*i-space_between_rows/2.0-row_width/2.0, space_between_rows*i-space_between_rows/2.0+row_width/2.0)
         flag = True
         for plant in row_array:
             if pow(x-plant[0],2) + pow(y-plant[1],2) < pow(space_min_plants,2):
@@ -55,7 +56,7 @@ print("Generation of red plants...")
 nb_append = 0
 while(nb_append != nb_outliers):
     x = random.uniform(0, row_lenght)
-    y = random.uniform(-space_between_rows/2+row_width/2+space_min_plants, space_between_rows*nb_rows-space_between_rows/2-row_width/2-space_min_plants)
+    y = random.uniform(-space_between_rows/2.0+row_width/2.0+space_min_plants, space_between_rows*nb_rows-space_between_rows/2.0-row_width/2.0-space_min_plants)
     flag = True
     for plant in plants:
         if pow(x-plant[0],2) + pow(y-plant[1],2) < pow(space_min_plants,2):
