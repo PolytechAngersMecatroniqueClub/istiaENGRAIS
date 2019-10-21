@@ -93,7 +93,7 @@
         <param name="pub_topic_right" type="string" value="$(arg right_wheel_control_signal)"/>
         <param name="pub_topic_left" type="string" value="$(arg left_wheel_control_signal)"/>
         <param name="emergency_topic" type="string" value="$(arg emer_topic_name)"/>
-        <param name="desired_velocity" type="string" value="$(arg velocity)"/>
+        <param name="desired_velocity" type="double" value="$(arg velocity)"/>
     </node>
 
 </launch>
