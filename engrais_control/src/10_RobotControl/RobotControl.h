@@ -25,15 +25,33 @@
 
 class RobotControl{ 
     private:
+
+        class SavedInfos{
+            public:
+
+                double a;
+                double br;
+                double bl;
+                double dist;
+                int cont;
+
+            public:
+                SavedInfos();
+
+                void initializeValues(const std::vector<Model> & models);
+             
+        }; 
+    
         StateMachine robotFSM;
 
         std::vector<int> msgCont;
 
         std::vector<WeightedModel> models;
-        std::pair<Model, Model> firstModels;
 
         std::vector<std::vector<Point>> frontPoints;
         std::vector<std::vector<Point>> backPoints;
+
+        SavedInfos si;
 
     public:
         //------------------------------------------------------------------------------------------------
@@ -49,12 +67,16 @@ class RobotControl{
         //------------------------------------------------------------------------------------------------
         void backLinesMessage(const visualization_msgs::Marker & msg); //Receive message from back lines (found by back LIDAR)   
         //------------------------------------------------------------------------------------------------
-        std::pair<Model, Model> selectModels(const std::vector<int> & msgCounter); //Select left and right models
+        std::vector<Model> selectModels(const std::vector<int> & msgCounter); //Select left and right models
         //------------------------------------------------------------------------------------------------
         std::pair<std_msgs::Float64, std_msgs::Float64> getWheelsCommand(const std::pair<Model, Model> & selectedModels); //Get wheel command from finite state machine
 
     private:
-        bool getInitialModels();
+        std::vector<Model> initializeRobot();
+
+        std::vector<Model> findBestModels();
+
+        void getFirstAndLastPoint(std::vector<Model> & models) const;
 
         Model translateLine(const Model m, const double newOX, const double newOY) const;
         Model rotateLine(const Model m, const double angleRot) const;
@@ -77,8 +99,13 @@ class RobotControl{
 
         //------------------------------------------------------------------------------------------------
         friend std::ostream & operator << (std::ostream & out, const RobotControl & rc); //Print Object
+
+        friend std::ostream & operator << (std::ostream & out, const SavedInfos & si); //Print Object
+
 };
 
+
+inline RobotControl::SavedInfos::SavedInfos() { a = br = bl = dist = cont = 0; }
 //--------------------------------------------------------------------------------------------------------
 inline RobotControl::RobotControl() : frontPoints(2), backPoints(2), msgCont(2,0) {} //Default constructor
 //--------------------------------------------------------------------------------------------------------

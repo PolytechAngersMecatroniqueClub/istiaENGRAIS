@@ -56,8 +56,7 @@ std::pair<double, double> StateMachine::makeTransition(const std::pair<Model, Mo
 
     }
     
-    std::cout << "Next state: " << stateTransition.nextState << std::endl << std::endl << std::endl << std::endl << std::endl << std::endl;
-    std::cout << "Error count: " << errorCount <<", Next State: " << stateTransition.nextState << std::endl << std::endl;
+    //std::cout << "Error count: " << errorCount <<", Next State: " << stateTransition.nextState << std::endl << std::endl;
 
     this->currentState = stateTransition.nextState; //Goes to next state
     return std::pair<double, double> (stateTransition.output.first * MAX_VEL, stateTransition.output.second * MAX_VEL); //Returns wheels command
@@ -71,7 +70,7 @@ StateMachine::Transition StateMachine::initialStateRoutine(const std::pair<Model
         std::pair<Point, Point> rPoints = models.second.getFirstAndLastPoint(); //Left model points
 
         if((0 <= lPoints.second.getX() && lPoints.second.getX() < MAX_DBL) || (0 <= rPoints.second.getX() && rPoints.second.getX() < MAX_DBL)) //If positive-most point is negative, then to backwards
-            return Transition(BACKWARD, std::pair<double, double> (0,0));
+            return Transition(FORWARD, std::pair<double, double> (0,0));
         
         else
             return Transition(BACKWARD, std::pair<double, double> (0,0)); //otherwise, goes forward
@@ -228,7 +227,7 @@ StateMachine::Transition StateMachine::angularStopStateRoutine(const std::pair<M
         else if(a_vel > 0.1)
             return Transition(ANGULAR_STOP, std::pair<double, double> (-0.3, 0.3));
         
-        else if(-0.1 <= a_vel && a_vel <= -0.001 || 0.001 <= a_vel && a_vel <= 0.1)
+        else if(-0.1 <= a_vel && a_vel <= -0.01 || 0.01 <= a_vel && a_vel <= 0.1)
             return Transition(ANGULAR_STOP, std::pair<double, double> (0,0));
 
         else{
@@ -261,7 +260,7 @@ StateMachine::Transition StateMachine::leftTurnBeginStateRoutine(const std::pair
         }
 
         else{ //Otherwise, stop and go forward
-            this->tAfterStop = Transition(LEFT_TURN_MID, std::pair<double, double> (0.3, 0.3));
+            this->tAfterStop = Transition(LEFT_TURN_MID, std::pair<double, double> (this->lastMovement * 0.3, this->lastMovement * 0.3));
 
             return Transition(ANGULAR_STOP, std::pair<double, double> (0,0));
         }
@@ -283,6 +282,7 @@ StateMachine::Transition StateMachine::leftTurnMidStateRoutine(const std::pair<M
     const int Sense = lastMovement == FORWARD ? 1 : -1; //Check which direction the robot has to go
     const bool condition = Sense == 1 ? models.second.isPopulated() : models.first.isPopulated(); //Checks if the used model is populated
     const double intercept = Sense == 1 ? models.second.getIntercept() : models.first.getIntercept(); //Gets used model's Intercept
+    const double distToX = Sense == 1 ? (models.second.getFirstAndLastPoint()).second.getX() : (models.first.getFirstAndLastPoint()).first.getX(); //Gets used model's Intercept
 
     static bool firstAssing = true; //Flag iteration
     static double savedIntercept;
@@ -297,7 +297,7 @@ StateMachine::Transition StateMachine::leftTurnMidStateRoutine(const std::pair<M
     else if(condition && !firstAssing){ //If the model exists
         this->errorCount = 0;
         //std::cout << "intercept: " << intercept << ", savedIntercept: " << savedIntercept << std::endl << std::endl;
-        if(BODY_SIZE*1.3/2.0 <= fabs(intercept) && fabs(intercept) <= fabs(savedIntercept * 0.8)){ //If intercept jumped from a high value to something greater than 0.5, this means that the robot changed lane
+        if(BODY_SIZE*1.3/2.0 <= fabs(intercept) && fabs(intercept) <= fabs(savedIntercept * 0.8) && fabs(distToX) > 1.0){ //If intercept jumped from a high value to something greater than 0.5, this means that the robot changed lane
             firstAssing = true; //Reset flag
 
             this->tAfterStop = Transition(LEFT_TURN_MERGE, std::pair<double, double> (0.5, -0.5)); //Begin to turn to merge

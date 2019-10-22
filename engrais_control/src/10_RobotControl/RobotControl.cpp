@@ -3,7 +3,18 @@
 
 using namespace std;
 
+void RobotControl::SavedInfos::initializeValues(const vector<Model> & models){
+    double model_a = (models[0].getSlope() + models[1].getSlope()) / 2.0;
+    double model_dist = fabs(models[0].getIntercept() - models[1].getIntercept()) / sqrt(pow(model_a, 2) + 1);
 
+    this->a = (this->a * cont + model_a) / (double)(cont + 1);
+    this->bl = (this->bl * cont + models[0].getIntercept()) / (double)(cont + 1);
+    this->br = (this->br * cont + models[1].getIntercept()) / (double)(cont + 1);
+    
+    this->dist = (this->dist * cont + model_dist) / (double)(cont + 1);
+
+    cont++;
+}
 //--------------------------------------------------------------------------------------------------------
 void RobotControl::frontPointsMessage(const visualization_msgs::Marker & msg){ //Receive message from front lines (found by front LIDAR) 
     this->frontPoints[0].clear();
@@ -59,16 +70,42 @@ void RobotControl::backLinesMessage(const visualization_msgs::Marker & msg){ //R
 
 
 //--------------------------------------------------------------------------------------------------------
-std::pair<Model, Model> RobotControl::selectModels(const std::vector<int> & msgCounter) { //Select left and right models 
+vector<Model> RobotControl::selectModels(const std::vector<int> & msgCounter) { //Select left and right models 
+    static vector<Model> selected; //Declare return
 
-    std::pair<Model, Model> ret; //Declare return
-
-    int minCounter = std::min(msgCounter[0], msgCounter[1]);
+    /*int minCounter = std::min(msgCounter[0], msgCounter[1]);
 
     for(int i = 0; i < this->models.size(); i++){ //For each model
-        //std::cout << "ContFront: " << msgCounter[1] << ", contBack: " << msgCounter[0] << std::endl << std::endl;
 
-        this->models[i].normalizeModel(msgCounter);
+        for(int j = 0; j < this->models.size(); j++){
+            if(i == 0)
+                this->models[j].normalizeModel(msgCounter);
+
+            double slopeRatio = this->models[i].getSlope() / this->models[j].getSlope();
+            double slopeDifference = fabs(this->models[i].getSlope() - this->models[j].getSlope()); //Calculate slope difference
+
+            bool isParallel = ((1 - Pearl::sameSlopeThreshold <= slopeRatio && slopeRatio <= 1 + Pearl::sameSlopeThreshold) || slopeDifference <= Pearl::sameSlopeThreshold); //Checks if slope is approximately the same
+
+            //cout << "i: " << i << ", j: " << j << ", slopeRatio: " << slopeRatio << ", slopeDifference: " << slopeDifference << ", isParallel: " << isParallel;
+            if(isParallel){
+                std::vector<int> maxSensors(2,0);
+
+                maxSensors[0] = max(this->models[i].getBackCounter(), this->models[j].getBackCounter());
+                maxSensors[1] = max(this->models[i].getFrontCounter(), this->models[j].getFrontCounter());
+
+                //cout << " maxSensors[0]: " << maxSensors[0] << ", maxSensors[1]: " << maxSensors[1] << endl << "Model 1: " << this->models[i] << endl << endl << "Model 2: " << this->models[j] << endl << endl;
+
+                this->models[i] = WeightedModel(this->models[i].getSlope(), this->models[i].getIntercept(), maxSensors);
+
+                //cout << "Model after change  " <<  this->models[i] << endl;
+            }
+
+            //cout << endl << endl << endl;
+
+
+        }
+
+        //std::cout << "ContFront: " << msgCounter[1] << ", contBack: " << msgCounter[0] << std::endl << std::endl;
 
         //cout << this->models[i] << endl << endl << endl << endl;
 
@@ -84,8 +121,33 @@ std::pair<Model, Model> RobotControl::selectModels(const std::vector<int> & msgC
         else if(models[i].getIntercept() < 0 && fabs(this->models[i].getIntercept()) < fabs(ret.second.getIntercept())){ //If intercept is negative and has a better counter
             ret.second = this->models[i].toModel(); //Convert to regular model
         }
+            
     } 
 
+    getFirstAndLastPoint(ret);*/
+
+    cout << si << endl;
+
+    if(si.cont < 2){
+        selected = initializeRobot();
+
+        if(selected[0].isPopulated() && selected[1].isPopulated()){
+            si.initializeValues(selected);
+        }
+
+        return vector<Model>();
+    }
+
+    else{
+        selected = findBestModels();
+
+        getFirstAndLastPoint(selected);
+
+        return selected;
+    }
+}
+
+void RobotControl::getFirstAndLastPoint(std::vector<Model> & m) const { 
     std::vector<Point> field;
 
     field.insert(field.end(), this->frontPoints[0].begin(), this->frontPoints[0].end());
@@ -94,41 +156,23 @@ std::pair<Model, Model> RobotControl::selectModels(const std::vector<int> & msgC
     field.insert(field.end(), this->backPoints[0].begin(), this->backPoints[0].end());
     field.insert(field.end(), this->backPoints[1].begin(), this->backPoints[1].end());
 
-    ret.first.clearPoints();
-    ret.second.clearPoints();
+    for(int i = 0; i < m.size(); i++)
+        m[i].clearPoints();
 
     for(int i = 0; i < field.size(); i++){
-        double distLeft = Utility::distFromPointToLine(field[i], ret.first.getSlope(), ret.first.getIntercept());
-        double distRight = Utility::distFromPointToLine(field[i], ret.second.getSlope(), ret.second.getIntercept());
+        for(int j = 0; j < m.size(); j++){
+            double dist = Utility::distFromPointToLine(field[i], m[j].getSlope(), m[j].getIntercept());
 
-        if(distLeft < Pearl::distanceForOutlier && ret.first.isPopulated())
-            ret.first.pushPoint(field[i]);
-
-        else if(distRight < Pearl::distanceForOutlier && ret.second.isPopulated())
-            ret.second.pushPoint(field[i]);
-    }
-
-    return ret;
-}
-//--------------------------------------------------------------------------------------------------------
-bool RobotControl::getInitialModels(){
-    bool found = false;
-
-    /*for(int i = 0; i < this->models.size(); i++){ //For each model
-        if(fabs(this->models[i].getSlope()) < 0.01){
-            if(this->models[i].getIntercept() >= 0 && fabs(this->models[i].getIntercept()) < fabs(firstModels.first.getIntercept())){
-                firstModels.first = this->models[i].toModel();
-
-                found = true;
-            }
-
-            else if(this->models[i].getIntercept() < 0 && fabs(this->models[i].getIntercept()) < fabs(firstModels.second.getIntercept())){
-                firstModels.second = this->models[i].toModel();
-
-                found = true;
+            if(dist < Pearl::distanceForOutlier){
+                m[j].pushPoint(field[i]);
             }
         }
-    }*/
+    }
+}
+
+//--------------------------------------------------------------------------------------------------------
+vector<Model> RobotControl::initializeRobot(){
+    vector<Model> ret(2); //Declare return
 
     for(int i = 0; i < this->models.size(); i++){
         for(int j = i + 1; j < this->models.size(); j++){
@@ -143,25 +187,43 @@ bool RobotControl::getInitialModels(){
             bool isEquidistant = ((-1 - Pearl::sameInterceptThreshold <= interceptRatio && interceptRatio <= -1 + Pearl::sameInterceptThreshold) || interceptSum <= Pearl::sameInterceptThreshold); //Checks if interpect is approximately the same
 
 
-            if(fabs(this->models[i].getSlope()) < 0.1 && isParallel && isEquidistant){
+            if(fabs(this->models[i].getSlope()) < 0.05 && isParallel && isEquidistant){
 
-                if(this->models[i].getIntercept() >= 0 && fabs(this->models[i].getIntercept()) < fabs(firstModels.first.getIntercept())){
-                    firstModels.first = this->models[i].toModel();
-                    firstModels.second = this->models[j].toModel();
-
-                    found = true;
+                if(this->models[i].getIntercept() >= 0 && fabs(this->models[i].getIntercept()) < fabs(ret[0].getIntercept())){
+                    ret[0] = this->models[i].toModel();
+                    ret[1] = this->models[j].toModel();
                 }
-                else if(this->models[i].getIntercept() < 0 && fabs(this->models[i].getIntercept()) < fabs(firstModels.second.getIntercept())){
-                    firstModels.first = this->models[j].toModel();
-                    firstModels.second = this->models[i].toModel();
-
-                    found = true;
+                else if(this->models[i].getIntercept() < 0 && fabs(this->models[i].getIntercept()) < fabs(ret[1].getIntercept())){
+                    ret[0] = this->models[j].toModel();
+                    ret[1] = this->models[i].toModel();
                 }
             }
         }
     }
 
-    return found;
+    return ret;
+}
+
+vector<Model> RobotControl::findBestModels(){
+    vector<Model> ret;
+    double new_slope = 0;
+    int cont = 0;
+
+    for(double delta = 0.1; ret.size() == 0; delta += 0.1){
+        ret.clear();
+
+        for(int i = 0; i < this->models.size(); i++){
+            if(fabs(this->models[i].getSlope() - si.a) <= delta){
+                ret.push_back(this->models[i].toModel());
+
+                new_slope = (new_slope * cont + this->models[i].getSlope()) / ++cont;
+            }
+        }
+    }
+
+    si.a = new_slope;
+
+    return ret;
 }
 //--------------------------------------------------------------------------------------------------------
 std::vector<Model> RobotControl::getHorizontalModels(){ 
@@ -343,6 +405,12 @@ std::ostream & operator << (std::ostream & out, const RobotControl & rc){ //Prin
 
     out << "\nBack Negative: \n";
     Utility::printVector(rc.backPoints[1]);*/
+
+    return out;
+}
+//--------------------------------------------------------------------------------------------------------
+std::ostream & operator << (std::ostream & out, const RobotControl::SavedInfos & si){ //Print object 
+    out << "Saved Infos: [ a: " << si.a << ", bl: " << si.bl << ", br: " << si.br << ", dist: " << si.dist << ", cont: " << si.cont << " ]\n";
 
     return out;
 }

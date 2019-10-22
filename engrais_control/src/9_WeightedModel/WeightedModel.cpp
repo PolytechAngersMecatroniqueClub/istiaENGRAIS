@@ -71,7 +71,7 @@ Model WeightedModel::toModel() const { //Converts to regular model
 }
 //--------------------------------------------------------------------------------------------------------
 std::ostream & operator << (std::ostream & out, const WeightedModel & wm){ //Print Object 
-    out << "WeightedModel: [ a: " << wm.a << ", b: " << wm.b << ", contFront: " << wm.cont[1] << ", contBack: " << wm.cont[0] << std::endl;
+    out << "WeightedModel: [ a: " << wm.a << ", b: " << wm.b << ", contBack: " << wm.cont[0] << ", contFront: " << wm.cont[1] << std::endl;
 
     out << wm.positivePoints.first << "    " << wm.positivePoints.second << "]" << std::endl;
     out << wm.negativePoints.first << "    " << wm.negativePoints.second << "]" << std::endl;

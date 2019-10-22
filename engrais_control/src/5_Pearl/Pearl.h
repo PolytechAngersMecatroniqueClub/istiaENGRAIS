@@ -23,7 +23,7 @@ class Pearl{
         
     public:
         static const int maxNumberOfIterations = 10; //Maximum number of iterations
-        static const int divideFactor = 2*INITIAL_NUMBER_OF_POINTS; //To calculate the minumum amount of points in the field
+        static const int divideFactor = 2 * INITIAL_NUMBER_OF_POINTS; //To calculate the minumum amount of points in the field
 
         static constexpr double outlierPenalty = 3; //Additional energy for each outlier point
         static constexpr double distanceForOutlier = 0.2; //Everything farther than 50cm of every model will be considered outlier

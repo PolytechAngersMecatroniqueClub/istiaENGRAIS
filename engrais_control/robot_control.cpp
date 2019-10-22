@@ -1,6 +1,6 @@
 //********************************************************************************************************
 #define BODY_SIZE 1.1
-#define SLEEP_TIME 500
+#define SLEEP_TIME 250
 #define PI 3.1415926535
 #define TO_MILLISECOND 1000
 #define DISTANCE_REFERENCE 1.5
@@ -41,7 +41,7 @@ RobotControl control; //Declare control
 std::vector<int> contMsgs(2,0);
 
 //--------------------------------------------------------------------------------------------------------
-void sendLine(const pair<Model, Model> & models){ //Send model's first and last point using the visualization marker 
+void sendLine(const vector<Model> & models){ //Send model's first and last point using the visualization marker 
     visualization_msgs::Marker line_list;
     geometry_msgs::Point p;
 
@@ -59,32 +59,20 @@ void sendLine(const pair<Model, Model> & models){ //Send model's first and last 
     line_list.color.g = 1.0; //Line list color
     line_list.color.a = 0.4;
 
-    if(models.first.isPopulated()){ //If left model is populated
-        pair<Point, Point> points = models.first.getFirstAndLastPoint(); //Get first and last point
+    for(int i = 0; i < models.size(); i++){ //For every model found
+        if(models[i].isPopulated() && models[i].getPointsSize() >= 2){ //If model is populated
+            pair<Point, Point> points = models[i].getFirstAndLastPoint(); //Finds negative and positive-most points (x-axis)
 
-        p.x = points.first.getX(); //Get first point X coordinate
-        p.y = models.first.getSlope()*p.x + models.first.getIntercept(); //Calculate Y using model
+            p.x = points.first.getX(); //Get first point X coordinate
+            p.y = models[i].getSlope()*p.x + models[i].getIntercept(); //Calculate Y using the model's information
 
-        line_list.points.push_back(p); //Push point
+            line_list.points.push_back(p); //Push point
 
-        p.x = points.second.getX(); //Get last point X coordinate
-        p.y = models.first.getSlope()*p.x + models.first.getIntercept(); //Calculate Y using model
+            p.x = points.second.getX(); //Last point X coordinate
+            p.y = models[i].getSlope()*p.x + models[i].getIntercept(); //Calculate using model's information
 
-        line_list.points.push_back(p); //Push point
-    }
-
-    if(models.second.isPopulated()){ //If right model is populated
-        pair<Point, Point> points = models.second.getFirstAndLastPoint(); //Get first and last point
-
-        p.x = points.first.getX(); //Get first point X coordinate
-        p.y = models.second.getSlope()*p.x + models.second.getIntercept(); //Calculate Y using model
-
-        line_list.points.push_back(p); //Push point
-
-        p.x = points.second.getX(); //Get last point X coordinate
-        p.y = models.second.getSlope()*p.x + models.second.getIntercept(); //Calculate Y using model
-
-        line_list.points.push_back(p); //Push point
+            line_list.points.push_back(p);
+        }
     }
     
     pubSelectedLines.publish(line_list); //Push lines list
@@ -116,28 +104,30 @@ void controlThread(){ //Control Thread
 
         critSec.lock();  //Lock critical section
 
-        std::cout << "ContFront: " << contMsgs[1] << ", contBack: " << contMsgs[0] << std::endl << std::endl;
+        //std::cout << "ContFront: " << contMsgs[1] << ", contBack: " << contMsgs[0] << std::endl << std::endl;
 
         std::cout << "Before change: " << control << std::endl << std::endl << std::endl << std::endl;
 
 
-        pair<Model, Model> selectedModels = control.selectModels(contMsgs); //Select models
+        vector<Model> selectedModels = control.selectModels(contMsgs); //Select models
 
-        std::cout << "After change: " << control << std::endl << std::endl << std::endl << std::endl;
+        //std::cout << "After change: " << control << std::endl << std::endl << std::endl << std::endl;
 
-        std::cout << "Selected First: " << selectedModels.first << std::endl << std::endl << ", Second: " << selectedModels.second << std::endl << std::endl;
+        std::cout << "Selected Models:: " << endl << endl;
+
+        Utility::printVector(selectedModels);
 
 
         sendLine(selectedModels); //Send selected lines
 
-        pair<std_msgs::Float64, std_msgs::Float64> wheels = control.getWheelsCommand(selectedModels); //Calculates wheels' commands
+        //pair<std_msgs::Float64, std_msgs::Float64> wheels = control.getWheelsCommand(selectedModels); //Calculates wheels' commands
 
-        cout << "\n---------------------------------------------------------------\n\n";
+        //cout << "\n---------------------------------------------------------------\n\n";
         
         critSec.unlock(); //Unlock*/
 
-        pubLeftControl.publish(wheels.first); //Send left wheel command
-        pubRightControl.publish(wheels.second); //Send right wheel command
+        //pubLeftControl.publish(wheels.first); //Send left wheel command
+        //pubRightControl.publish(wheels.second); //Send right wheel command
 
     }
 }
