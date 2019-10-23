@@ -30,8 +30,6 @@ class RobotControl{
             public:
 
                 double a;
-                double br;
-                double bl;
                 double dist;
                 int cont;
 
@@ -39,7 +37,7 @@ class RobotControl{
                 SavedInfos();
 
                 void initializeValues(const std::vector<Model> & models);
-             
+                 
         }; 
     
         StateMachine robotFSM;
@@ -74,7 +72,7 @@ class RobotControl{
     private:
         std::vector<Model> initializeRobot();
 
-        std::vector<Model> findBestModels();
+        std::vector<Model> findBestModels(const std::vector<Model> &);
 
         void getFirstAndLastPoint(std::vector<Model> & models) const;
 
@@ -105,7 +103,7 @@ class RobotControl{
 };
 
 
-inline RobotControl::SavedInfos::SavedInfos() { a = br = bl = dist = cont = 0; }
+inline RobotControl::SavedInfos::SavedInfos() { a = dist = cont = 0; }
 //--------------------------------------------------------------------------------------------------------
 inline RobotControl::RobotControl() : frontPoints(2), backPoints(2), msgCont(2,0) {} //Default constructor
 //--------------------------------------------------------------------------------------------------------

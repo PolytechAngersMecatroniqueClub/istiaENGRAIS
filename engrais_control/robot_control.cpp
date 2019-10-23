@@ -1,6 +1,6 @@
 //********************************************************************************************************
 #define BODY_SIZE 1.1
-#define SLEEP_TIME 250
+#define SLEEP_TIME 500
 #define PI 3.1415926535
 #define TO_MILLISECOND 1000
 #define DISTANCE_REFERENCE 1.5
@@ -120,14 +120,20 @@ void controlThread(){ //Control Thread
 
         sendLine(selectedModels); //Send selected lines
 
-        //pair<std_msgs::Float64, std_msgs::Float64> wheels = control.getWheelsCommand(selectedModels); //Calculates wheels' commands
+        if(selectedModels.size() > 2 && selectedModels[1].isPopulated() && selectedModels[2].isPopulated()){
 
-        //cout << "\n---------------------------------------------------------------\n\n";
+            pair<Model, Model> test(selectedModels[1], selectedModels[2]);
+
+            pair<std_msgs::Float64, std_msgs::Float64> wheels = control.getWheelsCommand(test); //Calculates wheels' commands
+
+            pubLeftControl.publish(wheels.first); //Send left wheel command
+            pubRightControl.publish(wheels.second); //Send right wheel command
+
+        }
+
+        cout << "\n---------------------------------------------------------------\n\n";
         
         critSec.unlock(); //Unlock*/
-
-        //pubLeftControl.publish(wheels.first); //Send left wheel command
-        //pubRightControl.publish(wheels.second); //Send right wheel command
 
     }
 }
