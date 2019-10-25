@@ -42,6 +42,7 @@ class RobotControl{
     
         StateMachine robotFSM;
 
+        std::vector<Model> selected;
         std::vector<int> msgCont;
 
         std::vector<WeightedModel> models;
@@ -105,7 +106,7 @@ class RobotControl{
 
 inline RobotControl::SavedInfos::SavedInfos() { a = dist = cont = 0; }
 //--------------------------------------------------------------------------------------------------------
-inline RobotControl::RobotControl() : frontPoints(2), backPoints(2), msgCont(2,0) {} //Default constructor
+inline RobotControl::RobotControl() : frontPoints(2), backPoints(2), msgCont(2,0), selected(4) {} //Default constructor
 //--------------------------------------------------------------------------------------------------------
 inline void RobotControl::clearModels(){ models.clear(); } //Clear all weighted models
 

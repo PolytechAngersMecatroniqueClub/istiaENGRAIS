@@ -69,8 +69,6 @@ void RobotControl::backLinesMessage(const visualization_msgs::Marker & msg){ //R
 
 //--------------------------------------------------------------------------------------------------------
 vector<Model> RobotControl::selectModels(const std::vector<int> & msgCounter) { //Select left and right models 
-    static vector<Model> selected(4); //Declare return
-
     cout << si << endl;
 
     if(si.cont < 10){
@@ -163,8 +161,6 @@ vector<Model> RobotControl::findBestModels(const std::vector<Model> & selected){
     double minErr = MAX_DBL;
     int minErrPos = MAX_INT;
 
-    Utility::printVector(this->models);
-
     for(double delta = 0.05; findCont == 0 && delta < 0.3; delta += 0.05){
         findCont = newSlope = 0;
 
@@ -192,15 +188,21 @@ vector<Model> RobotControl::findBestModels(const std::vector<Model> & selected){
         }
     }
 
+    cout << "Ret 1 ";
+    Utility::printVector(ret);
+
     if(findCont > 0){
         si.a = newSlope / (double)findCont;
-
+        cout << endl << "minErrPos: " << minErrPos << endl;
         for(int i = 0; i < ret.size(); i++){
             if(!ret[i].isPopulated()){
-                ret[i] = Model(si.a, selected[minErrPos].getIntercept() + (minErrPos - i) * (si.dist / atan(si.a)));
+                ret[i] = Model(si.a, selected[minErrPos].getIntercept() + (minErrPos - i) * (si.dist * sqrt(pow(si.a, 2) + 1)));
             }
         }
     }
+
+    cout << "Ret 2 ";
+    Utility::printVector(ret);
 
     return ret;
 }
@@ -220,12 +222,21 @@ std::vector<Model> RobotControl::getHorizontalModels(){
 
 //--------------------------------------------------------------------------------------------------------
 std::pair<std_msgs::Float64, std_msgs::Float64> RobotControl::getWheelsCommand(std::vector<Model> & selectedModels){ //Get wheel command from finite state machine 
-    std::pair<double, double> controls = robotFSM.makeTransition(selectedModels, si.dist); //Calculate FSM's transition based on selected models
+    std::tuple<double, double, std::vector<Model>> controls = robotFSM.makeTransition(selectedModels, si.dist); //Calculate FSM's transition based on selected models
 
     std::pair<std_msgs::Float64, std_msgs::Float64> ret;
 
-    ret.first.data = controls.first; //Cenvert to ROS message
-    ret.second.data = controls.second;
+    ret.first.data = std::get<0>(controls); //Cenvert to ROS message
+    ret.second.data = std::get<1>(controls);
+
+    /*cout << "Selected Class ";
+    Utility::printVector(selected);
+    cout << "Selected Argument ";
+    Utility::printVector(selectedModels);*/
+
+    if(selectedModels.size() != 0)
+        selected = selectedModels;
+
 
     return ret;
 }

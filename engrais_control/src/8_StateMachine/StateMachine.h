@@ -59,7 +59,7 @@ class StateMachine{ //Class to implement a state machine
         //------------------------------------------------------------------------------------------------
         StateMachine(); //Default Constructor
         //------------------------------------------------------------------------------------------------
-        std::pair<double, double> makeTransition(std::vector<Model> & allModels, double dist); //Compute a transition from the State machine, imagine this as a way to make this machine without a clock, and the user calls this function as a way to customize the clock frequency 
+        std::tuple<double, double, std::vector<Model>> makeTransition(std::vector<Model> & allModels, double dist); //Compute a transition from the State machine, imagine this as a way to make this machine without a clock, and the user calls this function as a way to customize the clock frequency 
 
     private:
         //------------------------------------------------------------------------------------------------

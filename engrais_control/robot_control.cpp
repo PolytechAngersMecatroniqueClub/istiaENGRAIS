@@ -113,7 +113,7 @@ void controlThread(){ //Control Thread
 
         //std::cout << "After change: " << control << std::endl << std::endl << std::endl << std::endl;
 
-        //std::cout << "Selected Models:: " << endl << endl;
+        std::cout << "Selected Models:: " << endl << endl;
 
         Utility::printVector(selectedModels);
 
@@ -125,7 +125,7 @@ void controlThread(){ //Control Thread
 
         cout << "\n---------------------------------------------------------------\n\n";
         
-        critSec.unlock(); //Unlock*/
+        critSec.unlock(); //Unlock
 
         pubLeftControl.publish(wheels.first); //Send left wheel command
         pubRightControl.publish(wheels.second); //Send right wheel command
