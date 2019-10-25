@@ -53,33 +53,35 @@ class StateMachine{ //Class to implement a state machine
 
         int errorCount = 0;
 
+        int numOfLines = 4;
+
     public:
         //------------------------------------------------------------------------------------------------
         StateMachine(); //Default Constructor
         //------------------------------------------------------------------------------------------------
-        std::pair<double, double> makeTransition(const std::pair<Model, Model> & models); //Compute a transition from the State machine, imagine this as a way to make this machine without a clock, and the user calls this function as a way to customize the clock frequency 
+        std::pair<double, double> makeTransition(std::vector<Model> & allModels, double dist); //Compute a transition from the State machine, imagine this as a way to make this machine without a clock, and the user calls this function as a way to customize the clock frequency 
 
     private:
         //------------------------------------------------------------------------------------------------
-        Transition initialStateRoutine(const std::pair<Model, Model> & models); //Initial State
+        Transition initialStateRoutine(std::vector<Model> & models); //Initial State
         //------------------------------------------------------------------------------------------------
-        Transition forwardStateRoutine(const std::pair<Model, Model> & models); //Forward State
+        Transition forwardStateRoutine(std::vector<Model> & models); //Forward State
         //------------------------------------------------------------------------------------------------
-        Transition backwardStateRoutine(const std::pair<Model, Model> & models); //Backward State
+        Transition backwardStateRoutine(std::vector<Model> & models); //Backward State
         //------------------------------------------------------------------------------------------------
-        Transition linearStopStateRoutine(const std::pair<Model, Model> & models); //Linear Stop State
+        Transition linearStopStateRoutine(std::vector<Model> & models); //Linear Stop State
         //------------------------------------------------------------------------------------------------
-        Transition angularStopStateRoutine(const std::pair<Model, Model> & models); //Angular Stop State
+        Transition angularStopStateRoutine(std::vector<Model> & models); //Angular Stop State
         //------------------------------------------------------------------------------------------------
-        Transition leftTurnBeginStateRoutine(const std::pair<Model, Model> & models); //Lert Turn Begin State
+        Transition leftTurnBeginStateRoutine(std::vector<Model> & models); //Lert Turn Begin State
         //------------------------------------------------------------------------------------------------
-        Transition leftTurnMidStateRoutine(const std::pair<Model, Model> & models); //Lert Turn Mid State
+        Transition leftTurnMidStateRoutine(std::vector<Model> & models, double dist); //Lert Turn Mid State
         //------------------------------------------------------------------------------------------------
-        Transition leftTurnMergeStateRoutine(const std::pair<Model, Model> & models); //Lert Turn Merge State
+        Transition leftTurnMergeStateRoutine(std::vector<Model> & models); //Lert Turn Merge State
         //------------------------------------------------------------------------------------------------
-        Transition endStateRoutine(const std::pair<Model, Model> & models); //End State 
+        Transition endStateRoutine(std::vector<Model> & models); //End State 
         //------------------------------------------------------------------------------------------------
-        Transition impossibleStateRoutine(const std::pair<Model, Model> & models); //Impossible State, it shouldn't be here!
+        Transition impossibleStateRoutine(std::vector<Model> & models); //Impossible State, it shouldn't be here!
 
         //################################################################################################
 

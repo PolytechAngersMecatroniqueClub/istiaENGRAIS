@@ -67,7 +67,7 @@ class RobotControl{
         //------------------------------------------------------------------------------------------------
         std::vector<Model> selectModels(const std::vector<int> & msgCounter); //Select left and right models
         //------------------------------------------------------------------------------------------------
-        std::pair<std_msgs::Float64, std_msgs::Float64> getWheelsCommand(const std::pair<Model, Model> & selectedModels); //Get wheel command from finite state machine
+        std::pair<std_msgs::Float64, std_msgs::Float64> getWheelsCommand(std::vector<Model> & selectedModels); //Get wheel command from finite state machine
 
     private:
         std::vector<Model> initializeRobot();

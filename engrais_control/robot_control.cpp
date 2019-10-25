@@ -1,6 +1,6 @@
 //********************************************************************************************************
 #define BODY_SIZE 1.1
-#define SLEEP_TIME 500
+#define SLEEP_TIME 250
 #define PI 3.1415926535
 #define TO_MILLISECOND 1000
 #define DISTANCE_REFERENCE 1.5
@@ -106,34 +106,29 @@ void controlThread(){ //Control Thread
 
         //std::cout << "ContFront: " << contMsgs[1] << ", contBack: " << contMsgs[0] << std::endl << std::endl;
 
-        std::cout << "Before change: " << control << std::endl << std::endl << std::endl << std::endl;
+        //std::cout << "Before change: " << control << std::endl << std::endl << std::endl << std::endl;
 
 
         vector<Model> selectedModels = control.selectModels(contMsgs); //Select models
 
         //std::cout << "After change: " << control << std::endl << std::endl << std::endl << std::endl;
 
-        std::cout << "Selected Models:: " << endl << endl;
+        //std::cout << "Selected Models:: " << endl << endl;
 
         Utility::printVector(selectedModels);
 
 
         sendLine(selectedModels); //Send selected lines
 
-        if(selectedModels.size() > 2 && selectedModels[1].isPopulated() && selectedModels[2].isPopulated()){
 
-            pair<Model, Model> test(selectedModels[1], selectedModels[2]);
-
-            pair<std_msgs::Float64, std_msgs::Float64> wheels = control.getWheelsCommand(test); //Calculates wheels' commands
-
-            pubLeftControl.publish(wheels.first); //Send left wheel command
-            pubRightControl.publish(wheels.second); //Send right wheel command
-
-        }
+        pair<std_msgs::Float64, std_msgs::Float64> wheels = control.getWheelsCommand(selectedModels); //Calculates wheels' commands
 
         cout << "\n---------------------------------------------------------------\n\n";
         
         critSec.unlock(); //Unlock*/
+
+        pubLeftControl.publish(wheels.first); //Send left wheel command
+        pubRightControl.publish(wheels.second); //Send right wheel command
 
     }
 }

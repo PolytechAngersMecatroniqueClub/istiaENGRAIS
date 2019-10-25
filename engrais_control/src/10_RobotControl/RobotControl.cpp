@@ -82,8 +82,6 @@ vector<Model> RobotControl::selectModels(const std::vector<int> & msgCounter) { 
             if(si.cont == 10){
                 selected[0] = Model(si.a, selected[1].getIntercept() + si.dist);
                 selected[3] = Model(si.a, selected[2].getIntercept() - si.dist);
-                
-                
             }
         }
 
@@ -166,16 +164,11 @@ vector<Model> RobotControl::findBestModels(const std::vector<Model> & selected){
     int minErrPos = MAX_INT;
 
     Utility::printVector(this->models);
-    Utility::printVector(selected);
-
 
     for(double delta = 0.05; findCont == 0 && delta < 0.3; delta += 0.05){
         findCont = newSlope = 0;
 
         for(int i = 0; i < selected.size(); i++){
-
-            /*if(!selected[i].isPopulated())
-                continue;*/
 
             for(WeightedModel m : this->models){
                 double deltaSlope = fabs(m.getSlope() - si.a);
@@ -183,7 +176,7 @@ vector<Model> RobotControl::findBestModels(const std::vector<Model> & selected){
 
                 double totalDelta = deltaSlope + deltaIntercept;
 
-                if(deltaSlope <= delta && deltaIntercept <= 10 * delta){
+                if(deltaSlope <= delta && deltaIntercept <= 2 * delta){
                     ret[i] = m.toModel();
 
                     newSlope += m.getSlope();
@@ -204,7 +197,7 @@ vector<Model> RobotControl::findBestModels(const std::vector<Model> & selected){
 
         for(int i = 0; i < ret.size(); i++){
             if(!ret[i].isPopulated()){
-                ret[i] = Model(si.a, selected[minErrPos].getIntercept() + (minErrPos - i) * si.dist);
+                ret[i] = Model(si.a, selected[minErrPos].getIntercept() + (minErrPos - i) * (si.dist / atan(si.a)));
             }
         }
     }
@@ -226,8 +219,8 @@ std::vector<Model> RobotControl::getHorizontalModels(){
 
 
 //--------------------------------------------------------------------------------------------------------
-std::pair<std_msgs::Float64, std_msgs::Float64> RobotControl::getWheelsCommand(const std::pair<Model, Model> & selectedModels){ //Get wheel command from finite state machine 
-    std::pair<double, double> controls = robotFSM.makeTransition(selectedModels); //Calculate FSM's transition based on selected models
+std::pair<std_msgs::Float64, std_msgs::Float64> RobotControl::getWheelsCommand(std::vector<Model> & selectedModels){ //Get wheel command from finite state machine 
+    std::pair<double, double> controls = robotFSM.makeTransition(selectedModels, si.dist); //Calculate FSM's transition based on selected models
 
     std::pair<std_msgs::Float64, std_msgs::Float64> ret;
 

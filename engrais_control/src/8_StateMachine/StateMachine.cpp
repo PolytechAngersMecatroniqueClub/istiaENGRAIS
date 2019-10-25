@@ -1,7 +1,7 @@
 //********************************************************************************************************
 #include "StateMachine.h"
 
-
+using namespace std;
 //--------------------------------------------------------------------------------------------------------
 StateMachine::Transition::Transition(const States & st, const std::pair<double, double> & out){ //Constructor 
     this->nextState = st; //Stores next state
@@ -11,7 +11,7 @@ StateMachine::Transition::Transition(const States & st, const std::pair<double, 
 //########################################################################################################
 
 //--------------------------------------------------------------------------------------------------------
-std::pair<double, double> StateMachine::makeTransition(const std::pair<Model, Model> & models){ //Compute a transition from the State machine 
+std::pair<double, double> StateMachine::makeTransition(std::vector<Model> & models, double dist){ //Compute a transition from the State machine 
     Transition stateTransition(INITIAL, std::pair<double, double> (0,0)); //Initialize Transition
 
     switch(this->currentState){
@@ -40,7 +40,7 @@ std::pair<double, double> StateMachine::makeTransition(const std::pair<Model, Mo
             break;
 
         case LEFT_TURN_MID:
-            stateTransition = leftTurnMidStateRoutine(models); //Left Turn Mid State
+            stateTransition = leftTurnMidStateRoutine(models, dist); //Left Turn Mid State
             break;
 
         case LEFT_TURN_MERGE:
@@ -62,12 +62,17 @@ std::pair<double, double> StateMachine::makeTransition(const std::pair<Model, Mo
     return std::pair<double, double> (stateTransition.output.first * MAX_VEL, stateTransition.output.second * MAX_VEL); //Returns wheels command
 }
 //--------------------------------------------------------------------------------------------------------
-StateMachine::Transition StateMachine::initialStateRoutine(const std::pair<Model, Model> & models){ //Initial State 
-    //cout << "Initial state" << endl;
+StateMachine::Transition StateMachine::initialStateRoutine(std::vector<Model> & models){ //Initial State 
+    cout << "Initial state" << endl;
 
-    if(models.first.isPopulated() || models.second.isPopulated()){ //If found some model
-        std::pair<Point, Point> lPoints = models.first.getFirstAndLastPoint(); //Left model points
-        std::pair<Point, Point> rPoints = models.second.getFirstAndLastPoint(); //Left model points
+    std::pair<Model, Model> m;
+
+    m.first = models.size() == numOfLines ? models[numOfLines/2 - 1] : Model();
+    m.second = models.size() == numOfLines ? models[numOfLines/2] : Model();
+
+    if(m.first.isPopulated() || m.second.isPopulated()){ //If found some model
+        std::pair<Point, Point> lPoints = m.first.getFirstAndLastPoint(); //Left model points
+        std::pair<Point, Point> rPoints = m.second.getFirstAndLastPoint(); //Left model points
 
         if((0 <= lPoints.second.getX() && lPoints.second.getX() < MAX_DBL) || (0 <= rPoints.second.getX() && rPoints.second.getX() < MAX_DBL)) //If positive-most point is negative, then to backwards
             return Transition(FORWARD, std::pair<double, double> (0,0));
@@ -81,29 +86,34 @@ StateMachine::Transition StateMachine::initialStateRoutine(const std::pair<Model
     }
 }
 //--------------------------------------------------------------------------------------------------------
-StateMachine::Transition StateMachine::forwardStateRoutine(const std::pair<Model, Model> & models){ //Forward State 
-    //cout << "forward state" << endl;
+StateMachine::Transition StateMachine::forwardStateRoutine(std::vector<Model> & models){ //Forward State 
+    cout << "Forward state" << endl;
 
     this->lastMovement = FORWARD; //Stores last movement
 
-    if(models.first.isPopulated() || models.second.isPopulated()){ //Something was found
-        //std::cout << models.first << " " << models.second << std::endl;
+    std::pair<Model, Model> m;
+
+    m.first = models.size() == numOfLines ? models[numOfLines/2 - 1] : Model();
+    m.second = models.size() == numOfLines ? models[numOfLines/2] : Model();
+
+    if(m.first.isPopulated() || m.second.isPopulated()){ //Something was found
         this->errorCount = 0;
 
-        std::pair<Point, Point> lPoints = models.first.getFirstAndLastPoint(); //Left model points
-        std::pair<Point, Point> rPoints = models.second.getFirstAndLastPoint(); //Left model points
+        std::pair<Point, Point> lPoints = m.first.getFirstAndLastPoint(); //Left model points
+        std::pair<Point, Point> rPoints = m.second.getFirstAndLastPoint(); //Left model points
 
         double distanceToLeft = lPoints.second.getX() != MAX_DBL ? lPoints.second.getX() : -1000.0;
         double distanceToRight = rPoints.second.getX() != MAX_DBL ? rPoints.second.getX() : -1000.0;
 
-        if(std::max(distanceToLeft, distanceToRight) <= -(0.5 + BODY_SIZE/2.0)){ //If positive-most point is smaller than -50cm, robot is at the end of the rows and needs to turn
+        if(std::max(distanceToLeft, distanceToRight) <= -(1.0 + BODY_SIZE/2.0)){ //If positive-most point is smaller than -50cm, robot is at the end of the rows and needs to turn
+
             if(this->toTurn == LEFT) //If it needs to go Left
-                this->tAfterStop = Transition(LEFT_TURN_BEGIN, std::pair<double, double> (-0.5, 0.5)); //Sets Stop State transition
+                this->tAfterStop = Transition(LEFT_TURN_BEGIN, std::pair<double, double> (0, 0)); //Sets Stop State transition
 
             return Transition(LINEAR_STOP, std::pair<double, double> (0,0)); //Stops robot
         }
         else{
-            std::pair<double, double> controls = this->fuzzy.getOutputValues(calculateRatio(models), calculateAngle(models)); //Calculates fuzzy output
+            std::pair<double, double> controls = this->fuzzy.getOutputValues(calculateRatio(m), calculateAngle(m)); //Calculates fuzzy output
             
             return Transition(FORWARD, std::pair<double, double> (controls.first, controls.second));
         }
@@ -116,28 +126,34 @@ StateMachine::Transition StateMachine::forwardStateRoutine(const std::pair<Model
     }
 }
 //--------------------------------------------------------------------------------------------------------
-StateMachine::Transition StateMachine::backwardStateRoutine(const std::pair<Model, Model> & models){ //Backward State 
-    //cout << "backward state" << endl;
+StateMachine::Transition StateMachine::backwardStateRoutine(std::vector<Model> & models){ //Backward State 
+    cout << "Backward state" << endl;
 
     this->lastMovement = BACKWARD; //Stores last movement
 
-    if(models.first.isPopulated() || models.second.isPopulated()){ //Something was found
+    std::pair<Model, Model> m;
+
+    m.first = models.size() == numOfLines ? models[numOfLines/2 - 1] : Model();
+    m.second = models.size() == numOfLines ? models[numOfLines/2] : Model();
+
+    if(m.first.isPopulated() || m.second.isPopulated()){ //Something was found
         this->errorCount = 0;
 
-        std::pair<Point, Point> lPoints = models.first.getFirstAndLastPoint(); //Left model points
-        std::pair<Point, Point> rPoints = models.second.getFirstAndLastPoint(); //Left model points
+        std::pair<Point, Point> lPoints = m.first.getFirstAndLastPoint(); //Left model points
+        std::pair<Point, Point> rPoints = m.second.getFirstAndLastPoint(); //Left model points
 
         double distanceToLeft = lPoints.first.getX() != MAX_DBL ? lPoints.first.getX() : 1000.0;
         double distanceToRight = rPoints.first.getX() != MAX_DBL ? rPoints.first.getX() : 1000.0;
 
-        if(std::min(distanceToLeft, distanceToRight) >= (0.5 + BODY_SIZE/2.0)){  //If negative-most point is bigger than 50cm, robot is at the end of the rows and needs to turn
+        if(std::min(distanceToLeft, distanceToRight) >= (1.0 + BODY_SIZE/2.0)){ //If positive-most point is smaller than -50cm, robot is at the end of the rows and needs to turn
+
             if(this->toTurn == LEFT) //If it needs to go Left
-                this->tAfterStop = Transition(LEFT_TURN_BEGIN, std::pair<double, double> (-0.5, 0.5)); //Sets Stop State transition
+                this->tAfterStop = Transition(LEFT_TURN_BEGIN, std::pair<double, double> (0, 0)); //Sets Stop State transition
 
             return Transition(LINEAR_STOP, std::pair<double, double> (0,0)); //Stops robot
         }
         else{
-            std::pair<double, double> controls = this->fuzzy.getOutputValues(calculateRatio(models), -calculateAngle(models)); //Calculates fuzzy output
+            std::pair<double, double> controls = this->fuzzy.getOutputValues(calculateRatio(m), -calculateAngle(m)); //Calculates fuzzy output
             
             return Transition(BACKWARD, std::pair<double, double> (-controls.first, -controls.second));
         }
@@ -150,18 +166,23 @@ StateMachine::Transition StateMachine::backwardStateRoutine(const std::pair<Mode
     }
 }
 //--------------------------------------------------------------------------------------------------------
-StateMachine::Transition StateMachine::linearStopStateRoutine(const std::pair<Model, Model> & models){ //Linear Stop State 
-    //cout << "linear stop state" << endl;
+StateMachine::Transition StateMachine::linearStopStateRoutine(std::vector<Model> & models){ //Linear Stop State 
+    cout << "Linear stop state" << endl;
 
     static std::chrono::time_point<std::chrono::system_clock> oldTime = std::chrono::system_clock::now(); //Initialize last iteration time
     static double oldDistance = 0; //Initialize last iteration distance
     static bool first = true; //Flag to first Iteration
 
-    if(models.first.isPopulated() || models.second.isPopulated()){ //Something was found
+    std::pair<Model, Model> m;
+
+    m.first = models.size() == numOfLines ? models[numOfLines/2 - 1] : Model();
+    m.second = models.size() == numOfLines ? models[numOfLines/2] : Model();
+
+    if(m.first.isPopulated() || m.second.isPopulated()){ //Something was found
         this->errorCount = 0;
 
         std::chrono::time_point<std::chrono::system_clock> time = std::chrono::system_clock::now(); //Gets current time
-        double distance = calculateDistance(models); //Calculates distance to models
+        double distance = calculateDistance(m); //Calculates distance to models
 
         std::chrono::duration<double> elapsed_seconds = time - oldTime; //Elapsed time between now and the last iteration
         double deltaDist = distance - oldDistance; //Variation in the distance during that time
@@ -195,18 +216,23 @@ StateMachine::Transition StateMachine::linearStopStateRoutine(const std::pair<Mo
     }
 }
 //--------------------------------------------------------------------------------------------------------
-StateMachine::Transition StateMachine::angularStopStateRoutine(const std::pair<Model, Model> & models){ //Angular Stop State 
-    //cout << "angular stop state" << endl;
+StateMachine::Transition StateMachine::angularStopStateRoutine(std::vector<Model> & models){ //Angular Stop State 
+    cout << "Angular stop state" << endl;
 
     static std::chrono::time_point<std::chrono::system_clock> oldTime; //Initialize last iteration time
     static double oldAngle; //Initialize last iteration angle
     static bool first = true; //Flag to first Iteration
 
-    if(models.first.isPopulated() || models.second.isPopulated()){ //Something was found
+    std::pair<Model, Model> m;
+
+    m.first = models.size() == numOfLines ? models[numOfLines/2 - 1] : Model();
+    m.second = models.size() == numOfLines ? models[numOfLines/2] : Model();
+
+    if(m.first.isPopulated() || m.second.isPopulated()){ //Something was found
         this->errorCount = 0;
 
         std::chrono::time_point<std::chrono::system_clock> time = std::chrono::system_clock::now(); //Gets current time
-        double angle = calculateAngle(models); //Calculates angle
+        double angle = calculateAngle(m); //Calculates angle
 
         std::chrono::duration<double> elapsed_seconds = time - oldTime; //Elapsed time between now and the last iteration
         double angDist = angle - oldAngle; //Variation in the angle during that time
@@ -221,13 +247,13 @@ StateMachine::Transition StateMachine::angularStopStateRoutine(const std::pair<M
             return Transition(ANGULAR_STOP, std::pair<double, double> (0,0)); //Does nothing and wait next iteration
         }
         
-        if(a_vel < -0.1) //If velocity is too big, sends couter command to stop faster
-            return Transition(ANGULAR_STOP, std::pair<double, double> (0.3, -0.3));
+        if(a_vel < -0.01) //If velocity is too big, sends couter command to stop faster
+            return Transition(ANGULAR_STOP, std::pair<double, double> (0.2, -0.2));
 
-        else if(a_vel > 0.1)
-            return Transition(ANGULAR_STOP, std::pair<double, double> (-0.3, 0.3));
+        else if(a_vel > 0.01)
+            return Transition(ANGULAR_STOP, std::pair<double, double> (-0.2, 0.2));
         
-        else if(-0.1 <= a_vel && a_vel <= -0.01 || 0.01 <= a_vel && a_vel <= 0.1)
+        else if(-0.01 <= a_vel && a_vel <= -0.001 || 0.001 <= a_vel && a_vel <= 0.01)
             return Transition(ANGULAR_STOP, std::pair<double, double> (0,0));
 
         else{
@@ -247,20 +273,25 @@ StateMachine::Transition StateMachine::angularStopStateRoutine(const std::pair<M
     }
 }
 //--------------------------------------------------------------------------------------------------------
-StateMachine::Transition StateMachine::leftTurnBeginStateRoutine(const std::pair<Model, Model> & models){ //Left Turn Begin State 
-    //cout << "Left turn begin state" << endl;
+StateMachine::Transition StateMachine::leftTurnBeginStateRoutine(std::vector<Model> & models){ //Left Turn Begin State 
+    cout << "Left turn begin state" << endl;
 
-    if(models.first.isPopulated() || models.second.isPopulated()){ //Something was found
+    std::pair<Model, Model> m;
+
+    m.first = models.size() == numOfLines ? models[numOfLines/2 - 1] : Model();
+    m.second = models.size() == numOfLines ? models[numOfLines/2] : Model();
+
+    if(m.first.isPopulated() || m.second.isPopulated()){ //Something was found
         this->errorCount = 0;
 
-        double angle = calculateAngle(models); //Calculates angle
+        double angle = calculateAngle(m); //Calculates angle
 
-        if(angle > -PI / 3.5){ //While robot's angle is smaller than 50º
-            return Transition(LEFT_TURN_BEGIN, std::pair<double, double> (-0.3, 0.3)); //Keeps turning
+        if(angle < PI / 4.5){ //While robot's angle is smaller than 50º
+            return Transition(LEFT_TURN_BEGIN, std::pair<double, double> (0.25, -0.25)); //Keeps turning
         }
 
         else{ //Otherwise, stop and go forward
-            this->tAfterStop = Transition(LEFT_TURN_MID, std::pair<double, double> (this->lastMovement * 0.3, this->lastMovement * 0.3));
+            this->tAfterStop = Transition(LEFT_TURN_MID, std::pair<double, double> (0, 0));
 
             return Transition(ANGULAR_STOP, std::pair<double, double> (0,0));
         }
@@ -276,45 +307,34 @@ StateMachine::Transition StateMachine::leftTurnBeginStateRoutine(const std::pair
     }
 }
 //--------------------------------------------------------------------------------------------------------
-StateMachine::Transition StateMachine::leftTurnMidStateRoutine(const std::pair<Model, Model> & models){ //Left Turn Mid State 
-    //cout << "Left turn mid state" << endl;
+StateMachine::Transition StateMachine::leftTurnMidStateRoutine(std::vector<Model> & models, double dist){ //Left Turn Mid State 
+    cout << "Left turn mid state" << endl;
 
-    const int Sense = lastMovement == FORWARD ? 1 : -1; //Check which direction the robot has to go
-    const bool condition = Sense == 1 ? models.second.isPopulated() : models.first.isPopulated(); //Checks if the used model is populated
-    const double intercept = Sense == 1 ? models.second.getIntercept() : models.first.getIntercept(); //Gets used model's Intercept
-    const double distToX = Sense == 1 ? (models.second.getFirstAndLastPoint()).second.getX() : (models.first.getFirstAndLastPoint()).first.getX(); //Gets used model's Intercept
+    std::pair<Model, Model> m;
 
-    static bool firstAssing = true; //Flag iteration
-    static double savedIntercept;
+    m.first = models.size() == numOfLines ? models[numOfLines/2 - 2] : Model();
+    m.second = models.size() == numOfLines ? models[numOfLines/2 - 1] : Model();
 
-    if(condition && firstAssing){ //For first iteration
-        firstAssing = false;
-        savedIntercept = intercept; //Save intercept
-
-        return Transition(LEFT_TURN_MID, std::pair<double, double> (0.5 * Sense, 0.5 * Sense)); //Keeps going forward
-    }
-
-    else if(condition && !firstAssing){ //If the model exists
+    if(m.first.isPopulated() || m.second.isPopulated()){ //If the model exists
         this->errorCount = 0;
-        //std::cout << "intercept: " << intercept << ", savedIntercept: " << savedIntercept << std::endl << std::endl;
-        if(BODY_SIZE*1.3/2.0 <= fabs(intercept) && fabs(intercept) <= fabs(savedIntercept * 0.8) && fabs(distToX) > 1.0){ //If intercept jumped from a high value to something greater than 0.5, this means that the robot changed lane
-            firstAssing = true; //Reset flag
+        
+        if(fabs(m.first.getIntercept() + m.second.getIntercept()) <= 0.8){
+            for(int i = models.size() - 1; i > 0; i--){
+                models[i] = models[i - 1];
+            }
 
-            this->tAfterStop = Transition(LEFT_TURN_MERGE, std::pair<double, double> (0.5, -0.5)); //Begin to turn to merge
-            return Transition(LINEAR_STOP, std::pair<double, double> (0,0));
-        }
-        else{
-            if(fabs(savedIntercept) <= fabs(intercept * 0.9)) //If intercept grew more than 10%, save the new value
-                savedIntercept = intercept;
+            models[0] = Model(models[1].getSlope(), models[1].getIntercept() + (dist / atan(models[1].getSlope())));
 
-            return Transition(LEFT_TURN_MID, std::pair<double, double> (0.5 * Sense, 0.5 * Sense)); //Goes forward or backward
+            if(this->toTurn == LEFT) //If it needs to go Left
+                this->tAfterStop = Transition(BACKWARD, std::pair<double, double> (0, 0)); //Sets Stop State transition
+
+            return Transition(LINEAR_STOP, std::pair<double, double> (0,0)); //Stops robot
         }
+        return Transition(LEFT_TURN_MID, std::pair<double, double> (-0.2, -0.2));
     }
 
     else{ //Nothing was found
         if(++this->errorCount == 3){
-            firstAssing = true;
-            std::cout << "Error" << std::endl << std::endl;
             return Transition(END, std::pair<double, double> (0,0));
         }
 
@@ -322,11 +342,11 @@ StateMachine::Transition StateMachine::leftTurnMidStateRoutine(const std::pair<M
     }
 }
 //--------------------------------------------------------------------------------------------------------
-StateMachine::Transition StateMachine::leftTurnMergeStateRoutine(const std::pair<Model, Model> & models){ //Left Turn Merge State 
-    //cout << "Left turn remerge state" << endl;
+StateMachine::Transition StateMachine::leftTurnMergeStateRoutine(std::vector<Model> & models){ //Left Turn Merge State 
+    cout << "Left turn remerge state" << endl;
     //cout << "angle: " << calculateAngle(models) << endl;
 
-    if(models.first.isPopulated() || models.second.isPopulated()){ //Something was found
+    /*if(models.first.isPopulated() || models.second.isPopulated()){ //Something was found
         this->errorCount = 0;
 
         double angle = calculateAngle(models); //Calculates angle
@@ -355,16 +375,16 @@ StateMachine::Transition StateMachine::leftTurnMergeStateRoutine(const std::pair
         }
 
         return Transition(LEFT_TURN_MERGE, std::pair<double, double> (0,0));
-    }
+    }*/
 }
 //--------------------------------------------------------------------------------------------------------
-StateMachine::Transition StateMachine::endStateRoutine(const std::pair<Model, Model> & models){ //End State 
-    //
+StateMachine::Transition StateMachine::endStateRoutine(std::vector<Model> & models){ //End State 
+    cout << "End State" << endl;
     return Transition(END, std::pair<double, double> (0,0)); //End test
 }
 //--------------------------------------------------------------------------------------------------------
-StateMachine::Transition StateMachine::impossibleStateRoutine(const std::pair<Model, Model> & models){ //Impossible State 
-    //
+StateMachine::Transition StateMachine::impossibleStateRoutine(std::vector<Model> & models){ //Impossible State 
+    cout << "Impossible State" << endl;
     return Transition(IMPOSSIBLE, std::pair<double, double> (0,0)); 
 }
 
@@ -397,7 +417,7 @@ double StateMachine::calculateDistance(const std::pair<Model, Model> & m){ //Cal
         cont++;
     }
     
-    return distMean == 0 ? 0 : distMean / (double)cont; //Average distance    
+    return distMean == 0 ? 0 : distMean / (double)cont; //Average distance
 }
 //--------------------------------------------------------------------------------------------------------
 double StateMachine::calculateAngle(const std::pair<Model, Model> & m){ //Calculate angle from models and robot x-axis 
