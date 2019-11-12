@@ -9,12 +9,6 @@
     <arg name="body_size" default="1.1"/>
     <arg name="body_size_2" default="$(eval arg('body_size')/2)"/>
 
-
-    <!-- We resume the logic in empty_world.launch, changing only the name of the world to be launched -->
-    <include file="$(find gazebo_ros)/launch/empty_world.launch">
-        <arg name="world_name" value="$(find engrais_gazebo)/worlds/$(arg world).world"/>
-    </include>
-
     <!-- Load the URDF into the ROS Parameter Server -->
     <param name="robot_description"
        command="$(find xacro)/xacro '$(find engrais_description)/urdf/engrais.xacro' body_size_x:=$(arg body_size)" />

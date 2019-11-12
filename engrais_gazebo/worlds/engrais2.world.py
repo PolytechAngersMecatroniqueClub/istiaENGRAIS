@@ -5,11 +5,11 @@ outputfile = "engrais2.world"   # name of the generated world
 myworld = open(outputfile, "w")
 
 # world parameters:
-nb_rows = 4            # number of rows
-nb_plants_rows = 30    # number of plants in a row
+nb_rows = 6            # number of rows
+nb_plants_rows = 60    # number of plants in a row
 space_between_rows = 1 # space between the rows
 row_width = 0.1        # width of a row
-row_lenght = 5       # length of a row
+row_lenght = 10       # length of a row
 
 myworld.write('<?xml version="1.0" ?>\n')
 myworld.write('<sdf version="1.4">\n')

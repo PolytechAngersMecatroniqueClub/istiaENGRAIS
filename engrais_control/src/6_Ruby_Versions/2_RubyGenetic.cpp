@@ -18,6 +18,8 @@ void RubyGenetic::populateOutliers(const sensor_msgs::LaserScan & msg){ //Popula
         
         angle += msg.angle_increment; //Increment angle
     }
+
+    initialField = this->outliers;
 }
 //--------------------------------------------------------------------------------------------------------
 std::vector<Model> RubyGenetic::findLines() { //Find the best lines into the cloud of points 

@@ -10,46 +10,14 @@
 	<arg name="back_lines_topic" value="/engrais/laser_back/lines"/>
 	<arg name="back_rviz_frame" value="sick_back_link"/>
 
-	<arg name="algorithm" default="Pearl"/>
-	<arg name="file_name" default="delete"/>
+	<arg name="algorithm" />
+	<arg name="file_name" />
+	<arg name="execution_file_name" />
 
 	<!--> Robot Central arguments <-->
 	<arg name="left_weel_topic" value="/engrais/leftWheel_controller/command"/>
 	<arg name="right_weel_topic" value="/engrais/rightWheel_controller/command"/>
 
-
-    <!-- to set the path from our customs models -->
-    <env name="GAZEBO_MODEL_PATH" value="$(find engrais_gazebo)/models/" />
-
-    <!-- these are the arguments you can pass this launch file, for example world:=engrais2 -->
-    <arg name="world" default="engrais"/>
-    <!-- the body size is needed for the LiDAR static transform and to set the initial robot pose -->
-    <arg name="body_size" default="2"/>
-    <arg name="body_size_2" default="$(eval arg('body_size')/2)"/>
-
-
-    <!-- Load the URDF into the ROS Parameter Server -->
-    <param name="robot_description"
-       command="$(find xacro)/xacro '$(find engrais_description)/urdf/engrais.xacro' body_size_x:=$(arg body_size)" />
-
-    <!-- Run a python script to the send a service call to gazebo_ros to spawn a URDF robot -->
-    <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
-        args="-urdf -model engrais_robot -param robot_description -x 0 -y 0 -Y 0"/>
-
-    <!-- static transform from the world to the front LiDAR -->
-    <node pkg="tf"
-        type="static_transform_publisher"
-        name="world_laser_front_broadcaster"
-        args="$(arg body_size_2) 0 0 0 0 0 world sick_front_link 100" />
-
-    <!-- static transform from the world to the back LiDAR -->
-    <node pkg="tf"
-        type="static_transform_publisher"
-        name="world_laser_back_broadcaster"
-        args="-$(arg body_size_2) 0 0 3.14159 0 0 world sick_back_link 100" />
-
-    <!-- ros_control mybot launch file -->
-    <include file="$(find engrais_control)/launch/engrais_control.launch" />
 
 	<include file="$(find engrais_control)/launch/central.launch">
 		<arg name="subscribe_topic_1" value="$(arg front_lines_topic)"/>
@@ -70,6 +38,7 @@
 		<arg name="publish_topic_back" value="$(arg back_lines_topic)"/>
 		<arg name="rviz_frame_back" value="$(arg back_rviz_frame)"/>
 
+		<arg name="exec_file_name" value="$(arg execution_file_name)"/>
 		<arg name="used_algorithm" value="$(arg algorithm)"/>
 	</include>
 

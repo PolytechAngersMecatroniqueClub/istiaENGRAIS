@@ -41,41 +41,68 @@ RobotControl control; //Declare control
 std::vector<int> contMsgs(2,0);
 
 //--------------------------------------------------------------------------------------------------------
-void sendLine(const vector<Model> & models){ //Send model's first and last point using the visualization marker 
-    visualization_msgs::Marker line_list;
+void sendLine(const std::pair<vector<Model>, std::vector<bool>> & models){ //Send model's first and last point using the visualization marker 
+    visualization_msgs::Marker line_list_found, line_list_calculated;
     geometry_msgs::Point p;
 
-    line_list.header.frame_id = mapName; //Assign map name
-    line_list.header.stamp = ros::Time::now(); //Assign time
-    line_list.ns = "points_and_lines"; //Message type 
-    line_list.action = visualization_msgs::Marker::ADD; //Add points
-    line_list.pose.orientation.w = 1.0;
+    line_list_found.header.frame_id = line_list_calculated.header.frame_id = mapName; //Assign map name
+    line_list_found.header.stamp = line_list_calculated.header.stamp = ros::Time::now(); //Assign time
+    line_list_found.ns = line_list_calculated.ns = "points_and_lines"; //Message type 
+    line_list_found.action = line_list_calculated.action = visualization_msgs::Marker::ADD; //Add points
+    line_list_found.pose.orientation.w = line_list_calculated.pose.orientation.w = 1.0;
 
-    line_list.id = 0; //Set id
-    line_list.type = visualization_msgs::Marker::LINE_LIST; //Message line list flag
+    line_list_found.id = 0;
+    line_list_calculated.id = 1; //Set id
 
-    line_list.scale.x = 0.08; //Line list scale
+    line_list_found.type = line_list_calculated.type = visualization_msgs::Marker::LINE_LIST; //Message line list flag
 
-    line_list.color.g = 1.0; //Line list color
-    line_list.color.a = 0.4;
+    line_list_found.scale.x = line_list_calculated.scale.x = 0.08; //Line list scale
 
-    for(int i = 0; i < models.size(); i++){ //For every model found
-        if(models[i].isPopulated() && models[i].getPointsSize() >= 2){ //If model is populated
-            pair<Point, Point> points = models[i].getFirstAndLastPoint(); //Finds negative and positive-most points (x-axis)
+    line_list_found.color.g = 1.0;
+
+    line_list_calculated.color.g = 1.0; //Line list color
+    line_list_calculated.color.r = 1.0; //Line list color
+
+    line_list_found.color.a = line_list_calculated.color.a = 0.4;
+
+    cout << "Selected Models: ";
+    
+    Utility::printVector(models.first);
+    Utility::printVector(models.second);
+
+    for(int i = 0; i < models.first.size(); i++){ //For every model found
+
+        if(!models.second[i] && models.first[i].isPopulated() && models.first[i].getPointsSize() >= 2){
+            pair<Point, Point> points = models.first[i].getFirstAndLastPoint(); //Finds negative and positive-most points (x-axis)
 
             p.x = points.first.getX(); //Get first point X coordinate
-            p.y = models[i].getSlope()*p.x + models[i].getIntercept(); //Calculate Y using the model's information
+            p.y = models.first[i].getSlope()*p.x + models.first[i].getIntercept(); //Calculate Y using the model's information
 
-            line_list.points.push_back(p); //Push point
+            line_list_found.points.push_back(p); //Push point
 
             p.x = points.second.getX(); //Last point X coordinate
-            p.y = models[i].getSlope()*p.x + models[i].getIntercept(); //Calculate using model's information
+            p.y = models.first[i].getSlope()*p.x + models.first[i].getIntercept(); //Calculate using model's information
 
-            line_list.points.push_back(p);
+            line_list_found.points.push_back(p);
+        }
+        else if(models.second[i] && models.first[i].isPopulated()){
+            pair<Point, Point> points = models.first[i].getFirstAndLastPoint(); //Finds negative and positive-most points (x-axis)
+
+
+            p.x = points.first.getX(); //Get first point X coordinate
+            p.y = models.first[i].getSlope()*p.x + models.first[i].getIntercept(); //Calculate Y using the model's information
+
+            line_list_calculated.points.push_back(p); //Push point
+
+            p.x = points.second.getX(); //Last point X coordinate
+            p.y = models.first[i].getSlope()*p.x + models.first[i].getIntercept(); //Calculate using model's information
+
+            line_list_calculated.points.push_back(p);
         }
     }
     
-    pubSelectedLines.publish(line_list); //Push lines list
+    pubSelectedLines.publish(line_list_found); //Push lines list
+    pubSelectedLines.publish(line_list_calculated); //Push lines list
 }
 
 
@@ -109,19 +136,19 @@ void controlThread(){ //Control Thread
         //std::cout << "Before change: " << control << std::endl << std::endl << std::endl << std::endl;
 
 
-        vector<Model> selectedModels = control.selectModels(contMsgs); //Select models
+        std::pair<vector<Model>, std::vector<bool>> selectedModels = control.selectModels(contMsgs); //Select models
 
         //std::cout << "After change: " << control << std::endl << std::endl << std::endl << std::endl;
 
-        std::cout << "Selected Models:: " << endl << endl;
+        //std::cout << "Selected Models:: " << endl << endl;
 
-        Utility::printVector(selectedModels);
+        //Utility::printVector(selectedModels);
 
 
         sendLine(selectedModels); //Send selected lines
 
 
-        pair<std_msgs::Float64, std_msgs::Float64> wheels = control.getWheelsCommand(selectedModels); //Calculates wheels' commands
+        pair<std_msgs::Float64, std_msgs::Float64> wheels = control.getWheelsCommand(selectedModels.first); //Calculates wheels' commands
 
         cout << "\n---------------------------------------------------------------\n\n";
         

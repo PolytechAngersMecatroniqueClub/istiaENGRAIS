@@ -17,6 +17,8 @@ void RubyPure::populateOutliers(const sensor_msgs::LaserScan & msg){ //Populate 
         
         angle += msg.angle_increment; //Increment angle
     }
+
+    initialField = this->outliers;
 }
 
 //########################################################################################################

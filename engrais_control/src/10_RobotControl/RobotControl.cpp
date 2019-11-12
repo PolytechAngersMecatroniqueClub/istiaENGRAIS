@@ -68,7 +68,7 @@ void RobotControl::backLinesMessage(const visualization_msgs::Marker & msg){ //R
 
 
 //--------------------------------------------------------------------------------------------------------
-vector<Model> RobotControl::selectModels(const std::vector<int> & msgCounter) { //Select left and right models 
+std::pair<std::vector<Model>, std::vector<bool>> RobotControl::selectModels(const std::vector<int> & msgCounter) { //Select left and right models 
     cout << si << endl;
 
     if(si.cont < 10){
@@ -83,19 +83,20 @@ vector<Model> RobotControl::selectModels(const std::vector<int> & msgCounter) { 
             }
         }
 
-        return vector<Model>();
+        return std::pair<std::vector<Model>, std::vector<bool>>(vector<Model>(), vector<bool>());
     }
 
     else{
-        selected = findBestModels(selected);
+        std::pair<std::vector<Model>, std::vector<bool>> ret = findBestModels(selected);
+        selected = ret.first;
 
-        getFirstAndLastPoint(selected);
+        getFirstAndLastPoint(ret);
 
-        return selected;
+        return ret;
     }
 }
 
-void RobotControl::getFirstAndLastPoint(std::vector<Model> & m) const { 
+void RobotControl::getFirstAndLastPoint(std::pair<std::vector<Model>, std::vector<bool>> & m) const { 
     std::vector<Point> field;
 
     field.insert(field.end(), this->frontPoints[0].begin(), this->frontPoints[0].end());
@@ -104,15 +105,28 @@ void RobotControl::getFirstAndLastPoint(std::vector<Model> & m) const {
     field.insert(field.end(), this->backPoints[0].begin(), this->backPoints[0].end());
     field.insert(field.end(), this->backPoints[1].begin(), this->backPoints[1].end());
 
-    for(int i = 0; i < m.size(); i++)
-        m[i].clearPoints();
+    for(int i = 0; i < m.first.size(); i++)
+        m.first[i].clearPoints();
 
     for(int i = 0; i < field.size(); i++){
-        for(int j = 0; j < m.size(); j++){
-            double dist = Utility::distFromPointToLine(field[i], m[j].getSlope(), m[j].getIntercept());
+        for(int j = 0; j < m.first.size(); j++){
+            double dist = Utility::distFromPointToLine(field[i], m.first[j].getSlope(), m.first[j].getIntercept());
 
-            if(m[j].isPopulated() && dist < Pearl::distanceForOutlier){
-                m[j].pushPoint(field[i]);
+            if(m.first[j].isPopulated() && dist < Pearl::distanceForOutlier && !m.second[j]){
+                m.first[j].pushPoint(field[i]);
+            }
+        }
+    }
+
+    for(int i = 0; i < m.first.size(); i++){
+        if(m.second[i]){
+            for(int j = 0; j < m.first.size(); j++){
+                if(m.first[j].getPointsSize() >= 2 && i != j && !m.second[j]){
+                    std::pair<Point, Point> p = m.first[j].getFirstAndLastPoint();
+
+                    m.first[i].pushPoint(p.first);
+                    m.first[i].pushPoint(p.second);
+                }
             }
         }
     }
@@ -148,12 +162,12 @@ vector<Model> RobotControl::initializeRobot(){
             }
         }
     }
-
+    
     return ret;
 }
 
-vector<Model> RobotControl::findBestModels(const std::vector<Model> & selected){
-    vector<Model> ret(4);
+std::pair<std::vector<Model>, std::vector<bool>> RobotControl::findBestModels(const std::vector<Model> & selected){
+    std::pair<std::vector<Model>, std::vector<bool>> ret(vector<Model>(4), vector<bool>(4, false));
 
     int findCont = 0;
     double newSlope = 0;
@@ -161,7 +175,7 @@ vector<Model> RobotControl::findBestModels(const std::vector<Model> & selected){
     double minErr = MAX_DBL;
     int minErrPos = MAX_INT;
 
-    for(double delta = 0.05; findCont == 0 && delta < 0.3; delta += 0.05){
+    for(double delta = 0.05; findCont < 1 && delta < 0.3; delta += 0.05){
         findCont = newSlope = 0;
 
         for(int i = 0; i < selected.size(); i++){
@@ -172,8 +186,8 @@ vector<Model> RobotControl::findBestModels(const std::vector<Model> & selected){
 
                 double totalDelta = deltaSlope + deltaIntercept;
 
-                if(deltaSlope <= delta && deltaIntercept <= 2 * delta){
-                    ret[i] = m.toModel();
+                if(deltaSlope <= delta && deltaIntercept <= 1.2 * delta){
+                    ret.first[i] = m.toModel();
 
                     newSlope += m.getSlope();
 
@@ -188,21 +202,15 @@ vector<Model> RobotControl::findBestModels(const std::vector<Model> & selected){
         }
     }
 
-    cout << "Ret 1 ";
-    Utility::printVector(ret);
-
     if(findCont > 0){
         si.a = newSlope / (double)findCont;
-        cout << endl << "minErrPos: " << minErrPos << endl;
-        for(int i = 0; i < ret.size(); i++){
-            if(!ret[i].isPopulated()){
-                ret[i] = Model(si.a, selected[minErrPos].getIntercept() + (minErrPos - i) * (si.dist * sqrt(pow(si.a, 2) + 1)));
+        for(int i = 0; i < ret.first.size(); i++){
+            if(!ret.first[i].isPopulated()){
+                ret.first[i] = Model(si.a, selected[minErrPos].getIntercept() + (minErrPos - i) * (si.dist * sqrt(pow(si.a, 2) + 1)));
+                ret.second[i] = true;
             }
         }
     }
-
-    cout << "Ret 2 ";
-    Utility::printVector(ret);
 
     return ret;
 }

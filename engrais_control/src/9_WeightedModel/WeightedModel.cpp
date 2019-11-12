@@ -41,16 +41,6 @@ void WeightedModel::fuseModels(const Model & m, bool isFrontMsg){ //Calculate th
 
     this->cont[isFrontMsg]++; //Increment counter
 }
-
-void WeightedModel::normalizeModel(const std::vector<int> & maxCounter){
-    int minimum = std::min(maxCounter[0], maxCounter[1]);
-
-    //std::cout << "inside normalize: back: " << maxCounter[0] << ", front: " << maxCounter[1] << ", min: " << minimum << ", cont[0]: " << this->cont[0] << ", cont[1]: " << this->cont[1] << std::endl;
-
-    for(int i = 0; i < this->cont.size(); i++){
-        this->cont[i] = (int)( this->cont[i] * minimum / maxCounter[i]);
-    }
-}
 //--------------------------------------------------------------------------------------------------------
 Model WeightedModel::toModel() const { //Converts to regular model 
     Model ret(this->a, this->b); //Declare model with calculated slope and intercept

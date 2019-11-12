@@ -35,8 +35,6 @@ int main(int argc, char **argv){ //Main function
 
     node.param<string>(node_name + "/arq_name", arq_name, "simulation_results.csv");
 
-    cout << arq_name << endl;
-
     arq.open(arq_name, std::ofstream::out | std::ofstream::trunc);
 
     arq << "t;;x;y;z;;r;p;y" << endl;

@@ -1,7 +1,36 @@
 //********************************************************************************************************
 #include "Model.h"
 
+//########################################################################################################
 
+//--------------------------------------------------------------------------------------------------------
+void Model::findBestModel(){ //Using the points attached, calculate the best line possible 
+    Model best = Model::linearFit(pointsInModel); //Find best model using its points
+
+    if(best.getSlope() != MAX_DBL) //If model is different than the default, assign slope and intercept
+        this->a = best.getSlope();
+
+    if(best.getIntercept() != MAX_DBL)
+        this->b = best.getIntercept();
+
+    this->energy = 0; //Resets energy
+    for (Point p : this->pointsInModel){ //For every point
+        this->energy += fabs(this->a * p.getX() - p.getY() + this->b) / sqrt(pow(this->a, 2) + 1.0); //Sums its distance to the line
+    }
+}
+//--------------------------------------------------------------------------------------------------------
+void Model::findBestModel(const std::vector<Point> & rPointsInModel){ //Using the points passed, calculate the best line possible and store points inside model 
+    this->pointsInModel.clear(); //Clear previous point
+    this->positivePoints = 0; 
+    this->pointsInModel = rPointsInModel; //Attach passed points to the model
+
+    for(Point p : rPointsInModel){ //Counts number of positive points 
+        if(p.getY() >= 0)
+            this->positivePoints++;
+    }
+
+    this->findBestModel();    
+}
 //--------------------------------------------------------------------------------------------------------
 Model Model::linearFit(const std::vector<Point> & vec){ //Uses gauss' linear regression to find best model 
     double xsum = 0, ysum = 0, xysum = 0, xxsum = 0; //Initialize regression sums
@@ -23,34 +52,9 @@ Model Model::linearFit(const std::vector<Point> & vec){ //Uses gauss' linear reg
 
     return (Model(a,b)); //Return best possible model
 }
-//--------------------------------------------------------------------------------------------------------
-void Model::findBestModel(){ //Using the points attached, calculate the best line possible 
-    Model best = Model::linearFit(pointsInModel); //Find best model using its points
 
-    if(best.getSlope() != MAX_DBL) //If model is different than the default, assign slope and intercept
-        this->a = best.getSlope();
+//########################################################################################################
 
-    if(best.getIntercept() != MAX_DBL)
-        this->b = best.getIntercept();
-
-    this->energy = 0; //Resets energy
-    for (Point p : this->pointsInModel){ //For every point
-        this->energy += fabs(this->a * p.getX() - p.getY() + this->b) / sqrt(pow(this->a, 2) + 1.0); //Sums its distance to the line
-    }
-}
-//--------------------------------------------------------------------------------------------------------
-void Model::findBestModel(const std::vector<Point> & rPointsInModel){ //Using the points passed, calculate the best line possible and store points inside model 
-	this->pointsInModel.clear(); //Clear previous point
-    this->positivePoints = 0; 
-    this->pointsInModel = rPointsInModel; //Attach passed points to the model
-
-    for(Point p : rPointsInModel){ //Counts number of positive points 
-        if(p.getY() >= 0)
-            this->positivePoints++;
-    }
-
-    this->findBestModel();    
-}
 //--------------------------------------------------------------------------------------------------------
 std::pair<Point, Point> Model::getFirstAndLastPoint(bool isRotated) const { //Get the closest point (first) and the farthest point (second) using only x-coordinate
     int mult = isRotated ? -1 : 1;
@@ -71,6 +75,19 @@ std::pair<Point, Point> Model::getFirstAndLastPoint(bool isRotated) const { //Ge
 
     return ret;
 }
+
+//########################################################################################################
+
+//--------------------------------------------------------------------------------------------------------
+void Model::fuseModel(const Model & m){ //Fuse two models, combining point and calculating the new best model 
+    this->pointsInModel.insert(this->pointsInModel.begin() + this->positivePoints, m.getPointsVecBegin(), m.getPointsVecBegin() + m.getPositivePointsNum()); //Insert positive points in the positive part
+    
+    this->pointsInModel.insert(this->pointsInModel.end(), m.getPointsVecBegin() + m.getPositivePointsNum(), m.getPointsVecEnd()); //Insert negative points at the end
+    
+    this->positivePoints += m.getPositivePointsNum(); //Increments number of positive points
+    
+    this->findBestModel(); //Recalculates best model
+}   
 //--------------------------------------------------------------------------------------------------------
 void Model::pushPoint(const Point & p) { //Interts a point in the model
     if(this->pointsInModel.size() == 0) //If it's the first point, reset energy
@@ -88,16 +105,9 @@ void Model::pushPoint(const Point & p) { //Interts a point in the model
     else //Else, insert at end
         this->pointsInModel.push_back(p);
 }
-//--------------------------------------------------------------------------------------------------------
-void Model::fuseModel(const Model & m){ //Fuse two models, combining point and calculating the new best model 
-    this->pointsInModel.insert(this->pointsInModel.begin() + this->positivePoints, m.getPointsVecBegin(), m.getPointsVecBegin() + m.getPositivePointsNum()); //Insert positive points in the positive part
-    
-    this->pointsInModel.insert(this->pointsInModel.end(), m.getPointsVecBegin() + m.getPositivePointsNum(), m.getPointsVecEnd()); //Insert negative points at the end
-    
-    this->positivePoints += m.getPositivePointsNum(); //Increments number of positive points
-    
-    this->findBestModel(); //Recalculates best model
-}   
+
+//########################################################################################################
+
 //--------------------------------------------------------------------------------------------------------
 std::ostream & operator << (std::ostream &out, const Model &m){ //Print model 
     out << "Model: [ a: " << m.a << ", b: " << m.b << ", energy: " << m.energy << ", parallelCount: " << m.parallelCount << ", fitness: " << m.fitness;

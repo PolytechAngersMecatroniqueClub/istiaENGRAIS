@@ -1,16 +1,9 @@
 //********************************************************************************************************
 #include "Utility.h"
 
+//########################################################################################################
 
-//--------------------------------------------------------------------------------------------------------
-double Utility::calcSumDist(const std::vector<Point> & vec_p, const double a, const double b) { //Calculates the sum of all points in the vector and a line 
-    double dist = 0; //Sum = 0
-    for(Point p : vec_p){ //For each point
-        dist +=  fabs(a * p.getX() - p.getY() + b) / sqrt(pow(a, 2) + 1.0); //Sum the distance from point to line
-    }
-    
-    return dist;
-}
+
 //--------------------------------------------------------------------------------------------------------
 void Utility::printInColor(const std::string msg, const int color){ //Print colored text to console 
     std::string out;
@@ -50,5 +43,16 @@ std::vector<int> Utility::randomDiffVector(const int min, const int max, const i
 
     return r;
 }
+//--------------------------------------------------------------------------------------------------------
+double Utility::calcSumDist(const std::vector<Point> & vec_p, const double a, const double b) { //Calculates the sum of all points in the vector and a line 
+    double dist = 0; //Sum = 0
+    for(Point p : vec_p){ //For each point
+        dist +=  fabs(a * p.getX() - p.getY() + b) / sqrt(pow(a, 2) + 1.0); //Sum the distance from point to line
+    }
+    
+    return dist;
+}
+
+//########################################################################################################
 
 //********************************************************************************************************

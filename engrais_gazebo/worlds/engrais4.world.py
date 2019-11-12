@@ -7,21 +7,30 @@ def is_xOK(x, row): # to add some holes in the rows
     if  row == 0:
         ret_val = True
     elif row == 1:
-        if 10 <= x <= 15:
+        if 0 <= x <= 5 or 15 <= x <= 20:
             ret_val = True
     elif row == 2:
         if 0 <= x <= 10 or 20 <= x <= 25:
             ret_val = True
     elif row == 3:
-        if 0 <= x <= 5 or 15 <= x <= 25:
+        if 0 <= x <= 5 or 10 <= x <= 15:
             ret_val = True
     elif row == 4:
         if 10 <= x <= 20:
             ret_val = True
     elif row == 5:
-        if 0 <= x <= 20:
-            ret_val = True
+        ret_val = True
     return ret_val
+
+def is_yOK(y, nb_rows, space_between_rows, row_width): # to add some holes in the rows
+    flag = True
+    delta = 0.1
+
+    for i in range(0, nb_rows):
+        if (space_between_rows*i-space_between_rows/2.0-row_width/2.0 - delta) <= y <= (space_between_rows*i-space_between_rows/2.0+row_width/2.0 + delta):
+            flag = False
+
+    return flag
 
 outputfile = "engrais4.world"  # name of the generated world
 myworld = open(outputfile, "w")
@@ -54,7 +63,7 @@ for i in range(0, nb_rows):
     nb_append = 0
     while(nb_append != nb_plants_rows):
         x = random.uniform(0, row_lenght)
-        y = random.uniform(space_between_rows*i-space_between_rows/2.0-row_width/2.0 - 2.0, space_between_rows*i-space_between_rows/2.0+row_width/2.0 - 2.0)
+        y = random.uniform(space_between_rows*i-space_between_rows/2.0-row_width/2.0, space_between_rows*i-space_between_rows/2.0+row_width/2.0)
         flag = True
         for plant in row_array:
             if pow(x-plant[0],2) + pow(y-plant[1],2) < pow(space_min_plants,2):
@@ -77,12 +86,12 @@ print("Generation of red plants...")
 nb_append = 0
 while(nb_append != nb_outliers):
     x = random.uniform(0, row_lenght)
-    y = random.uniform(-space_between_rows/2.0+row_width/2.0+space_min_plants - 2.0, space_between_rows*nb_rows-space_between_rows/2.0-row_width/2.0-space_min_plants - 2.0)
+    y = random.uniform(-space_between_rows/2.0+row_width/2.0+space_min_plants, space_between_rows*nb_rows-space_between_rows/2.0-row_width/2.0-space_min_plants)
     flag = True
     for plant in plants:
         if pow(x-plant[0],2) + pow(y-plant[1],2) < pow(space_min_plants,2):
             flag = False
-    if flag:
+    if flag and is_yOK(y, nb_rows, space_between_rows, row_width):
         nb_append += 1
 
         myworld.write('      <model name="plantred_' + str(nb_append) + '">\n')

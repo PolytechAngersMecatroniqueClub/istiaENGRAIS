@@ -1,7 +1,53 @@
 //********************************************************************************************************
 #include "Pearl.h"
 
+//--------------------------------------------------------------------------------------------------------
+std::vector<Model> Pearl::findLines() { //Find the best lines into the cloud of points 
+    double energy;
 
+    if(this->outliers.size() != 0){ //If the vector is not empty
+        int nModels = int(this->outliers.size() / Pearl::divideFactor); //Number of models to be searched is the nu,ber of outliers / 6. Because each model gets 3 points and we want 50% of outliers still available
+
+        if(nModels > 0){ 
+            this->searchModels(nModels); //Search for this number of models
+
+            double newEnergy = this->expansionEnergy(); //Calculates expansion energy and total set energy
+
+            newEnergy += this->removeTinyModels((int)(1.5*nModels)); //Remove models that have too few points attached
+
+            energy = newEnergy; //Store current energy
+
+            std::vector<Model> bestModels = this->models; //Store current models
+            std::vector<Point> bestOutliers = this->outliers; //Store current set of outliers
+
+            for(int nbOfIteractions = 0; nbOfIteractions < Pearl::maxNumberOfIterations; nbOfIteractions++) { //For 'maxNumberOfIterations' iterations
+                this->searchModels((int)(this->outliers.size() / Pearl::divideFactor)); //Search for models
+
+                this->fuseEqualModels(); //Fuse equal models
+
+                this->reEstimation(); //Re calculate best models
+
+                this->eraseBadModels(Pearl::worstEnergySizeRatioAllowed); //Erase models that have energy/nOfPoint
+
+                newEnergy = this->expansionEnergy(); //Calculates expansion energy and total set energy
+
+                if ((newEnergy > energy)){ //Store best state
+                    this->models = bestModels;
+                    this->outliers = bestOutliers;
+                    energy = newEnergy;
+                }
+                else{ //Restore best state
+                    bestModels = this->models;
+                    bestOutliers = this->outliers;
+
+                    newEnergy = energy;
+                }
+            }
+        }
+    }
+
+    return this->models; //Return models
+}
 //--------------------------------------------------------------------------------------------------------
 void Pearl::populateOutliers(const sensor_msgs::LaserScan & msg){ //Receive LaserScan message and puts all the points into outlier vector 
     //std::cout << "Pearl" << std::endl;
@@ -16,53 +62,18 @@ void Pearl::populateOutliers(const sensor_msgs::LaserScan & msg){ //Receive Lase
         
         angle += msg.angle_increment; //Increment angle
     }
+
+    initialField = this->outliers;
 }
+
+//########################################################################################################
+
 //--------------------------------------------------------------------------------------------------------
-std::vector<Model> Pearl::findLines() { //Find the best lines into the cloud of points 
-	double energy;
-
-	if(this->outliers.size() != 0){ //If the vector is not empty
-	    int nModels = int(this->outliers.size() / Pearl::divideFactor); //Number of models to be searched is the nu,ber of outliers / 6. Because each model gets 3 points and we want 50% of outliers still available
-
-	    if(nModels > 0){ 
-	        this->searchModels(nModels); //Search for this number of models
-
-	        double newEnergy = this->expansionEnergy(); //Calculates expansion energy and total set energy
-
-	        newEnergy += this->removeTinyModels((int)(1.5*nModels)); //Remove models that have too few points attached
-
-	        energy = newEnergy; //Store current energy
-
-	        std::vector<Model> bestModels = this->models; //Store current models
-	        std::vector<Point> bestOutliers = this->outliers; //Store current set of outliers
-
-	        for(int nbOfIteractions = 0; nbOfIteractions < Pearl::maxNumberOfIterations; nbOfIteractions++) { //For 'maxNumberOfIterations' iterations
-	            this->searchModels((int)(this->outliers.size() / Pearl::divideFactor)); //Search for models
-
-	            this->fuseEqualModels(); //Fuse equal models
-
-                this->reEstimation(); //Re calculate best models
-
-                this->eraseBadModels(Pearl::worstEnergySizeRatioAllowed); //Erase models that have energy/nOfPoint
-
-	            newEnergy = this->expansionEnergy(); //Calculates expansion energy and total set energy
-
-	            if ((newEnergy > energy)){ //Store best state
-	                this->models = bestModels;
-	                this->outliers = bestOutliers;
-	                energy = newEnergy;
-	            }
-	            else{ //Restore best state
-	                bestModels = this->models;
-	                bestOutliers = this->outliers;
-
-	                newEnergy = energy;
-	            }
-	        }
-	    }
-	}
-
-	return this->models; //Return models
+void Pearl::removePointsInModels(){ //Removes all the points attached to all the models 
+    for(int i = 0; i < this->models.size(); i++){ //For each model
+        this->outliers.insert(this->outliers.end(), this->models[i].getPointsVecBegin(), this->models[i].getPointsVecEnd()); //Insert points into outliers 
+        this->models[i].clearPoints(); //Clear points
+    }
 }
 //--------------------------------------------------------------------------------------------------------    
 void Pearl::removeModel(const int modelIndex){ //Removes model from the vector 
@@ -75,16 +86,22 @@ void Pearl::removeModel(const int modelIndex){ //Removes model from the vector
     this->models[modelIndex].clearPoints(); //Clear points
     this->models.erase(this->models.begin() + modelIndex); //Erase model fom vector
 }
-//--------------------------------------------------------------------------------------------------------
-void Pearl::removePointsInModels(){ //Removes all the points attached to all the models 
-    for(int i = 0; i < this->models.size(); i++){ //For each model
-        this->outliers.insert(this->outliers.end(), this->models[i].getPointsVecBegin(), this->models[i].getPointsVecEnd()); //Insert points into outliers 
-        this->models[i].clearPoints(); //Clear points
-    }
-}
+
 
 //########################################################################################################
 
+//--------------------------------------------------------------------------------------------------------
+void Pearl::searchModels(const int nbOfModels) { //Searches for 'nbOfModels' models that are possible 
+    Model model;
+    for(int modelNum = 0; modelNum < nbOfModels; modelNum++){ //Search for 'nbOfModels' models
+        std::vector<Point> points = this->randomPointsInField(INITIAL_NUMBER_OF_POINTS); //Pick points
+        if(points.size() != 0){
+            model.findBestModel(points); //If points vector is populated, assign it to model and add it to vector
+
+            this->models.push_back(model);
+        }
+    }
+}
 //--------------------------------------------------------------------------------------------------------
 std::vector<Point> Pearl::randomPointsInField(const int num) { //Picks 'num' different points in the outlier vector 
     std::vector<Point> ret;
@@ -106,21 +123,18 @@ std::vector<Point> Pearl::randomPointsInField(const int num) { //Picks 'num' dif
 
     return ret; //Return points
 }
-//--------------------------------------------------------------------------------------------------------
-void Pearl::searchModels(const int nbOfModels) { //Searches for 'nbOfModels' models that are possible 
-    Model model;
-    for(int modelNum = 0; modelNum < nbOfModels; modelNum++){ //Search for 'nbOfModels' models
-        std::vector<Point> points = this->randomPointsInField(INITIAL_NUMBER_OF_POINTS); //Pick points
-        if(points.size() != 0){
-            model.findBestModel(points); //If points vector is populated, assign it to model and add it to vector
-
-            this->models.push_back(model);
-        }
-    }
-}
 
 //########################################################################################################
 
+//--------------------------------------------------------------------------------------------------------
+double Pearl::expansionEnergy() { //Redistributes every point to the closest one, removes tiny models and calculates set's final energy 
+    double newEnergy = this->redistributePoints(); //Redistributes points
+    newEnergy += this->removeTinyModels(INITIAL_NUMBER_OF_POINTS); //Remove tiny models, adjusting energy
+
+    newEnergy += this->calculateAdditionalEnergy(); //Calculates additional energy
+
+    return newEnergy; //Return set's energy
+}
 //--------------------------------------------------------------------------------------------------------
 double Pearl::redistributePoints() { //Reattach points to the closest model 
     this->removePointsInModels(); //Clear points 
@@ -179,15 +193,7 @@ double Pearl::calculateAdditionalEnergy() const { //Calculates additional energy
 
     return addEnergy; //Returns extra energy                         
 }
-//--------------------------------------------------------------------------------------------------------
-double Pearl::expansionEnergy() { //Redistributes every point to the closest one, removes tiny models and calculates set's final energy 
-    double newEnergy = this->redistributePoints(); //Redistributes points
-    newEnergy += this->removeTinyModels(INITIAL_NUMBER_OF_POINTS); //Remove tiny models, adjusting energy
 
-    newEnergy += this->calculateAdditionalEnergy(); //Calculates additional energy
-
-    return newEnergy; //Return set's energy
-}
 
 //########################################################################################################
 

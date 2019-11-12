@@ -31,7 +31,7 @@ except IOError:
 
 # try to open the file to save the coordinates
 try:
-    output_name = file_name + ".csv"
+    output_name = "/home/usrlocal/Plants Position/" + file_name + ".csv"
     output_file = open(output_name, 'w')  # if the file exists it is erased
 except IOError:
     print("[ERROR] can not open the file", output_name)

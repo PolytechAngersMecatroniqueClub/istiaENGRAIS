@@ -6,12 +6,12 @@ outputfile = "engrais3.world"  # name of the generated world
 myworld = open(outputfile, "w")
 
 # parameters:
-nb_rows = 4             # nb rows
-nb_plants_rows = 20     # nb plants in a row
-space_between_rows = 1  # space between two rows (from center to center)
+nb_rows = 6             # nb rows
+nb_plants_rows = 40     # nb plants in a row
+space_between_rows = 1.3  # space between two rows (from center to center)
 row_width = 0.1        # width of a row
-row_lenght = 5         # length of a row
-nb_outliers = 20        # nb of outliers in the all field
+row_lenght = 10         # length of a row
+nb_outliers = 50        # nb of outliers in the all field
 space_min_plants = 0.15 # minimal space between two generated plants
 
 myworld.write('<?xml version="1.0" ?>\n')

@@ -3,9 +3,14 @@
 #include <chrono>
 #include <time.h>  
 #include <stdio.h> 
-#include <stdlib.h>   
+#include <stdlib.h>
+#include <fstream>   
 #include <iostream>
 #include <algorithm>
+
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
 
 #include <ros/ros.h>
 #include <ros/console.h>
@@ -36,8 +41,9 @@ RubyGeneticOnePoint rubyGeneticOP; //Ruby objectPearl pearl; //Ruby object
 RubyGeneticOnePointPosNeg rubyGeneticOPPN; //Ruby objectPearl pearl; //Ruby object
 RubyGeneticOnePointPosNegInfinite rubyGeneticOPPNInf; //Ruby objectPearl pearl; //Ruby object
 
+ofstream arq;
 
-string mapName, node_name; //rviz map name
+string mapName, node_name, arq_name; //rviz map name
 
 ros::Publisher pubLineNode; //Lines found publisher
 
@@ -115,12 +121,20 @@ void OnRosMsg(const sensor_msgs::LaserScan & msg){ //ROS message received
     std::chrono::duration<double> diff = start - last; //Get elapsed time from first message
     std::chrono::duration<double> elapsed_seconds = std::chrono::duration<double>::zero(); //Set 0
 
-    int cont = 0;
     while(ros::ok() && elapsed_seconds.count() <= diff.count() * 0.7){ //Continue calculating until hit 80% of message period
-        cont++;
         usedAlgo->populateOutliers(msg); //Populate outliers
 
+        auto exec_start = std::chrono::system_clock::now(); //Get time now
+
         vector <Model> lines = usedAlgo->findLines(); //Find models in cloud
+
+        auto exec_end = std::chrono::system_clock::now(); //Get time now
+
+        std::chrono::duration<double> elapsed_exec = exec_end - exec_start;
+
+        if(arq_name != "none"){
+            arq << usedAlgo->getInitialField().size() << ";" << elapsed_exec.count() * 1000.0 << endl;
+        }
 
         sendLine(lines, *usedAlgo); //Send found models via ROS
 
@@ -129,12 +143,10 @@ void OnRosMsg(const sensor_msgs::LaserScan & msg){ //ROS message received
         elapsed_seconds = end - start; //Update elapsed time
     }
 
-    //cout << node_name << ":: Cont: " << cont << ", Elaped Time:" << elapsed_seconds.count()*1000 << ", time diff between msgs: " << diff.count()*1000 << endl << endl;
     last = start;
 }
 //--------------------------------------------------------------------------------------------------------
 int main(int argc, char **argv){ //Main function 
-
     srand (time(NULL)); //Set RNG seed
     ros::init(argc, argv, "engrais_findlines"); //Initialize ROS
     ros::NodeHandle node;
@@ -152,7 +164,14 @@ int main(int argc, char **argv){ //Main function
 
     node.param<string>(node_name + "/rviz_frame", mapName, "world"); //Get optional parameters
     node.param<string>(node_name + "/algorithm", algorithm, "Pearl"); //Get optional parameters
-    cout << endl << algorithm << endl<< endl;
+
+    node.param<string>(node_name + "/arq_name", arq_name, "none");
+
+    if(arq_name != "none"){
+        arq.open(arq_name, std::ofstream::out | std::ofstream::trunc);
+
+        arq << "nPoints;execution_time" << endl;
+    }
 
     if(algorithm == "Pearl")
         usedAlgo = &pearl;
@@ -185,6 +204,9 @@ int main(int argc, char **argv){ //Main function
     pubLineNode.shutdown();
     ros::shutdown();
 
+    if(arq_name != "none"){
+        arq.close();
+    }
     return 0;
 }
 

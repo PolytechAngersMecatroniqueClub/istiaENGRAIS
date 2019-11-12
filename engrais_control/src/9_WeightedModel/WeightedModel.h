@@ -20,7 +20,7 @@ class WeightedModel{ //Class to combine models into a "Center Of Mass" model
     private:
         std::vector<int> cont; //Counter to calculate the final model
 
-        double a = MAX_DBL; //Final slope
+        double a = MAX_DBL;  //Final slope
         double b = MAX_DBL; //Final intercept
 
         std::pair<Point, Point> positivePoints; //Initial and final point to 
@@ -34,17 +34,11 @@ class WeightedModel{ //Class to combine models into a "Center Of Mass" model
         //------------------------------------------------------------------------------------------------
         WeightedModel(const double aa, const double bb); //Constructor to assign slope and intercept
         //------------------------------------------------------------------------------------------------
-        WeightedModel(const double aa, const double bb, const std::vector<int> & c); //Constructor to assign slope, intercept and count
-        //------------------------------------------------------------------------------------------------
         double getSlope() const; //Get slope
         //------------------------------------------------------------------------------------------------
         double getIntercept() const; //Get intercept
 
-        void normalizeModel(const std::vector<int> & maxCounter);
-        //------------------------------------------------------------------------------------------------
-        int getFrontCounter() const; //Get counter
-        int getBackCounter() const; //Get counter
-        int getTotalCounter() const; //Get counter
+        int getTotalCounter() const { return (cont[0] + cont[1]);}
         //------------------------------------------------------------------------------------------------
         void assignPoints(const Model & m, bool isFrontMsg = true); //Assign points to weighted model
         //------------------------------------------------------------------------------------------------
@@ -66,17 +60,10 @@ inline WeightedModel::WeightedModel(const Model & m, bool isFrontMsg) : a(m.getS
 //--------------------------------------------------------------------------------------------------------
 inline WeightedModel::WeightedModel(const double aa, const double bb) : a(aa), b(bb), cont(2,0) {} //Constructor to assign slope and intercept
 
-inline WeightedModel::WeightedModel(const double aa, const double bb, const std::vector<int> & c) : a(aa), b(bb), cont(2,0) { cont[0] = c[0]; cont[1] = c[1]; } //Constructor to assign slope and intercept
-
-
 //--------------------------------------------------------------------------------------------------------
 inline double WeightedModel::getSlope() const { return a; } //Get slope
 //--------------------------------------------------------------------------------------------------------
 inline double WeightedModel::getIntercept() const { return b; } //Get intercept
-//--------------------------------------------------------------------------------------------------------
-inline int WeightedModel::getFrontCounter() const { return cont[1]; } //Get counter
-inline int WeightedModel::getBackCounter() const { return cont[0]; } //Get counter
-inline int WeightedModel::getTotalCounter() const { return cont[0] + cont[1]; } //Get counter
 
 #endif
 //********************************************************************************************************

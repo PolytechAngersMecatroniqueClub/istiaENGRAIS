@@ -66,16 +66,16 @@ class RobotControl{
         //------------------------------------------------------------------------------------------------
         void backLinesMessage(const visualization_msgs::Marker & msg); //Receive message from back lines (found by back LIDAR)   
         //------------------------------------------------------------------------------------------------
-        std::vector<Model> selectModels(const std::vector<int> & msgCounter); //Select left and right models
+        std::pair<std::vector<Model>, std::vector<bool>> selectModels(const std::vector<int> & msgCounter); //Select left and right models
         //------------------------------------------------------------------------------------------------
         std::pair<std_msgs::Float64, std_msgs::Float64> getWheelsCommand(std::vector<Model> & selectedModels); //Get wheel command from finite state machine
 
     private:
         std::vector<Model> initializeRobot();
 
-        std::vector<Model> findBestModels(const std::vector<Model> &);
+        std::pair<std::vector<Model>, std::vector<bool>> findBestModels(const std::vector<Model> &);
 
-        void getFirstAndLastPoint(std::vector<Model> & models) const;
+        void getFirstAndLastPoint(std::pair<std::vector<Model>, std::vector<bool>> & models) const;
 
         Model translateLine(const Model m, const double newOX, const double newOY) const;
         Model rotateLine(const Model m, const double angleRot) const;

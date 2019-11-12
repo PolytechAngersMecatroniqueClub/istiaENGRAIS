@@ -13,11 +13,11 @@
           <uri>model://plantgreen</uri>
         </include>
       </model>
-      <pose>2.5 -0.5 0 0 0 0</pose>
+      <pose>5.0 -0.5 0 0 0 0</pose>
       <box>
-        <size>5 0.1 0.01</size>
+        <size>10 0.1 0.01</size>
       </box>
-      <model_count>30</model_count>
+      <model_count>60</model_count>
       <distribution>
         <type>random</type>
       </distribution>
@@ -28,11 +28,11 @@
           <uri>model://plantgreen</uri>
         </include>
       </model>
-      <pose>2.5 0.5 0 0 0 0</pose>
+      <pose>5.0 0.5 0 0 0 0</pose>
       <box>
-        <size>5 0.1 0.01</size>
+        <size>10 0.1 0.01</size>
       </box>
-      <model_count>30</model_count>
+      <model_count>60</model_count>
       <distribution>
         <type>random</type>
       </distribution>
@@ -43,11 +43,11 @@
           <uri>model://plantgreen</uri>
         </include>
       </model>
-      <pose>2.5 1.5 0 0 0 0</pose>
+      <pose>5.0 1.5 0 0 0 0</pose>
       <box>
-        <size>5 0.1 0.01</size>
+        <size>10 0.1 0.01</size>
       </box>
-      <model_count>30</model_count>
+      <model_count>60</model_count>
       <distribution>
         <type>random</type>
       </distribution>
@@ -58,11 +58,41 @@
           <uri>model://plantgreen</uri>
         </include>
       </model>
-      <pose>2.5 2.5 0 0 0 0</pose>
+      <pose>5.0 2.5 0 0 0 0</pose>
       <box>
-        <size>5 0.1 0.01</size>
+        <size>10 0.1 0.01</size>
       </box>
-      <model_count>30</model_count>
+      <model_count>60</model_count>
+      <distribution>
+        <type>random</type>
+      </distribution>
+    </population>
+    <population name="row4">
+      <model name="plantgreen4">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+      </model>
+      <pose>5.0 3.5 0 0 0 0</pose>
+      <box>
+        <size>10 0.1 0.01</size>
+      </box>
+      <model_count>60</model_count>
+      <distribution>
+        <type>random</type>
+      </distribution>
+    </population>
+    <population name="row5">
+      <model name="plantgreen5">
+        <include>
+          <uri>model://plantgreen</uri>
+        </include>
+      </model>
+      <pose>5.0 4.5 0 0 0 0</pose>
+      <box>
+        <size>10 0.1 0.01</size>
+      </box>
+      <model_count>60</model_count>
       <distribution>
         <type>random</type>
       </distribution>

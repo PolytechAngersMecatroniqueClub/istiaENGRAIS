@@ -10,6 +10,9 @@
 	<arg name="back_lines_topic" value="/engrais/laser_back/lines"/>
 	<arg name="back_rviz_frame" value="sick_back_link"/>
 
+	<arg name="algorithm" />
+	<arg name="file_name" />
+	<arg name="execution_file_name" />
 
 	<!--> Robot Central arguments <-->
 	<arg name="left_weel_topic" value="/engrais/leftWheel_controller/command"/>
@@ -17,7 +20,6 @@
 
 
 	<!--><include file="$(find engrais_gazebo)/launch/engrais_world.launch" /><-->
-	<include file="$(find engrais_description)/launch/rviz.launch" />
 
 	<include file="$(find engrais_control)/launch/findlines.launch">
 		<arg name="subscribe_topic_front" value="$(arg front_scan_topic)"/>

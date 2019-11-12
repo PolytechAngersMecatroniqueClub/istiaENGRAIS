@@ -28,8 +28,8 @@
 class StateMachine{ //Class to implement a state machine 
     private:
         //------------------------------------------------------------------------------------------------
-        enum States { BACKWARD = -1, INITIAL = 0, FORWARD = 1, LINEAR_STOP = 2, ANGULAR_STOP = 3, LEFT_TURN_BEGIN = 4, LEFT_TURN_MID = 5, 
-                      LEFT_TURN_MERGE = 6, END = 7, IMPOSSIBLE = 8 }; //All possible states
+        enum States { BACKWARD = -1, INITIAL = 0, FORWARD = 1, LINEAR_STOP, ANGULAR_STOP, LEFT_TURN_BEGIN, LEFT_TURN_MID, 
+                      LEFT_TURN_MERGE, RIGHT_TURN_BEGIN, RIGHT_TURN_MID, RIGHT_TURN_MERGE, IMPOSSIBLE, END}; //All possible states
         //------------------------------------------------------------------------------------------------
         enum Turn { LEFT, RIGHT }; //Where to turn
         //------------------------------------------------------------------------------------------------
@@ -55,6 +55,8 @@ class StateMachine{ //Class to implement a state machine
 
         int numOfLines = 4;
 
+        int currentRowPos = 1;
+
     public:
         //------------------------------------------------------------------------------------------------
         StateMachine(); //Default Constructor
@@ -78,6 +80,12 @@ class StateMachine{ //Class to implement a state machine
         Transition leftTurnMidStateRoutine(std::vector<Model> & models, double dist); //Lert Turn Mid State
         //------------------------------------------------------------------------------------------------
         Transition leftTurnMergeStateRoutine(std::vector<Model> & models); //Lert Turn Merge State
+        //------------------------------------------------------------------------------------------------
+        Transition rightTurnBeginStateRoutine(std::vector<Model> & models); //Lert Turn Begin State
+        //------------------------------------------------------------------------------------------------
+        Transition rightTurnMidStateRoutine(std::vector<Model> & models, double dist); //Lert Turn Mid State
+        //------------------------------------------------------------------------------------------------
+        Transition rightTurnMergeStateRoutine(std::vector<Model> & models); //Lert Turn Merge State
         //------------------------------------------------------------------------------------------------
         Transition endStateRoutine(std::vector<Model> & models); //End State 
         //------------------------------------------------------------------------------------------------
