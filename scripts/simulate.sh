@@ -11,7 +11,7 @@ algorithm=("Pearl" "RubyPure" "RubyGenetic" "RubyGeneticOnePoint" "RubyGeneticOn
 
 printf "\nLaunching Simulation:\n\n"
 
-for environment in ${resDirectory[@]}
+for environment in ${resDirectory[@]:0:2}
 do
 	printf "$environment Simulation Begin:"
 
@@ -34,7 +34,7 @@ do
 			tmux new -d -s robot_control #Create robot_control session
 			tmux send-keys -t robot_control.0 "roslaunch engrais_control simulation.launch algorithm:='$algo' file_name:='../catkin_ws/src/$simResDir/$environment/$algo/${algo}_results_${i}.csv' execution_file_name:='../catkin_ws/src/$simResDir/$environment/$algo/${algo}_execution_${i}.csv' >> $baseDir/${outDir}/${environment}/${algo}/${algo}_${environment}_${i}" C-m #Launch simulation environment
 
-			sleep 45m
+			sleep 25m
 
 
 			tmux kill-session -t gazebo
@@ -52,16 +52,3 @@ do
 	printf "\n\n"
 done
 echo "Simulation finished"
-
-#algo=${algorith[0]}
-#environment=${resDirectory[0]}
-#i=0
-
-#echo "roslaunch engrais_control simulation.launch algorithm:='${algo}' file_name:='$simResPath/$environment/$algo/${algo}_results_${i}.csv' execution_file_name:='$simResPath/$environment/$algo/${algo}_execution_${i}.csv' >> './src/${outPath}/${environment}/${algo}/${algo}_${environment}_${i}'"
-
-
-
-
-
-
-

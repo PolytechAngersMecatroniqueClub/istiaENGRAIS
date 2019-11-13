@@ -22,6 +22,7 @@ def main():
 	input_directory = sys.argv[3]
 	output_directory = sys.argv[4]
 	plants_directory = sys.argv[5]
+
 	nSim = int(sys.argv[6])
 
 	if not os.path.exists(output_directory):
@@ -42,8 +43,50 @@ def main():
 	    )
 	)
 
-	fig.update_xaxes(range=[-2.0, 30.0])
-	fig.update_yaxes(range=[-1.0, 5.5])
+	maxX = 10.0
+	maxY = 10.0
+
+	movementRange = [0, 0]
+
+	if(environment == "engrais"):
+		fig.update_xaxes(range=[-2.0, 14.0])
+		fig.update_yaxes(range=[-1.0, 7.0])
+		maxX = 13.0
+		maxY = 5.5
+
+		rowsDistance = 1.5
+
+		movementRange = [1, 11]
+
+	elif(environment == "engrais2"):
+		fig.update_xaxes(range=[-2.0, 12.0])
+		fig.update_yaxes(range=[-1.0, 5.0])
+		maxX = 11.0
+		maxY = 3.5
+
+		rowsDistance = 1.0
+
+		movementRange = [1, 9]
+
+	elif(environment == "engrais3"):
+		fig.update_xaxes(range=[-2.0, 13.0])
+		fig.update_yaxes(range=[-1.0, 7.5])
+		maxX = 10.0
+		maxY = 5.0
+
+		rowsDistance = 1.3
+
+		movementRange = [1, 8]
+
+	elif(environment == "engrais4"):
+		fig.update_xaxes(range=[-2.0, 30.0])
+		fig.update_yaxes(range=[-1.0, 5.5])
+		maxX = 23.0
+		maxY = 3.5
+
+		rowsDistance = 1.0
+
+		movementRange = [1, 23]
 	 
 	red_plant_pos_x = []
 	red_plant_pos_y = []
@@ -70,6 +113,10 @@ def main():
 	fig.add_trace(go.Scatter(x=green_plant_pos_x, y=green_plant_pos_y, marker_color='rgba(0, 200, 0, .8)', name ="Plants"))
 	fig.update_traces(mode='markers', marker_line_width=1.5, marker_size=4)
 
+	resume_file = open_file(output_directory + "/" + algorithm + "_" + environment + "_results.csv", "w") # ~/<path>/engrais4/Pearl/Pearl_results_0.csv
+	resume_file.write("iteration;Mean Err^2;Mean Points;Mean Exec Time(ms)\n")
+
+
 	for i in range(nSim):
 		t = []
 		x = []
@@ -79,7 +126,10 @@ def main():
 		p = []
 		ya = []
 
+		err = []
+
 		input_file = open_file(input_directory + "/" + environment + "/" + algorithm + "/" + algorithm + "_results_" + str(i) + ".csv", "r") # ~/<path>/engrais4/Pearl/Pearl_results_0.csv
+		execution_file = open_file(input_directory + "/" + environment + "/" + algorithm + "/" + algorithm + "_execution_" + str(i) + ".csv", "r") # ~/<path>/engrais4/Pearl/Pearl_results_0.csv
 
 		for j, line in enumerate(input_file):
 			if(j == 0):
@@ -97,16 +147,44 @@ def main():
 			p.append(float(data[7]))
 			ya.append(float(data[8]))
 
+
+			if(movementRange[0] <= float(data[2]) <= movementRange[1]):
+				for n in range(5):
+					if(n * rowsDistance <= float(data[3]) + rowsDistance/2.0 <= rowsDistance * (n + 1)):
+						err.append((float(data[3]) - n * rowsDistance) ** 2.0)
+
+
+			if(x[len(x) - 1] >= maxX and y[len(y) - 1] >= maxY):
+				break
+
 		fig.add_trace(go.Scatter(x=x, y=y, line_shape='linear', name = "trajectory_" + str(i)))
+
+		cont = 0
+		nPointsSum = 0
+		execTimeSum = 0
+
+		for j, line in enumerate(execution_file):
+			if(j == 0):
+				continue
+
+			data = line.split(';')
+
+			if(int(data[0]) < 10):
+				break
+
+			nPointsSum += int(data[0])
+			execTimeSum += float(data[1])
+			cont += 1
+
+		resume_file.write(str(i) + ";" + str(sum(err) / len(err)) + ";" + str(nPointsSum/float(cont)) + ";" + str(execTimeSum/float(cont)) + "\n")
 
 	fig.write_image(output_directory + "/" + algorithm + "_" + environment + ".svg")
 
 	#fig.show()
 
-
 if __name__ == "__main__":
 	if len(sys.argv) != 7:  # given file name
-	    print("[ERROR] Wrong argument, expecting 'algorithm', 'environment', 'results_directory', 'output_directory', 'plants_CSV_directory', 'number of simulations")
+	    print("[ERROR] Wrong argument, expecting 'algorithm', 'environment', 'results_directory', 'output_directory', 'plants_CSV_directory', 'number of simulations'")
 	    sys.exit(1)
 
 	main()

@@ -1,5 +1,5 @@
 #!/bin/bash
-numIterations=1
+numIterations=5
 baseDir="../../Results"
 worldsDir="../engrais_gazebo/worlds"
 
@@ -13,24 +13,36 @@ algorithm=("Pearl" "RubyPure" "RubyGenetic" "RubyGeneticOnePoint" "RubyGeneticOn
 
 
 mkdir -p "$baseDir/$plantsDir"
-mkdir -p "$baseDir/$resultsDir"
 
 printf "Getting Plants Position:\n\n"
 
 cd "${worldsDir}/"
 
-for environment in ${resDirectory[@]:2}
+for environment in ${resDirectory[@]}
 do
 	./plantsLocation.py "${environment}.world" "../${baseDir}/${plantsDir}/${environment}.world.csv"
 done
 
 cd "../../scripts"
 
+printf "Processing Trajectories : \n\n"
 
-for environment in ${resDirectory[3]}
+for environment in ${resDirectory[@]}
 do
-	for algo in ${algorithm[0]}
+	printf "\t$environment : \n"
+	for algo in ${algorithm[@]}
 	do
-		./resultAnalysis.py "$algo" "$environment" "$baseDir/$simResDir" "$baseDir/$resultsDir" "$baseDir/$plantsDir" "$numIterations"
+		printf "\t\t$algo "
+
+		mkdir -p "$baseDir/$resultsDir/$environment/$algo"
+
+		./resultAnalysis.py "$algo" "$environment" "$baseDir/$simResDir" "$baseDir/$resultsDir/$environment/$algo" "$baseDir/$plantsDir" "$numIterations"
+
+		printf "OK\n"
 	done
+
+	printf "\n"
+
 done
+
+printf "Finished\n\n"
