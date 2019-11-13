@@ -1,7 +1,108 @@
-# ENGRAIS
+
+# ENGRAIS Master
 This repository contains all the packages to simulate and control a robot through an unknown field, using LIDAR sensors.
 
-This project contains 3 packages.
+
+# ROS Setup
+
+To use all ROS nodes and liberaries created, we have a few settings to make. 
+
+    1) Install ROS using the tutorial in wiki.ros.org/melodic/Installation/Ubuntu (Currently the last version is ROS Melodic)
+
+    2) Create a catkin workspace
+        ~$ mkdir catkin_ws
+        ~$ cd catkin_ws/
+        ~/catkin_ws$ mkdir src 
+        ~/catkin_ws$ catkin_make
+
+    3) Install Git using the commands 
+        ~$ sudo apt-get update
+        ~$ sudo apt-get install git
+
+    4) Clone the git repository inside the workspace and change to the "raspberry_pi" branch
+        ~$ cd catkin_ws/src/
+        ~/catkin_ws/src$ git clone https://github.com/PolytechAngersMecatroniqueClub/istiaENGRAIS.git
+        ~/catkin_ws/src$ git checkout raspberry_pi
+
+    5) In directory ~/catkin_ws/src/istiaENGRAIS/engrais_control/src/.fuzzylite-6.0 copy fuzzylite-6.0-linux64.zip to ~/Downloads and extract it
+
+    6) Build the library
+        ~$ cd Downloads/fuzzylite-6.0-linux64/fuzzylite-6.0/fuzzylite/
+        ~/Downloads/fuzzylite-6.0-linux64/fuzzylite-6.0/fuzzylite$ chmod +x build.sh 
+        ~/Downloads/fuzzylite-6.0-linux64/fuzzylite-6.0/fuzzylite$ ./build.sh
+
+    7) Copy the binaries in folder "~/Downloads/fuzzylite-6.0-linux64/fuzzylite-6.0/fuzzylite/release/bin/" to "~/catkin_ws/src/istiaENGRAIS/engrais_control/src/.fuzzylite-6.0/bin/"
+
+    8) Build everything
+        ~$ cd catkin_ws/
+        ~/catkin_ws$ catkin_make 
+
+    9) Using ~$ gedit .bashrc add the following lines to the end of it :
+        source /opt/ros/melodic/setup.bash
+        source ~/catkin_ws/devel/setup.bash 
+
+# Gazebo Setup
+
+The next step is to install the simulation environment gazebo and its packages
+
+    1) Follow the alternative method in : http://gazebosim.org/tutorials?tut=install_ubuntu&cat=install the last version is the 9.0
+      *) If "gazebo: symbol lookup error: /usr/lib/x86_64-linux-gnu/libgazebo_common.so.9: undefined symbol" error appears, try running "sudo apt upgrade libignition-math2"
+    
+    2) Install these packages :
+
+      sudo apt install ros-melodic-gazebo-ros
+      sudo apt install ros-melodic-controller-manager
+      sudo apt install ros-melodic-velocity-controllers
+      sudo apt install ros-melodic-controller-interface
+      sudo apt install ros-melodic-joint-state-controller
+      sudo apt install ros-melodic-effort-controllers
+
+Now all the silulation parts are ready 
+
+# Scripts
+
+This folder is not a packege, but it contains usefull scripts to our simulation. To run the simulation, you only have to install
+  sudo apt-get install tmux
+
+and then run it with ./simulation.sh All the results will be saved in <catkin_ws_name>/src/Results. Output will be the raw data that the algorithm prints, and Simulation Results a csv with time(s) | x | y | z | roll | pitch | yall, organized by environment and algorithm used.
+
+To get the graph analysis you will have to install:
+  1) Miniconda using the installer found in https://docs.conda.io/en/latest/miniconda.html
+
+  2) Plotly : conda install -c plotly plotly=4.2.1
+
+  3) Orca : conda install -c plotly plotly-orca psutil requests
+
+  4) These libraries
+    sudo apt -y install libgconf2-4
+    sudo apt install libcanberra-gtk-module libcanberra-gtk3-module
+
+Then, reopen terminal and run ./analysis.sh All the graphs will be saved in <catkin_ws_name>/src/Results. The folder Plants Position has the plants positions for engrais3 and 4, and the folder Analysis results will have all the graphs
+
+Then, reopen terminal and run ./analysis.sh All the graphs will be saved in <catkin_ws_name>/src/Results. The folder Plants Position has the plants positions for engrais3 and 4, and the folder Analysis results will have all the graphs
+
+\***WARNING**\*
+
+Conda will add some lines to ~/.bashrc that will interfere with ROS, thus they CANNOT run at the same time. The best solotion is to comment the section :
+
+    # >>> conda initialize >>>
+    # !! Contents within this block are managed by 'conda init' !!
+    __conda_setup="$('/home/laris/miniconda3/bin/conda' 'shell.bash' 'hook' 2> /dev/null)"
+    if [ $? -eq 0 ]; then
+        eval "$__conda_setup"
+    else
+        if [ -f "/home/laris/miniconda3/etc/profile.d/conda.sh" ]; then
+            . "/home/laris/miniconda3/etc/profile.d/conda.sh"
+        else
+            export PATH="/home/laris/miniconda3/bin:$PATH"
+        fi
+    fi
+    unset __conda_setup
+    # <<< conda initialize <<<
+
+
+With this selection commented, ROS will run normally. If you want to run the analysis script, you will have to either uncomment those lines or run the export line before running the script.
+
 
 # engrais_control
 

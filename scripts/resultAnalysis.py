@@ -5,9 +5,9 @@ import re
 import plotly.graph_objects as go
 import numpy as np
 
-def open_file(file_name):
+def open_file(file_name, mode):
 	try:
-		file = open(file_name, "r+")
+		file = open(file_name, mode)
 	except IOError:
 		print("[ERROR] can not open the file \'" + file_name + '\'')
 		sys.exit(2)
@@ -19,14 +19,15 @@ def main():
 	algorithm = sys.argv[1]
 	environment = sys.argv[2]
 
-	input_directory = str(os.path.expanduser('~')) + "/" + sys.argv[3]
-	output_directory = str(os.path.expanduser('~')) + "/" + sys.argv[4]
-	plants_directory = str(os.path.expanduser('~')) + "/" + sys.argv[5]
+	input_directory = sys.argv[3]
+	output_directory = sys.argv[4]
+	plants_directory = sys.argv[5]
+	nSim = int(sys.argv[6])
 
 	if not os.path.exists(output_directory):
 	    os.makedirs(output_directory)
 
-	plants_file = open_file(plants_directory + "/" + environment + ".world.csv")
+	plants_file = open_file(plants_directory + "/" + environment + ".world.csv", "r")
 
 	fig = go.Figure()
 
@@ -69,7 +70,7 @@ def main():
 	fig.add_trace(go.Scatter(x=green_plant_pos_x, y=green_plant_pos_y, marker_color='rgba(0, 200, 0, .8)', name ="Plants"))
 	fig.update_traces(mode='markers', marker_line_width=1.5, marker_size=4)
 
-	for i in range(1):
+	for i in range(nSim):
 		t = []
 		x = []
 		y = []
@@ -78,7 +79,7 @@ def main():
 		p = []
 		ya = []
 
-		input_file = open_file(input_directory + "/" + environment + "/" + algorithm + "/" + algorithm + "_results_" + str(i) + ".csv") # ~/<path>/engrais4/Pearl/Pearl_results_0.csv
+		input_file = open_file(input_directory + "/" + environment + "/" + algorithm + "/" + algorithm + "_results_" + str(i) + ".csv", "r") # ~/<path>/engrais4/Pearl/Pearl_results_0.csv
 
 		for j, line in enumerate(input_file):
 			if(j == 0):
@@ -100,12 +101,12 @@ def main():
 
 	fig.write_image(output_directory + "/" + algorithm + "_" + environment + ".svg")
 
-	fig.show()
+	#fig.show()
 
 
 if __name__ == "__main__":
-	if len(sys.argv) != 6:  # given file name
-	    print("[ERROR] Wrong argument, expecting 'algorithm', 'environment', 'reults_directory', 'output_directory', 'plants_CSV_directory'")
+	if len(sys.argv) != 7:  # given file name
+	    print("[ERROR] Wrong argument, expecting 'algorithm', 'environment', 'results_directory', 'output_directory', 'plants_CSV_directory', 'number of simulations")
 	    sys.exit(1)
 
 	main()
