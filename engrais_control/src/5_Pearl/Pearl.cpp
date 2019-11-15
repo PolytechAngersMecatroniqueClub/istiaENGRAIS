@@ -3,7 +3,7 @@
 
 //--------------------------------------------------------------------------------------------------------
 std::vector<Model> Pearl::findLines() { //Find the best lines into the cloud of points 
-    double energy;
+    double energy = MAX_DBL;
 
     if(this->outliers.size() != 0){ //If the vector is not empty
         int nModels = int(this->outliers.size() / Pearl::divideFactor); //Number of models to be searched is the nu,ber of outliers / 6. Because each model gets 3 points and we want 50% of outliers still available

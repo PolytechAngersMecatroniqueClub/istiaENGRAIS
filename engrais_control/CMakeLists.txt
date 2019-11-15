@@ -203,11 +203,6 @@ add_executable(robot_findlines robot_findlines.cpp
 target_link_libraries(robot_findlines ${catkin_LIBRARIES})
 
 
-add_executable(robot_get_pose robot_get_pose.cpp
-)
-target_link_libraries(robot_get_pose ${catkin_LIBRARIES})
-
-
 add_executable(robot_control robot_control.cpp
     src/1_Point/Point.cpp
     src/2_WeightedPoint/WeightedPoint.cpp

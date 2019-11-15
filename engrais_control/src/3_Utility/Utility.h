@@ -27,7 +27,6 @@ class Utility{
 
         //################################################################################################
 
-        
         //------------------------------------------------------------------------------------------------
         static int randomInt(const int min, const int max); //Generates a random integer between "min" and "max", boundaries included
         //------------------------------------------------------------------------------------------------
@@ -35,7 +34,7 @@ class Utility{
         //------------------------------------------------------------------------------------------------
         static void printInColor(const std::string msg, const int color); //Print colored text to console
         //------------------------------------------------------------------------------------------------
-        static double distFromPointToLine(const Point & p1, const double a, const double b);
+        static double distFromPointToLine(const Point & p, const double a, const double b); //Calculates distance from point to line in the form y = ax + b
         //------------------------------------------------------------------------------------------------
         static std::vector<int> randomDiffVector(const int min, const int max, const int size); //Returns a vector, sized "size", of different random numbers ranging from "min" from "max", boundaries included
         //------------------------------------------------------------------------------------------------
@@ -79,7 +78,7 @@ inline int Utility::randomInt(const int min, const int max) { return (rand() % (
 //--------------------------------------------------------------------------------------------------------
 inline double Utility::distPoints(const Point & p1, const Point & p2) { return sqrt( pow(p1.getX() - p2.getX(), 2) + pow(p1.getY() - p2.getY(), 2) ); } //Calculates the Euclidean distance between 2 points
 //--------------------------------------------------------------------------------------------------------
-inline double Utility::distFromPointToLine(const Point & p, const double a, const double b) { return fabs(a * p.getX() - p.getY() + b) / sqrt(pow(a, 2) + 1.0); }
+inline double Utility::distFromPointToLine(const Point & p, const double a, const double b) { return fabs(a * p.getX() - p.getY() + b) / sqrt(pow(a, 2) + 1.0); } //Calculates distance from point to line in the form y = ax + b using |ax0 - y0 + b| / sqrt(a² + 1)
 
 //########################################################################################################
 

@@ -1,35 +1,32 @@
 <?xml version="1.6" ?>
 <launch>
 
-	<arg name="used_algorithm" default="RubyGeneticOnePoint"/>
+	<!--> Node Name <-->
+	<arg name="findlines_node_name" default="default_findlines"/>
 
-	<arg name="subscribe_topic_front" default="/engrais/laser_front/scan"/>
-	<arg name="publish_topic_front" default="/engrais/laser_front/lines"/>
-	<arg name="rviz_frame_front" default="sick_front_link"/>
+	<!--> ROS Topic Names <-->
+	<arg name="scan_topic" default="default/lidarPoints"/>
+	<arg name="lines_topic" default="default/foundLines"/>
+
+	<!--> Rviz Frame Name <-->
+	<arg name="world_frame" default="world"/>
+
+	<!--> Find Lines Arguments <-->
+	<arg name="used_algorithm" default="RubyGeneticOnePointPosNeg"/>
+    <arg name="emer_topic" default="none"/>
+    <arg name="output_file_name" default="none"/>
 
 
-	<arg name="subscribe_topic_back" default="/engrais/laser_back/scan"/>
-	<arg name="publish_topic_back" default="/engrais/laser_back/lines"/>
-	<arg name="rviz_frame_back" default="sick_back_link"/>
+    <!--> Launch node <-->
+	<node name="$(arg findlines_node_name)" pkg="engrais_control" type="robot_findlines">
+		<param name="subscribe_topic" type="string" value="$(arg scan_topic)"/>
+		<param name="publish_topic" type="string" value="$(arg lines_topic)"/>
 
-	<arg name="exec_file_name" default="delete"/>
-
-	<node name="engrais_findlines_front" pkg="engrais_control" type="robot_findlines" output="screen">
-		<param name="subscribe_topic" type="string" value="$(arg subscribe_topic_front)"/>
-		<param name="publish_topic" type="string" value="$(arg publish_topic_front)"/>
-		<param name="rviz_frame" type="string" value="$(arg rviz_frame_front)"/>
-
-		<param name="arq_name" type="string" value="$(arg exec_file_name)"/>
+		<param name="rviz_frame" type="string" value="$(arg world_frame)"/>
 		<param name="algorithm" type="string" value="$(arg used_algorithm)"/>
-	</node>
-	
-	<node name="engrais_findlines_back" pkg="engrais_control" type="robot_findlines" output="screen">
-		<param name="subscribe_topic" type="string" value="$(arg subscribe_topic_back)"/>
-		<param name="publish_topic" type="string" value="$(arg publish_topic_back)"/>
-		<param name="rviz_frame" type="string" value="$(arg rviz_frame_back)"/>
 
-		<param name="arq_name" type="string" value="none"/>
-		<param name="algorithm" type="string" value="$(arg used_algorithm)"/>
+        <param name="emergency_topic" type="string" value="$(arg emer_topic)"/>
+        <param name="arq_name" type="string" value="$(arg output_file_name)"/>
 	</node>
 
 </launch>

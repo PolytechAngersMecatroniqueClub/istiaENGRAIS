@@ -60,7 +60,7 @@ class Model{ //Class to store models (lines)
         //------------------------------------------------------------------------------------------------
         std::vector<Point>::const_iterator getPointsVecBegin() const; //Get iterator to first point
         //------------------------------------------------------------------------------------------------
-        std::pair<Point, Point> getFirstAndLastPoint(bool isRotated = false) const; //Get the negative-most point (first) and the positive-most point (second) using only x-coordinate
+        std::pair<Point, Point> getFirstAndLastPoint(const bool isRotated = false) const; //Get the negative-most point (first) and the positive-most point (second) using only x-coordinate and rotates it 180º if argument is true
 
         //################################################################################################
 

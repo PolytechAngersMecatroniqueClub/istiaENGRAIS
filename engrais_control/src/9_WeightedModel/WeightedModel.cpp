@@ -45,16 +45,16 @@ void WeightedModel::fuseModels(const Model & m, bool isFrontMsg){ //Calculate th
 Model WeightedModel::toModel() const { //Converts to regular model 
     Model ret(this->a, this->b); //Declare model with calculated slope and intercept
 
-    if(negativePoints.second.isAssigned()) //Assign negative-most point
-        ret.pushPoint(negativePoints.second);
-    else if(positivePoints.first.isAssigned())
-        ret.pushPoint(positivePoints.first);
+    if(this->negativePoints.second.isAssigned()) //Assign negative-most point
+        ret.pushPoint(this->negativePoints.second);
+    else if(this->positivePoints.first.isAssigned())
+        ret.pushPoint(this->positivePoints.first);
         
 
-    if(positivePoints.second.isAssigned()) //Assign positive-most point
-        ret.pushPoint(positivePoints.second);
-    else if(negativePoints.first.isAssigned())
-        ret.pushPoint(negativePoints.first);
+    if(this->positivePoints.second.isAssigned()) //Assign positive-most point
+        ret.pushPoint(this->positivePoints.second);
+    else if(this->negativePoints.first.isAssigned())
+        ret.pushPoint(this->negativePoints.first);
 
 
     return ret;

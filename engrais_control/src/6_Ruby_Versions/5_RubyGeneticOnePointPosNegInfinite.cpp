@@ -47,6 +47,8 @@ void RubyGeneticOnePointPosNegInfinite::populateOutliers(const sensor_msgs::Lase
     else if(fusedPoint.getX() != MIN_DBL && fusedPoint.getY() != MIN_DBL){ //Add to second half if negative Y
         this->field.push_back(fusedPoint);
     }
+
+    initialField = this->outliers; //Store initial field
 }
 //--------------------------------------------------------------------------------------------------------
 std::vector<Model> RubyGeneticOnePointPosNegInfinite::findLines() { //Find the best lines into the cloud of points 

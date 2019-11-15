@@ -9,7 +9,8 @@ void RubyGeneticOnePoint::populateOutliers(const sensor_msgs::LaserScan & msg){ 
     this->outliers.clear(); //Clears outliers vector
 
     for(int i = 0; i < this->models.size(); i++){ //For every model
-        this->models[i].clearPoints(); //Clear models points
+        this->models[i].clearPoints();
+        this->models[i].resetParallelCount();
     }
 
     WeightedPoint fusedPoint;

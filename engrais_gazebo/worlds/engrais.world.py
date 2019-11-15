@@ -2,7 +2,7 @@
 #pyhton code that generates a world with random plants and weeds
 import random as random
 
-outputfile = "engrais2.world"  # name of the generated world
+outputfile = "engrais.world"  # name of the generated world
 myworld = open(outputfile, "w")
 
 # world parameters:

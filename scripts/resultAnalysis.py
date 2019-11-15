@@ -169,7 +169,7 @@ def main():
 
 			data = line.split(';')
 
-			if(int(data[0]) < 10):
+			if(j > 500):
 				break
 
 			nPointsSum += int(data[0])

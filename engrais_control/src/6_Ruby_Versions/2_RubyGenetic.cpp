@@ -144,7 +144,7 @@ void RubyGenetic::eraseBadModels(){ //Erases models that are considered bad
 
     std::sort(this->models.begin(), this->models.end()); //sort it from better to worse
 
-    int initialPos = std::max((int)(this->models.size()*0.25), 4); 
+    int initialPos = std::max((int)(this->models.size()*0.25), 6); 
 
     for(int i = initialPos; i < this->models.size(); i++){ //Keeps the 25% best models, or at least 4
     	this->removeModel(i);

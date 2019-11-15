@@ -56,7 +56,7 @@ Model Model::linearFit(const std::vector<Point> & vec){ //Uses gauss' linear reg
 //########################################################################################################
 
 //--------------------------------------------------------------------------------------------------------
-std::pair<Point, Point> Model::getFirstAndLastPoint(bool isRotated) const { //Get the closest point (first) and the farthest point (second) using only x-coordinate
+std::pair<Point, Point> Model::getFirstAndLastPoint(const bool isRotated) const { //Get the closest point (first) and the farthest point (second) using only x-coordinate and rotates it 180º if argument is true
     int mult = isRotated ? -1 : 1;
 
     std::pair<Point, Point> ret;

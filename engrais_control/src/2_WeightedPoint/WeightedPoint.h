@@ -64,7 +64,6 @@ inline bool WeightedPoint::operator != (const WeightedPoint & wp) const { return
 //--------------------------------------------------------------------------------------------------------
 inline bool WeightedPoint::operator == (const WeightedPoint & wp) const { return (this->getX() == wp.getX() && this->getY() == wp.getY() && this->getWeight() == wp.getWeight()); } //Checks if equal
 
-
 //########################################################################################################
 
 //--------------------------------------------------------------------------------------------------------

@@ -2,20 +2,17 @@
 #include <cmath>
 #include <chrono>
 #include <time.h>  
+#include <thread>
 #include <stdio.h> 
-#include <stdlib.h>
-#include <fstream>   
+#include <stdlib.h>   
+#include <fstream>
 #include <iostream>
 #include <algorithm>
 
-#include <unistd.h>
-#include <sys/types.h>
-#include <pwd.h>
-
 #include <ros/ros.h>
 #include <ros/console.h>
-#include <sensor_msgs/LaserScan.h>
 #include <std_msgs/Bool.h>
+#include <sensor_msgs/LaserScan.h>
 #include <visualization_msgs/Marker.h>
 
 #include <Point.h>
@@ -32,21 +29,15 @@
 
 using namespace std;
 
-Pearl* usedAlgo;
+Pearl* usedAlgo; //Used algorithm
 
-Pearl pearl;
-RubyPure rubyPure; //Ruby object
-RubyGenetic rubyGenetic; //Ruby objectPearl pearl; //Ruby object
-RubyGeneticOnePoint rubyGeneticOP; //Ruby objectPearl pearl; //Ruby object
-RubyGeneticOnePointPosNeg rubyGeneticOPPN; //Ruby objectPearl pearl; //Ruby object
-RubyGeneticOnePointPosNegInfinite rubyGeneticOPPNInf; //Ruby objectPearl pearl; //Ruby object
+ofstream arq; //Output file
 
-ofstream arq;
+string mapName, node_name, emergecy_topic, arq_name;
 
-string mapName, node_name, arq_name; //rviz map name
+ros::NodeHandle* node;
 
-ros::Publisher pubLineNode; //Lines found publisher
-
+ros::Publisher pubLineNode; //Found lines publisher
 
 //--------------------------------------------------------------------------------------------------------
 void sendLine(const vector<Model> & models, const Pearl & pearl){ //Send model's first and last point using the visualization marker 
@@ -78,11 +69,11 @@ void sendLine(const vector<Model> & models, const Pearl & pearl){ //Send model's
 
 
     for(Point point : pearl.getInitialField()){ //Get initial field to compare with the sensor's data
-		p.x = point.getX(); //Get X coordinate
-		p.y = point.getY(); //Get Y coordinate
-		p.z = 0.05; //Set a bit higher to help visualize
+        p.x = point.getX(); //Get X coordinate
+        p.y = point.getY(); //Get Y coordinate
+        p.z = 0.05; //Set a bit higher to help visualize
 
-		points.points.push_back(p); //Add points
+        points.points.push_back(p); //Add points
     }
     p.z = 0; //Reset hight
 
@@ -90,124 +81,181 @@ void sendLine(const vector<Model> & models, const Pearl & pearl){ //Send model's
         if(models[i].isPopulated() && models[i].getPointsSize() >= 2){ //If model is populated
             pair<Point, Point> points = models[i].getFirstAndLastPoint(); //Finds negative and positive-most points (x-axis)
 
-    	    p.x = points.first.getX(); //Get first point X coordinate
-    	    p.y = models[i].getSlope()*p.x + models[i].getIntercept(); //Calculate Y using the model's information
+            p.x = points.first.getX(); //Get first point X coordinate
+            p.y = models[i].getSlope()*p.x + models[i].getIntercept(); //Calculate Y using the model's information
 
-    	    line_list.points.push_back(p); //Push point
+            line_list.points.push_back(p); //Push point
 
-    	    p.x = points.second.getX(); //Last point X coordinate
-    	    p.y = models[i].getSlope()*p.x + models[i].getIntercept(); //Calculate using model's information
+            p.x = points.second.getX(); //Last point X coordinate
+            p.y = models[i].getSlope()*p.x + models[i].getIntercept(); //Calculate using model's information
 
-    	    line_list.points.push_back(p);
-    	}
+            line_list.points.push_back(p);
+        }
     }
 
     pubLineNode.publish(points); //Publish field points
     pubLineNode.publish(line_list); //Publish line list
 }
 
+//--------------------------------------------------------------------------------------------------------
+ros::Time lastMsg; //Store last time
+bool comReady = false; //Flag to say the communication is ready
+bool emergencyCalled = false; //Flag to signal exit
 
 //--------------------------------------------------------------------------------------------------------
-void exitApp(const std_msgs::Bool & msg){ //ROS message received 
-    if(msg.data)
+void OnEmergencyBrake(const std_msgs::Bool & msg){ //Emergency message
+    lastMsg = ros::Time::now(); //Store last time
+    
+    comReady = true; //Sets flag
+
+    if(msg.data == true){ //If message is true, exit
+        Utility::printInColor(node_name + ": Emergency Shutdown Called", RED);
+        emergencyCalled = true;
         ros::shutdown();
+    }
 }
 //--------------------------------------------------------------------------------------------------------
+void emergencyThread(){
+    lastMsg = ros::Time::now();
+
+    ros::Subscriber emergencySub = node->subscribe(emergecy_topic, 10, OnEmergencyBrake); //Subscribe to topics
+    ros::Publisher emergencyPub = node->advertise<std_msgs::Bool>(emergecy_topic, 10); //Topic to publish if automatic
+
+    std_msgs::Bool msg; //Sets message
+    msg.data = false;
+    
+    while(ros::ok() && !comReady) //If mode is manual, wait for comunication to be set
+        ros::Duration(0.01).sleep();
+
+    while(ros::ok() && !emergencyCalled){ //Until emergency is called
+        ros::Time now = ros::Time::now(); //get time
+        
+        ros::Duration delta_t = now - lastMsg;
+
+        if(!emergencyCalled && delta_t.toSec() > 0.2){ //If last emergency message was received more than 200ms ago, shutdown
+            Utility::printInColor(node_name + ": Emergency Timeout Shutdown", RED);
+            ros::shutdown();
+        }
+
+        ros::Duration(0.05).sleep();
+    }
+
+    emergencySub.shutdown(); //Shutdown everything
+    emergencyPub.shutdown();
+}
+
+//--------------------------------------------------------------------------------------------------------
 void OnRosMsg(const sensor_msgs::LaserScan & msg){ //ROS message received 
-    static auto last = std::chrono::system_clock::now();
+    static ros::Time last = ros::Time::now(); //Last message time
 
-    auto start = std::chrono::system_clock::now(); //Get time now
+    ros::Time exec_start, exec_end;
 
-    std::chrono::duration<double> diff = start - last; //Get elapsed time from first message
-    std::chrono::duration<double> elapsed_seconds = std::chrono::duration<double>::zero(); //Set 0
+    ros::Time start = ros::Time::now(); //Get time now
 
-    while(ros::ok() && elapsed_seconds.count() <= diff.count() * 0.7){ //Continue calculating until hit 80% of message period
+    ros::Duration diff = start - last; //Get elapsed time from first message
+    ros::Duration elapsed_seconds; //Set 0
+
+    while(ros::ok() && elapsed_seconds.toSec() <= diff.toSec() * 0.7){ //Continue calculating until hit 70% of message period
         usedAlgo->populateOutliers(msg); //Populate outliers
 
-        auto exec_start = std::chrono::system_clock::now(); //Get time now
+        if(arq_name != "none")
+            exec_start = ros::Time::now(); //Get time now
 
         vector <Model> lines = usedAlgo->findLines(); //Find models in cloud
 
-        auto exec_end = std::chrono::system_clock::now(); //Get time now
-
-        std::chrono::duration<double> elapsed_exec = exec_end - exec_start;
-
         if(arq_name != "none"){
-            arq << usedAlgo->getInitialField().size() << ";" << elapsed_exec.count() * 1000.0 << endl;
+            exec_end = ros::Time::now(); //Get time now
+
+            ros::Duration elapsed_exec = exec_end - exec_start;
+
+            arq << usedAlgo->getInitialField().size() << ";" << elapsed_exec.toSec() * 1000.0 << endl;
         }
 
         sendLine(lines, *usedAlgo); //Send found models via ROS
 
-        auto end = std::chrono::system_clock::now();
+        ros::Time end = ros::Time::now();
 
         elapsed_seconds = end - start; //Update elapsed time
     }
 
     last = start;
 }
+
+
 //--------------------------------------------------------------------------------------------------------
 int main(int argc, char **argv){ //Main function 
-    srand (time(NULL)); //Set RNG seed
-    ros::init(argc, argv, "engrais_findlines"); //Initialize ROS
-    ros::NodeHandle node;
+    srand (time(NULL));
+    ros::init(argc, argv, "engrais_findlines");
+    
+    node = new ros::NodeHandle();
 
     string algorithm, sub_topic, pub_topic;
 
     node_name = ros::this_node::getName();
 
-    Utility::printInColor(node_name + ": Initializing Robot Control Ros Node", CYAN);
+    node->param<string>(node_name + "/subscribe_topic", sub_topic, "default/lidarMsg"); //Get parameters or set default values
+    node->param<string>(node_name + "/publish_topic", pub_topic, "default/foundLines");
+    
+    node->param<string>(node_name + "/rviz_frame", mapName, "world");
+    node->param<string>(node_name + "/algorithm", algorithm, "RubyGeneticOnePointPosNeg");
 
-    if(!node.getParam(node_name + "/subscribe_topic", sub_topic) || !node.getParam(node_name + "/publish_topic", pub_topic)){ //Get mandatory parameters
-        ROS_ERROR_STREAM("Argument missing in node " << node_name << ", expected 'subscribe_topic', 'publish_topic' and [optional: 'rviz_frame']\n\n");
-        return -1;
-    }
+    node->param<string>(node_name + "/emergency_topic", emergecy_topic, "none");
+    node->param<string>(node_name + "/arq_name", arq_name, "none");
 
-    node.param<string>(node_name + "/rviz_frame", mapName, "world"); //Get optional parameters
-    node.param<string>(node_name + "/algorithm", algorithm, "Pearl"); //Get optional parameters
-
-    node.param<string>(node_name + "/arq_name", arq_name, "none");
-
-    if(arq_name != "none"){
+    if(arq_name != "none"){ //Open file if necessary
         arq.open(arq_name, std::ofstream::out | std::ofstream::trunc);
-
         arq << "nPoints;execution_time" << endl;
     }
 
-    if(algorithm == "Pearl")
-        usedAlgo = &pearl;
+    if(algorithm == "Pearl") //Declare used findlines algorithm
+        usedAlgo = new Pearl();
 
     else if(algorithm == "RubyPure")
-        usedAlgo = &rubyPure;
+        usedAlgo = new RubyPure();
 
     else if(algorithm == "RubyGenetic")
-        usedAlgo = &rubyGenetic;
+        usedAlgo = new RubyGenetic();
 
     else if(algorithm == "RubyGeneticOnePoint")
-        usedAlgo = &rubyGeneticOP;
+        usedAlgo = new RubyGeneticOnePoint();
 
     else if(algorithm == "RubyGeneticOnePointPosNeg")
-        usedAlgo = &rubyGeneticOPPN;
+        usedAlgo = new RubyGeneticOnePointPosNeg();
 
     else if(algorithm == "RubyGeneticOnePointPosNegInfinite")
-        usedAlgo = &rubyGeneticOPPNInf;
+        usedAlgo = new RubyGeneticOnePointPosNegInfinite();
 
-    ros::Subscriber sub = node.subscribe(sub_topic, 10, OnRosMsg); // /engrais/laser_front/scan or /engrais/laser_back/scan
-    ros::Subscriber exitSub = node.subscribe("/exit_app_topic", 10, exitApp); // /engrais/laser_front/scan or /engrais/laser_back/scan
 
-    pubLineNode = node.advertise<visualization_msgs::Marker>(pub_topic, 10);// /engrais/laser_front/lines or /engrais/laser_back/lines
+    ros::Subscriber sub = node->subscribe(sub_topic, 10, OnRosMsg); // /engrais/laser_front/scan or /engrais/laser_back/scan
+
+    pubLineNode = node->advertise<visualization_msgs::Marker>(pub_topic, 10);// /engrais/laser_front/lines or /engrais/laser_back/lines
+
+    thread* emergency_t; //Run thread to exit
+    if(emergecy_topic != "none")
+        emergency_t = new thread(emergencyThread);
+
 
     Utility::printInColor(node_name + ": Code Running, press Control+C to end", CYAN);
-    ros::spin(); //Spin to receive messages
+    ros::spin();
     Utility::printInColor(node_name + ": Shutting down...", CYAN);
+    
+    if(emergecy_topic != "none"){
+        emergency_t->join();
+        delete emergency_t;
+    }
 
-    sub.shutdown(); //Shutdown ROS
+    sub.shutdown(); //Shutdown everything
     pubLineNode.shutdown();
-    ros::shutdown();
 
-    if(arq_name != "none"){
+    ros::shutdown();
+       
+    delete node;
+
+    if(arq_name != "none"){ //Close file
         arq.close();
     }
+
+    Utility::printInColor(node_name + ": Code ended without errors", BLUE);
+
     return 0;
 }
-
-//********************************************************************************************************

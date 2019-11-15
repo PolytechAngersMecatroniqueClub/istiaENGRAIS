@@ -1,49 +1,41 @@
 //********************************************************************************************************
 #include "RobotControl.h"
 
-using namespace std;
-
-void RobotControl::SavedInfos::initializeValues(const vector<Model> & models){
-    double model_a = (models[1].getSlope() + models[2].getSlope()) / 2.0;
-    double model_dist = fabs(models[1].getIntercept() - models[2].getIntercept()) / sqrt(pow(model_a, 2) + 1);
-
-    this->a = (this->a * cont + model_a) / (double)(cont + 1);
-    this->dist = (this->dist * cont + model_dist) / (double)(cont + 1);
-
-    cont++;
-}
 
 //--------------------------------------------------------------------------------------------------------
+void RobotControl::SavedInfos::initializeValues(const std::vector<Model> & models, int numLines){
+    double model_a = (models[numLines/2 - 1].getSlope() + models[numLines/2].getSlope()) / 2.0; //Calculate mean slope
+
+    double model_dist = fabs(models[numLines/2 - 1].getIntercept() - models[numLines/2].getIntercept()) / sqrt(pow(model_a, 2) + 1); //Calculate distance between models
+
+    this->a = (this->a * this->cont + model_a) / (double)(this->cont + 1); //Ajust slope
+    this->dist = (this->dist * this->cont + model_dist) / (double)(this->cont + 1); //Ajust Interept
+
+    this->cont++; //Increment counter
+}
+//--------------------------------------------------------------------------------------------------------
 void RobotControl::frontPointsMessage(const visualization_msgs::Marker & msg){ //Receive message from front lines (found by front LIDAR) 
-    this->frontPoints[0].clear();
-    this->frontPoints[1].clear();
+    this->frontPoints.clear(); //Clear front points
 
-    const visualization_msgs::Marker finalMsg = this->translateAxis(msg, -BODY_SIZE/2.0, 0); //Translate from front LIDAR to robot's center
+    const visualization_msgs::Marker finalMsg = this->translateAxis(msg, -this->BODY_SIZE/2.0, 0); //Translate from front LIDAR to robot's center
 
-    for(int i = 0; i < finalMsg.points.size(); i++){
+    for(int i = 0; i < finalMsg.points.size(); i++){ //Adds points to field
         Point p(finalMsg.points[i].x, finalMsg.points[i].y);
 
-        if(p.getY() >= 0)
-            this->frontPoints[0].insert(this->frontPoints[0].begin(), p);
-        else
-            this->frontPoints[1].insert(this->frontPoints[1].end(), p);
+        this->frontPoints.push_back(p);
     }
 }
 //--------------------------------------------------------------------------------------------------------
 void RobotControl::backPointsMessage(const visualization_msgs::Marker & msg){ //Receive message from back lines (found by back LIDAR) 
-    this->backPoints[0].clear();
-    this->backPoints[1].clear();
+    this->backPoints.clear(); //Clear Back Points
 
     const visualization_msgs::Marker movedMsg = this->rotateAxis(msg, -PI); //Rotate from back LIDAR to same orientation as the robot
-    const visualization_msgs::Marker finalMsg = this->translateAxis(movedMsg, BODY_SIZE/2.0, 0); //Translate from back LIDAR to robot's center
+    const visualization_msgs::Marker finalMsg = this->translateAxis(movedMsg, this->BODY_SIZE/2.0, 0); //Translate from back LIDAR to robot's center
 
-    for(int i = 0; i < finalMsg.points.size(); i++){
+    for(int i = 0; i < finalMsg.points.size(); i++){ //Adds points to field
         Point p(finalMsg.points[i].x, finalMsg.points[i].y);
 
-        if(p.getY() >= 0)
-            this->backPoints[0].insert(this->backPoints[0].begin(), p);
-        else
-            this->backPoints[1].insert(this->backPoints[1].end(), p);
+        this->backPoints.push_back(p);
     }
 }   
 
@@ -68,78 +60,76 @@ void RobotControl::backLinesMessage(const visualization_msgs::Marker & msg){ //R
 
 
 //--------------------------------------------------------------------------------------------------------
-std::pair<std::vector<Model>, std::vector<bool>> RobotControl::selectModels(const std::vector<int> & msgCounter) { //Select left and right models 
-    cout << si << endl;
+std::pair<std::vector<Model>, std::vector<bool>> RobotControl::selectModels(){ //Finds and calculates best models 
+    if(this->si.cont < 10){ //If counter < 10, continue to initialize
+        selected = initializeRobot(); //Searches for models that are coherent with initialization phase
 
-    if(si.cont < 10){
-        selected = initializeRobot();
+        if(selected[this->NUM_OF_LINES/2 - 1].isPopulated() && selected[this->NUM_OF_LINES/2].isPopulated()){ //If those models were found
+            si.initializeValues(selected, this->NUM_OF_LINES); //Update saved values
 
-        if(selected[1].isPopulated() && selected[2].isPopulated()){
-            si.initializeValues(selected);
+            if(si.cont == 10){ //End initialization
 
-            if(si.cont == 10){
-                selected[0] = Model(si.a, selected[1].getIntercept() + si.dist);
-                selected[3] = Model(si.a, selected[2].getIntercept() - si.dist);
+                for(int i = 0; i < this->NUM_OF_LINES/2 - 1; i++) //All left models
+                    selected[i] = Model(this->si.a, selected[this->NUM_OF_LINES/2 - 1].getIntercept() + ((this->NUM_OF_LINES/2 - 1) - i) * (si.dist * sqrt(pow(si.a, 2) + 1))); //Calculate
+
+                for(int i = this->NUM_OF_LINES/2 + 1; i < this->NUM_OF_LINES; i++) //All right models
+                    selected[i] = Model(this->si.a, selected[this->NUM_OF_LINES/2].getIntercept() + ((this->NUM_OF_LINES/2) - i) * (si.dist * sqrt(pow(si.a, 2) + 1))); //Calculate
             }
         }
 
-        return std::pair<std::vector<Model>, std::vector<bool>>(vector<Model>(), vector<bool>());
+        return std::pair<std::vector<Model>, std::vector<bool>>(std::vector<Model>(), std::vector<bool>()); //Return empty vector
     }
 
-    else{
-        std::pair<std::vector<Model>, std::vector<bool>> ret = findBestModels(selected);
-        selected = ret.first;
+    else{ //After initialization
+        std::pair<std::vector<Model>, std::vector<bool>> ret = findBestModels(); //Selects and calculates models
+        selected = ret.first; //Save models
 
-        getFirstAndLastPoint(ret);
+        addPointsToModels(ret); //Find 
 
-        return ret;
+        return ret; //Return models
     }
 }
+//--------------------------------------------------------------------------------------------------------
+void RobotControl::addPointsToModels(std::pair<std::vector<Model>, std::vector<bool>> & m) const { //Add points to models 
+    std::vector<Point> field; //Declare field
 
-void RobotControl::getFirstAndLastPoint(std::pair<std::vector<Model>, std::vector<bool>> & m) const { 
-    std::vector<Point> field;
+    field.insert(field.end(), this->frontPoints.begin(), this->frontPoints.end()); //Insert front points
+    field.insert(field.end(), this->backPoints.begin(), this->backPoints.end()); //Insert back points
 
-    field.insert(field.end(), this->frontPoints[0].begin(), this->frontPoints[0].end());
-    field.insert(field.end(), this->frontPoints[1].begin(), this->frontPoints[1].end());
+    for(int i = 0; i < m.first.size(); i++) //For all models
+        m.first[i].clearPoints(); //Clears points
 
-    field.insert(field.end(), this->backPoints[0].begin(), this->backPoints[0].end());
-    field.insert(field.end(), this->backPoints[1].begin(), this->backPoints[1].end());
+    for(int i = 0; i < field.size(); i++){ //For each point
+        for(int j = 0; j < m.first.size(); j++){ //For each model
+            double dist = Utility::distFromPointToLine(field[i], m.first[j].getSlope(), m.first[j].getIntercept()); //Get distance from point to model
 
-    for(int i = 0; i < m.first.size(); i++)
-        m.first[i].clearPoints();
-
-    for(int i = 0; i < field.size(); i++){
-        for(int j = 0; j < m.first.size(); j++){
-            double dist = Utility::distFromPointToLine(field[i], m.first[j].getSlope(), m.first[j].getIntercept());
-
-            if(m.first[j].isPopulated() && dist < Pearl::distanceForOutlier && !m.second[j]){
-                m.first[j].pushPoint(field[i]);
+            if(m.first[j].isPopulated() && dist < Pearl::distanceForOutlier && !m.second[j]){ //If point was found and not calculated, and exists
+                m.first[j].pushPoint(field[i]); //Push point
             }
         }
     }
 
-    for(int i = 0; i < m.first.size(); i++){
-        if(m.second[i]){
-            for(int j = 0; j < m.first.size(); j++){
-                if(m.first[j].getPointsSize() >= 2 && i != j && !m.second[j]){
+    for(int i = 0; i < m.first.size(); i++){ //For each model
+        if(m.second[i]){ //If model was calculated
+            for(int j = 0; j < m.first.size(); j++){ //For every model
+                if(m.first[j].getPointsSize() >= 2 && i != j && !m.second[j]){ //If model was found, has more than 2 points
                     std::pair<Point, Point> p = m.first[j].getFirstAndLastPoint();
 
-                    m.first[i].pushPoint(p.first);
+                    m.first[i].pushPoint(p.first); //Add first and last point to calculated model (this works because only the x-coordinate matters)
                     m.first[i].pushPoint(p.second);
                 }
             }
         }
     }
 }
-
 //--------------------------------------------------------------------------------------------------------
-vector<Model> RobotControl::initializeRobot(){
-    vector<Model> ret(4); //Declare return
+std::vector<Model> RobotControl::initializeRobot() const { //Do the initialization process 
+    std::vector<Model> ret(this->NUM_OF_LINES); //Declare return
 
-    for(int i = 0; i < this->models.size(); i++){
-        for(int j = i + 1; j < this->models.size(); j++){
+    for(int i = 0; i < this->models.size(); i++){ //For each model
+        for(int j = i + 1; j < this->models.size(); j++){ //For each model
 
-            double slopeRatio = this->models[i].getSlope() / this->models[j].getSlope();
+            double slopeRatio = this->models[i].getSlope() / this->models[j].getSlope(); //Calculate slope ratio
             double interceptRatio = this->models[i].getIntercept() / this->models[j].getIntercept(); //Calculate intercept ratio
 
             double slopeDifference = fabs(this->models[i].getSlope() - this->models[j].getSlope()); //Calculate slope difference
@@ -149,15 +139,15 @@ vector<Model> RobotControl::initializeRobot(){
             bool isEquidistant = ((-1 - Pearl::sameInterceptThreshold <= interceptRatio && interceptRatio <= -1 + Pearl::sameInterceptThreshold) || interceptSum <= Pearl::sameInterceptThreshold); //Checks if interpect is approximately the same
 
 
-            if(fabs(this->models[i].getSlope()) < 0.05 && isParallel && isEquidistant){
+            if(fabs(this->models[i].getSlope()) < 0.05 && isParallel && isEquidistant){ //if a pair of models is approximately the parallel, equidistant and have slope ~ 0
 
-                if(this->models[i].getIntercept() >= 0 && fabs(this->models[i].getIntercept()) < fabs(ret[1].getIntercept())){
-                    ret[1] = this->models[i].toModel();
-                    ret[2] = this->models[j].toModel();
+                if(this->models[i].getIntercept() >= 0 && fabs(this->models[i].getIntercept()) < fabs(ret[this->NUM_OF_LINES/2 - 1].getIntercept())){ //If the intercept is smaller,
+                    ret[this->NUM_OF_LINES/2 - 1] = this->models[i].toModel(); //Save models
+                    ret[this->NUM_OF_LINES/2] = this->models[j].toModel();
                 }
-                else if(this->models[i].getIntercept() < 0 && fabs(this->models[i].getIntercept()) < fabs(ret[2].getIntercept())){
-                    ret[1] = this->models[j].toModel();
-                    ret[2] = this->models[i].toModel();
+                else if(this->models[i].getIntercept() < 0 && fabs(this->models[i].getIntercept()) < fabs(ret[this->NUM_OF_LINES/2].getIntercept())){ //If the intercept is smaller,
+                    ret[this->NUM_OF_LINES/2 - 1] = this->models[j].toModel(); //Save models
+                    ret[this->NUM_OF_LINES/2] = this->models[i].toModel();
                 }
             }
         }
@@ -165,35 +155,35 @@ vector<Model> RobotControl::initializeRobot(){
     
     return ret;
 }
+//--------------------------------------------------------------------------------------------------------
+std::pair<std::vector<Model>, std::vector<bool>> RobotControl::findBestModels() { //Search models received to find models that are more coherent and calculates models that are not found
+    std::pair<std::vector<Model>, std::vector<bool>> ret(std::vector<Model>(this->NUM_OF_LINES), std::vector<bool>(this->NUM_OF_LINES, false)); //Declare return
 
-std::pair<std::vector<Model>, std::vector<bool>> RobotControl::findBestModels(const std::vector<Model> & selected){
-    std::pair<std::vector<Model>, std::vector<bool>> ret(vector<Model>(4), vector<bool>(4, false));
+    int findCont = 0; //Number of models found
+    double newSlope = 0; //field's mean slope
 
-    int findCont = 0;
-    double newSlope = 0;
+    double minErr = MAX_DBL; //Stores minimum error
+    int minErrPos = MAX_INT; //Stores minimum error position
 
-    double minErr = MAX_DBL;
-    int minErrPos = MAX_INT;
-
-    for(double delta = 0.05; findCont < 1 && delta < 0.3; delta += 0.05){
+    for(double delta = 0.05; findCont < 1 && delta < 0.3; delta += 0.05){ //Increment delta until something is found
         findCont = newSlope = 0;
 
-        for(int i = 0; i < selected.size(); i++){
+        for(int i = 0; i < selected.size(); i++){ //For each selected model position
 
-            for(WeightedModel m : this->models){
-                double deltaSlope = fabs(m.getSlope() - si.a);
-                double deltaIntercept = fabs(m.getIntercept() - selected[i].getIntercept());
+            for(WeightedModel m : this->models){ //For each model
+                double deltaSlope = fabs(m.getSlope() - si.a); //|Δslope|
+                double deltaIntercept = fabs(m.getIntercept() - selected[i].getIntercept()); //|Δb|
 
-                double totalDelta = deltaSlope + deltaIntercept;
+                double totalDelta = deltaSlope + deltaIntercept; //Total delta
 
-                if(deltaSlope <= delta && deltaIntercept <= 1.2 * delta){
-                    ret.first[i] = m.toModel();
+                if(deltaSlope <= delta && deltaIntercept <= 1.2 * delta){ //If Δslope and Δb are smaller than the maximum allowed delta
+                    ret.first[i] = m.toModel(); //Store model into position
 
-                    newSlope += m.getSlope();
+                    newSlope += m.getSlope(); //Sums its slope
 
-                    findCont++;
+                    findCont++; //increment found counter
 
-                    if(minErr >= totalDelta){
+                    if(minErr >= totalDelta){ //Save minimum error
                         minErr = totalDelta;
                         minErrPos = i;
                     }
@@ -202,49 +192,29 @@ std::pair<std::vector<Model>, std::vector<bool>> RobotControl::findBestModels(co
         }
     }
 
-    if(findCont > 0){
-        si.a = newSlope / (double)findCont;
-        for(int i = 0; i < ret.first.size(); i++){
-            if(!ret.first[i].isPopulated()){
-                ret.first[i] = Model(si.a, selected[minErrPos].getIntercept() + (minErrPos - i) * (si.dist * sqrt(pow(si.a, 2) + 1)));
-                ret.second[i] = true;
+    if(findCont > 0){ //If something was found
+        si.a = newSlope / (double)findCont; //Update field's slope
+        for(int i = 0; i < ret.first.size(); i++){ //For each selected model
+
+            if(!ret.first[i].isPopulated()){ //If it's not populated
+                ret.first[i] = Model(si.a, selected[minErrPos].getIntercept() + (minErrPos - i) * (si.dist * sqrt(pow(si.a, 2) + 1))); //Calculate models using the minimum error 
+                ret.second[i] = true; //Raises calculated flag
             }
         }
     }
 
     return ret;
 }
-//--------------------------------------------------------------------------------------------------------
-std::vector<Model> RobotControl::getHorizontalModels(){ 
-    std::vector<Model> ret;
-
-    /*for(int i = 0; i < this->models.size(); i++){
-        Model m = this->models[i].toModel();
-
-
-    }*/
-
-    return ret;
-} 
 
 
 //--------------------------------------------------------------------------------------------------------
-std::pair<std_msgs::Float64, std_msgs::Float64> RobotControl::getWheelsCommand(std::vector<Model> & selectedModels){ //Get wheel command from finite state machine 
-    std::tuple<double, double, std::vector<Model>> controls = robotFSM.makeTransition(selectedModels, si.dist); //Calculate FSM's transition based on selected models
+std::pair<std_msgs::Float64, std_msgs::Float64> RobotControl::getWheelsCommand(){ //Get wheel command from finite state machine 
+    std::pair<double, double> controls = robotFSM.makeTransition(selected, si.dist); //Calculate FSM's transition based on selected models
 
     std::pair<std_msgs::Float64, std_msgs::Float64> ret;
 
-    ret.first.data = std::get<0>(controls); //Cenvert to ROS message
-    ret.second.data = std::get<1>(controls);
-
-    /*cout << "Selected Class ";
-    Utility::printVector(selected);
-    cout << "Selected Argument ";
-    Utility::printVector(selectedModels);*/
-
-    if(selectedModels.size() != 0)
-        selected = selectedModels;
-
+    ret.first.data = controls.first; //Cenvert to ROS message
+    ret.second.data = controls.second;
 
     return ret;
 }
@@ -265,40 +235,6 @@ void RobotControl::addMsgModels(const std::vector<Model> & modelsInMsg, bool isF
         }
     }
 }
-
-
-//--------------------------------------------------------------------------------------------------------
-Model RobotControl::translateLine(const Model m, const double newOX, const double newOY) const {
-
-    double newSlope = m.getSlope(); //a' = a
-    double newIntercept = m.getSlope() * newOX - newOY + m.getIntercept(); //b' = a * x0 - y0 + b
-
-    std::vector<Point> newPoints = translateAxis(m.getPointsInModel(), newOX, newOY);
-
-    Model ret(newSlope, newIntercept);
-
-    for(int i = 0; i < newPoints.size(); i++)
-        ret.pushPoint(newPoints[i]);
-
-    return ret;
-}
-//--------------------------------------------------------------------------------------------------------
-Model RobotControl::rotateLine(const Model m, const double angleRot) const {
-    double div = cos(angleRot) - m.getSlope() * sin(angleRot); //cos(θ) - a*sin(θ)
-
-    double newSlope = div != 0 ? (m.getSlope() * cos(angleRot) + sin(angleRot)) / div : MAX_DBL; //a' = (a*cos(θ) + sin(θ)) / (cos(θ) - a*sin(θ))
-    double newIntercept = div != 0 ? m.getIntercept() / div : MAX_DBL; //b' = b / (cos(θ) - a*sin(θ))
-
-    std::vector<Point> newPoints = rotateAxis(m.getPointsInModel(), angleRot);
-
-    Model ret(newSlope, newIntercept);
-
-    for(int i = 0; i < newPoints.size(); i++)
-        ret.pushPoint(newPoints[i]);
-
-    return ret;
-}
-
 
 //--------------------------------------------------------------------------------------------------------
 std::vector<Point> RobotControl::translateAxis(const std::vector<Point> & points, const double newOX, const double newOY) const { //Translate points from origin 
@@ -328,8 +264,6 @@ std::vector<Point> RobotControl::rotateAxis(const std::vector<Point> & points, c
 
     return ret;
 }
-
-
 //--------------------------------------------------------------------------------------------------------
 visualization_msgs::Marker RobotControl::translateAxis(const visualization_msgs::Marker & msg, const double newOX, const double newOY) const { //Translate points from origin 
     visualization_msgs::Marker ret;
@@ -391,18 +325,6 @@ std::vector<Model> RobotControl::getFoundLines(const visualization_msgs::Marker 
 std::ostream & operator << (std::ostream & out, const RobotControl & rc){ //Print object 
     out << "Models: \n";
     Utility::printVector(rc.models);
-
-    /*out << "\nFront Positive: \n";
-    Utility::printVector(rc.frontPoints[0]);
-
-    out << "\nFront Negative: \n";
-    Utility::printVector(rc.frontPoints[1]);
-
-    out << "\nBack Positive: \n";
-    Utility::printVector(rc.backPoints[0]);
-
-    out << "\nBack Negative: \n";
-    Utility::printVector(rc.backPoints[1]);*/
 
     return out;
 }

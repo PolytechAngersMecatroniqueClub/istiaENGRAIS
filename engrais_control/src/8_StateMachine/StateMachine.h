@@ -7,26 +7,26 @@
 #include <iostream>
 #include <Point.h>
 #include <Model.h>
-#include <Utility.h>
 #include <vector>
 #include <chrono>
 
+#include <ros/ros.h>
+
 #include <FuzzyController.h>
 
-#ifndef MAX_VEL
-#define MAX_VEL 0.7 //Maximum robot velocity
-#endif
-
-#ifndef BODY_SIZE
-#define BODY_SIZE 1.1 //Robot's body size
-#endif
-
-#ifndef DISTANCE_REFERENCE
-#define DISTANCE_REFERENCE 1.5 //Distance to be from a line if just 1 is found
-#endif
 
 class StateMachine{ //Class to implement a state machine 
     private:
+
+        int errorCount = 0; //Error count to stop the robot's movement
+        int currentRowPos = 1; //Current Row
+
+        const int NUM_OF_LINES; //Number of lines present in selected models
+        const int NUM_OF_TIMES_TURN; //Number of times the robot will turn
+
+        const double MAX_VEL; //Robot's max velocity
+        const double BODY_SIZE; //Robot's X length
+
         //------------------------------------------------------------------------------------------------
         enum States { BACKWARD = -1, INITIAL = 0, FORWARD = 1, LINEAR_STOP, ANGULAR_STOP, LEFT_TURN_BEGIN, LEFT_TURN_MID, 
                       LEFT_TURN_MERGE, RIGHT_TURN_BEGIN, RIGHT_TURN_MID, RIGHT_TURN_MERGE, IMPOSSIBLE, END}; //All possible states
@@ -51,17 +51,12 @@ class StateMachine{ //Class to implement a state machine
 
         FuzzyController fuzzy; //Fuzzy controller to Backward / Forward motion
 
-        int errorCount = 0;
-
-        int numOfLines = 4;
-
-        int currentRowPos = 1;
 
     public:
         //------------------------------------------------------------------------------------------------
-        StateMachine(); //Default Constructor
+        StateMachine(const int NLines, const int NTimesTurn, const double MVel, const double BSize); //Default Constructor
         //------------------------------------------------------------------------------------------------
-        std::tuple<double, double, std::vector<Model>> makeTransition(std::vector<Model> & allModels, double dist); //Compute a transition from the State machine, imagine this as a way to make this machine without a clock, and the user calls this function as a way to customize the clock frequency 
+        std::pair<double, double> makeTransition(std::vector<Model> & allModels, const double dist); //Compute a transition from the State machine, imagine this as a way to make this machine without a clock, and the user calls this function as a way to customize the clock frequency 
 
     private:
         //------------------------------------------------------------------------------------------------
@@ -77,15 +72,15 @@ class StateMachine{ //Class to implement a state machine
         //------------------------------------------------------------------------------------------------
         Transition leftTurnBeginStateRoutine(std::vector<Model> & models); //Lert Turn Begin State
         //------------------------------------------------------------------------------------------------
-        Transition leftTurnMidStateRoutine(std::vector<Model> & models, double dist); //Lert Turn Mid State
+        Transition leftTurnMidStateRoutine(std::vector<Model> & models, const double dist); //Lert Turn Mid State
         //------------------------------------------------------------------------------------------------
         Transition leftTurnMergeStateRoutine(std::vector<Model> & models); //Lert Turn Merge State
         //------------------------------------------------------------------------------------------------
-        Transition rightTurnBeginStateRoutine(std::vector<Model> & models); //Lert Turn Begin State
+        Transition rightTurnBeginStateRoutine(std::vector<Model> & models); //Right Turn Begin State
         //------------------------------------------------------------------------------------------------
-        Transition rightTurnMidStateRoutine(std::vector<Model> & models, double dist); //Lert Turn Mid State
+        Transition rightTurnMidStateRoutine(std::vector<Model> & models, const double dist); //Right Turn Mid State
         //------------------------------------------------------------------------------------------------
-        Transition rightTurnMergeStateRoutine(std::vector<Model> & models); //Lert Turn Merge State
+        Transition rightTurnMergeStateRoutine(std::vector<Model> & models); //Right Turn Merge State
         //------------------------------------------------------------------------------------------------
         Transition endStateRoutine(std::vector<Model> & models); //End State 
         //------------------------------------------------------------------------------------------------
@@ -102,7 +97,7 @@ class StateMachine{ //Class to implement a state machine
 };
 
 //--------------------------------------------------------------------------------------------------------
-inline StateMachine::StateMachine() : tAfterStop(INITIAL, std::pair<double, double> (0,0)) {} //Initialize class members
+inline StateMachine::StateMachine(const int NLines, const int NTimesTurn, const double MVel, const double BSize) : NUM_OF_TIMES_TURN(NTimesTurn), MAX_VEL(MVel), BODY_SIZE(BSize), NUM_OF_LINES(NLines), tAfterStop(INITIAL, std::pair<double, double> (0,0)) {} //Initialize class members
 
 #endif
 //********************************************************************************************************

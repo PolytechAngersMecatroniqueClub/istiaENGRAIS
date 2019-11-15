@@ -11,7 +11,7 @@ algorithm=("Pearl" "RubyPure" "RubyGenetic" "RubyGeneticOnePoint" "RubyGeneticOn
 
 printf "\nLaunching Simulation:\n\n"
 
-for environment in ${resDirectory[@]:0:2}
+for environment in ${resDirectory[@]}
 do
 	printf "$environment Simulation Begin:"
 
