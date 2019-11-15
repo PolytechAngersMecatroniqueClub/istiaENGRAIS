@@ -33,20 +33,24 @@ int main(int argc, char **argv){ //Main function
 
     string arq_name, node_name = ros::this_node::getName();
 
-    node.param<string>(node_name + "/arq_name", arq_name, "simulation_results.csv"); //Get parameter or use a default value
+    node.param<string>(node_name + "/arq_name", arq_name, "none"); //Get parameter or use a default value
 
-    arq.open(arq_name, std::ofstream::out | std::ofstream::trunc); //Open file
+    if(arq_name != "none"){
+        arq.open(arq_name, std::ofstream::out | std::ofstream::trunc); //Open file
 
-    arq << "t;;x;y;z;;r;p;y" << endl;
+        arq << "t;;x;y;z;;r;p;y" << endl;
 
-    ros::Subscriber sub = node.subscribe("/gazebo_robot_pose", 10, OnRosMsg); //Subscribe to topic
+        ros::Subscriber sub = node.subscribe("/gazebo_robot_pose", 10, OnRosMsg); //Subscribe to topic
 
-    ros::spin(); //Spin
+        ros::spin(); //Spin
 
-    sub.shutdown(); //Shutdown everything
+        sub.shutdown(); //Shutdown everything
+    }
+
     ros::shutdown();
     
-    arq.close();
+    if(arq_name != "none")
+        arq.close();
    
     return 0;
 }

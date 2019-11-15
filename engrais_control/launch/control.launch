@@ -28,7 +28,7 @@
 	<arg name="robot_max_velocity" default="1.0"/>
 	<arg name="robot_body_size" default="1.0"/>
 
-	<arg name="global_frame" default="body"/>
+	<arg name="global_frame" default="world"/>
 
 
 	<!--> Launch node <-->

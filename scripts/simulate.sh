@@ -28,18 +28,18 @@ do
 			tmux new -d -s gazebo #Create gazebo session
 			tmux send -t gazebo.0 "roslaunch engrais_gazebo engrais_world.launch world:=$environment" C-m #Launch simulation environment
 
-			sleep 1m #Wait gazebo to complete
+			sleep 20 #Wait gazebo to complete
 
 
 			tmux new -d -s robot_control #Create robot_control session
-			tmux send-keys -t robot_control.0 "roslaunch engrais_control simulation.launch algorithm:='$algo' file_name:='../catkin_ws/src/$simResDir/$environment/$algo/${algo}_results_${i}.csv' execution_file_name:='../catkin_ws/src/$simResDir/$environment/$algo/${algo}_execution_${i}.csv' >> $baseDir/${outDir}/${environment}/${algo}/${algo}_${environment}_${i}" C-m #Launch simulation environment
+			tmux send-keys -t robot_control.0 "roslaunch engrais system.launch algorithm:='$algo' position_file:='../catkin_ws/src/$simResDir/$environment/$algo/${algo}_results_${i}.csv' execution_time_file:='../catkin_ws/src/$simResDir/$environment/$algo/${algo}_execution_${i}.csv' >> $baseDir/${outDir}/${environment}/${algo}/${algo}_${environment}_${i}" C-m #Launch simulation environment
 
-			sleep 25m
+			sleep 20
 
 
 			tmux kill-session -t gazebo
 			tmux kill-session -t robot_control
-			sleep 2m
+			sleep 20
 
 			printf "|"
 			if [ $i -eq 4 ]

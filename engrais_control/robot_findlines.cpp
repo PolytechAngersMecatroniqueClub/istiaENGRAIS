@@ -146,34 +146,34 @@ void emergencyThread(){
 
 //--------------------------------------------------------------------------------------------------------
 void OnRosMsg(const sensor_msgs::LaserScan & msg){ //ROS message received 
-    static ros::Time last = ros::Time::now(); //Last message time
+    static std::chrono::time_point<std::chrono::system_clock> last = std::chrono::system_clock::now();
 
-    ros::Time exec_start, exec_end;
+    std::chrono::time_point<std::chrono::system_clock> exec_start, exec_end;
 
-    ros::Time start = ros::Time::now(); //Get time now
+    std::chrono::time_point<std::chrono::system_clock> start = std::chrono::system_clock::now(); //Get time now
 
-    ros::Duration diff = start - last; //Get elapsed time from first message
-    ros::Duration elapsed_seconds; //Set 0
+    std::chrono::duration<double> diff = start - last; //Get elapsed time from first message
+    std::chrono::duration<double> elapsed_seconds = std::chrono::duration<double>::zero(); //Set 0
 
-    while(ros::ok() && elapsed_seconds.toSec() <= diff.toSec() * 0.7){ //Continue calculating until hit 70% of message period
+    while(ros::ok() && elapsed_seconds.count() <= diff.count() * 0.7){ //Continue calculating until hit 70% of message period
         usedAlgo->populateOutliers(msg); //Populate outliers
 
         if(arq_name != "none")
-            exec_start = ros::Time::now(); //Get time now
+            exec_start = std::chrono::system_clock::now(); //Get time now
 
         vector <Model> lines = usedAlgo->findLines(); //Find models in cloud
 
         if(arq_name != "none"){
-            exec_end = ros::Time::now(); //Get time now
+            exec_end = std::chrono::system_clock::now(); //Get time now
 
-            ros::Duration elapsed_exec = exec_end - exec_start;
+            std::chrono::duration<double> elapsed_exec = exec_end - exec_start;
 
-            arq << usedAlgo->getInitialField().size() << ";" << elapsed_exec.toSec() * 1000.0 << endl;
+            arq << usedAlgo->getInitialField().size() << ";" << elapsed_exec.count() * 1000.0 << endl;
         }
 
         sendLine(lines, *usedAlgo); //Send found models via ROS
 
-        ros::Time end = ros::Time::now();
+        std::chrono::time_point<std::chrono::system_clock> end = std::chrono::system_clock::now();
 
         elapsed_seconds = end - start; //Update elapsed time
     }

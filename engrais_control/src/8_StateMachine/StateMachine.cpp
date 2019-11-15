@@ -208,7 +208,7 @@ StateMachine::Transition StateMachine::backwardStateRoutine(std::vector<Model> &
 StateMachine::Transition StateMachine::linearStopStateRoutine(std::vector<Model> & models){ //Linear Stop State 
     //cout << "Linear stop state" << endl;
 
-    static ros::Time oldTime; //Initialize last iteration time
+    static std::chrono::time_point<std::chrono::system_clock> oldTime = std::chrono::system_clock::now(); //Initialize last iteration time
     static double oldDistance = 0; //Initialize last iteration distance
     static bool first = true; //Flag to first Iteration
 
@@ -220,13 +220,13 @@ StateMachine::Transition StateMachine::linearStopStateRoutine(std::vector<Model>
     if(m.first.isPopulated() || m.second.isPopulated()){ //Something was found
         this->errorCount = 0; //Reset Error count
 
-        ros::Time time = ros::Time::now(); //Gets current time
+        std::chrono::time_point<std::chrono::system_clock> time = std::chrono::system_clock::now(); //Gets current time
         double distance = calculateDistance(m); //Calculates distance to models
 
-        ros::Duration elapsed_seconds = time - oldTime; //Elapsed time between now and the last iteration
+        std::chrono::duration<double> elapsed_seconds = time - oldTime; //Elapsed time between now and the last iteration
         double deltaDist = distance - oldDistance; //Variation in the distance during that time
 
-        double x_vel = deltaDist / elapsed_seconds.toSec(); // Δx / Δt to calculate average velocity in x-coordinate
+        double x_vel = deltaDist / elapsed_seconds.count(); // Δx / Δt to calculate average velocity in x-coordinate
 
         oldDistance = distance; //Stores current distance for next iteration
         oldTime = time; //Stores current time for next iteration
@@ -258,7 +258,7 @@ StateMachine::Transition StateMachine::linearStopStateRoutine(std::vector<Model>
 StateMachine::Transition StateMachine::angularStopStateRoutine(std::vector<Model> & models){ //Angular Stop State 
     //cout << "Angular stop state" << endl;
 
-    static ros::Time oldTime; //Initialize last iteration time
+    static std::chrono::time_point<std::chrono::system_clock> oldTime = std::chrono::system_clock::now(); //Initialize last iteration time
     static double oldAngle; //Initialize last iteration angle
     static bool first = true; //Flag to first Iteration
 
@@ -270,13 +270,13 @@ StateMachine::Transition StateMachine::angularStopStateRoutine(std::vector<Model
     if(m.first.isPopulated() || m.second.isPopulated()){ //Something was found
         this->errorCount = 0; //Reset Err counter
 
-        ros::Time time = ros::Time::now(); //Gets current time
+        std::chrono::time_point<std::chrono::system_clock> time = std::chrono::system_clock::now(); //Gets current time
         double angle = calculateAngle(m); //Calculates angle
 
-        ros::Duration elapsed_seconds = time - oldTime; //Elapsed time between now and the last iteration
+        std::chrono::duration<double> elapsed_seconds = time - oldTime; //Elapsed time between now and the last iteration
         double angDist = angle - oldAngle; //Variation in the angle during that time
 
-        double a_vel = angDist / elapsed_seconds.toSec(); // Δθ/ Δt to calculate average angular velocity
+        double a_vel = angDist / elapsed_seconds.count(); // Δθ/ Δt to calculate average angular velocity
 
         oldAngle = angle; //Stores current angle for next iteration
         oldTime = time; //Stores current time for next iteration
