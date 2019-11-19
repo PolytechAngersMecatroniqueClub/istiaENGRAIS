@@ -45,7 +45,8 @@ To use all ROS nodes and liberaries created, we have a few settings to make.
     4) Clone the git repository inside the workspace and change to the "raspberry_pi" branch
         ~$ cd catkin_ws/src/
         ~/catkin_ws/src$ git clone https://github.com/PolytechAngersMecatroniqueClub/istiaENGRAIS.git
-        ~/catkin_ws/src$ git checkout raspberry_pi
+        ~/catkin_ws/src$ cd istiaENGRAIS
+        ~/catkin_ws/src/istiaENGRAIS$ git checkout raspberry_pi
 
     5) In directory ~/catkin_ws/src/istiaENGRAIS/engrais_control/src/.fuzzylite-6.0 copy fuzzylite-6.0-linux64.zip to ~/Downloads and extract it
 
