@@ -3,126 +3,128 @@
 
 
 //--------------------------------------------------------------------------------------------------------
-void RubyGenetic::populateOutliers(const sensor_msgs::LaserScan & msg){ //Checked 
-    double angle = msg.angle_min;
+void RubyGenetic::populateOutliers(const sensor_msgs::LaserScan & msg){ //Populate outliers vector with laser scan message 
+    double angle = msg.angle_min; //Gets minimum angle 
 
-    this->outliers.clear();
+    this->outliers.clear(); //Clear outliers
 
-    for(int i = 0; i < this->models.size(); i++){
-        this->models[i].clearPoints();
-        this->models[i].resetParallelCount();
+    for(int i = 0; i < this->models.size(); i++){ //For each model
+        this->models[i].clearPoints(); //Clear points in models
     }
 
-    for(int i = 0; i < msg.ranges.size(); i++){
-        if(!isinf(msg.ranges[i]))
-            this->outliers.push_back(Point(msg.ranges[i] * cos(angle), msg.ranges[i] * sin(angle)));
+    for(int i = 0; i < msg.ranges.size(); i++){ //For each ray in LIDAR
+        if(!isinf(msg.ranges[i])) //If it finds something
+            this->outliers.push_back(Point(msg.ranges[i] * cos(angle), msg.ranges[i] * sin(angle))); //Convert to (X,Y) coordinates
         
-        angle += msg.angle_increment;
+        angle += msg.angle_increment; //Increment angle
     }
+
+    initialField = this->outliers;
 }
 //--------------------------------------------------------------------------------------------------------
-std::vector<Model> RubyGenetic::findLines() { //Checked 
-    int numberMinOfPoints;
-
+std::vector<Model> RubyGenetic::findLines() { //Find the best lines into the cloud of points 
     double newEnergy = MAX_DBL, energy = MAX_DBL;
 
-    if(this->outliers.size() != 0){
+    std::vector<Model> bestModels;
+    std::vector<Point> bestOutliers;
 
-        std::vector<Model> bestModels;
-        std::vector<Point> bestOutliers;
+    if(this->outliers.size() != 0){ //If outliers are populated
 
-        for (int it = 0; it < Pearl::maxNumberOfIterations; it++) {
-            this->searchModels(RubyGenetic::numberOfModelsToSearch - models.size());
+        for (int it = 0; it < Pearl::maxNumberOfIterations; it++){ //For each iteration
+            this->searchModels(RubyGenetic::numberOfModelsToSearch); //Search for models until 40 total
 
-            this->fuseEqualModels();
+            this->fuseEqualModels(); //Fuse models that are considered equal
             
-            this->redistributePoints();
+            this->redistributePoints(); //Redistribute points to closest models
 
-            numberMinOfPoints = std::max((int)(this->meanNumbOfPoints() * RubyGenetic::factorToDeletePoints), 3);
+            //int numberMinOfPoints = std::max((int)(this->meanNumOfPoints() * RubyGenetic::factorToDeletePoints), 3);
 
-            this->removeTinyModels(numberMinOfPoints);
+            this->removeTinyModels(3); //Remove models that have too few points
 
-            this->reEstimation();
+            this->reEstimation(); //Re estimate models using linear fit
             
-            this->eraseBadModels();
+            this->eraseBadModels(); //Erase models that are considered bad
             
-            newEnergy = this->calculateEnergy();
+            newEnergy = this->calculateEnergy(); //Calculate final energy
 
-            if ((newEnergy >= energy)){
+            if ((newEnergy >= energy)){ //If energy gets bigger, recover last iteration
                 this->models = bestModels;
                 this->outliers = bestOutliers;
-
-                energy = newEnergy;
             }
-            else{
+            else{ //Else, save it
                 bestModels = this->models;
                 bestOutliers = this->outliers;
 
-                newEnergy = energy;
+                energy = newEnergy;
             }
         }
     }  
 
-    return this->models;
+    return bestModels; //Return best models
 }
 
 //########################################################################################################
 
 //--------------------------------------------------------------------------------------------------------
-std::vector<Point> RubyGenetic::randomPointsInField(const int num) const { //Checked 
-    std::vector<Point> ret(num);
+std::vector<Point> RubyGenetic::randomPointsInField(const int num) const { //Picks 'num' different points in the outlier vector 
+    std::vector<Point> ret(num); //Declares return
 
-    std::vector<int> randomNums = Utility::randomDiffVector(0, this->outliers.size() - 1, num);
+    std::vector<int> randomNums = Utility::randomDiffVector(0, this->outliers.size() - 1, num); //Selects 'num' random integers
 
-    int pos = 0;
-    for(int i : randomNums) {
-        ret[pos] = this->outliers[i];
+    int pos = 0; //Starting position is 0
+    for(int i : randomNums) { //For each random integer
+        ret[pos] = this->outliers[i]; //Assing this set of points to the return vector
         pos++;
     }
     
-    return ret;
+    return ret; //Return random points
 }
 //--------------------------------------------------------------------------------------------------------
-void RubyGenetic::searchModels(const int nbOfModels) { //Checked 
-    if(this->outliers.size() < INITIAL_NUMBER_OF_POINTS)
+void RubyGenetic::searchModels(const int nbOfModels) { //Searches for 'nbOfModels' models that are possible 
+    if(this->outliers.size() < INITIAL_NUMBER_OF_POINTS) //If outliers vector doesn't have enough points
         return;
         
-    for(int modelNum = 0; modelNum < nbOfModels; modelNum++){
-        std::vector<Point> points = this->randomPointsInField(INITIAL_NUMBER_OF_POINTS);
-        if(points.size() > 0)
-            this->models.push_back(Model::linearFit(points));
+    while(this->models.size() < nbOfModels){ //Search for models
+        std::vector<Point> points = this->randomPointsInField(INITIAL_NUMBER_OF_POINTS); //Get a random set of points
+        if(points.size() > 0) //If the function returned something useful 
+            this->models.push_back(Model::linearFit(points)); //Add the linear fit for this vector of points to the models vector
     }
 }
 
 //########################################################################################################
 
 //--------------------------------------------------------------------------------------------------------
-double RubyGenetic::calculateEnergy() const { //Checked 
-    double energy = this->outliers.size() * Pearl::outlierPenalty;
+double RubyGenetic::calculateEnergy() const { //Calculate set's total energy 
+    double energy = this->outliers.size() * Pearl::outlierPenalty; //Add the outliers' penalty energy
 
-    for(Model m : models)
-        energy += m.getEnergy();
+    for(Model m : this->models) //For each model
+        energy += m.getEnergy(); //Gets its energy
 
-    energy += this->calculateAdditionalEnergy();
+    energy += this->calculateAdditionalEnergy(); //Calculate additional energy
 
     return energy;
 }
 //--------------------------------------------------------------------------------------------------------
-double RubyGenetic::meanNumbOfPoints() const { //Checked 
+double RubyGenetic::meanNumOfPoints() const { //Calculate mean number of points in the models 
     double mean = 0;
-    for(Model m : models)
-        mean += m.getPointsSize();
+    for(Model m : this->models) //For each model
+        mean += m.getPointsSize(); //Adds the number of points
 
-    return mean/(double)this->models.size();
+    return mean/(double)this->models.size(); //Calculates average
 }
 
 //########################################################################################################
 
 //--------------------------------------------------------------------------------------------------------
-void RubyGenetic::countParallelLines(){ //Checked 
-    for(int model = 0; model < this->models.size(); model++){
+void RubyGenetic::countParallelLines(){ //Calculates parallel count for each model 
+    for(int model = 0; model < this->models.size(); model++){ //For each model
         for(int model2 = model + 1; model2 < this->models.size(); model2++){
-            if(fabs(this->models[model].getSlope() - this->models[model2].getSlope()) < Pearl::sameSlopeThreshold){
+            double slopeRatio = this->models[model].getSlope() / this->models[model2].getSlope(); //Calculate the ratio of the 2 slopes, this is usefull when the slope is big
+            double slopeDifference = fabs(this->models[model].getSlope() - this->models[model2].getSlope()); //Calculate the difference of the 2 slopes, this is usefull when the slope is small
+
+            bool isSlopeTheSame = ((1 - Pearl::sameSlopeThreshold <= slopeRatio && slopeRatio <= 1 + Pearl::sameSlopeThreshold) || slopeDifference <= Pearl::sameSlopeThreshold); //If one of the two criteria meet the threshold for slope, store true
+
+            if(isSlopeTheSame){ //If slope is the same, increment parallel count for both models
                 this->models[model].incrementParallelCount();
                 this->models[model2].incrementParallelCount();
             }
@@ -130,17 +132,21 @@ void RubyGenetic::countParallelLines(){ //Checked
     }
 }
 //--------------------------------------------------------------------------------------------------------
-void RubyGenetic::eraseBadModels(){ //Checked 
-    this->countParallelLines();
+void RubyGenetic::eraseBadModels(){ //Erases models that are considered bad 
+
+    for(int i = 0; i < this->models.size(); i++) //For each model
+        this->models[i].resetParallelCount(); //Reset parallel count
     
-    for(int i = 0; i < this->models.size(); i++)
+    this->countParallelLines(); //Calculate parallel count
+    
+    for(int i = 0; i < this->models.size(); i++) //Calculate fitness for every model
     	this->models[i].calculateFitness();
 
-    std::sort(this->models.begin(), this->models.end());
+    std::sort(this->models.begin(), this->models.end()); //sort it from better to worse
 
-    int initialPos = std::max((int)(this->models.size()*0.25), 6);
+    int initialPos = std::max((int)(this->models.size()*0.25), 6); 
 
-    for(int i = initialPos; i < this->models.size(); i++){
+    for(int i = initialPos; i < this->models.size(); i++){ //Keeps the 25% best models, or at least 4
     	this->removeModel(i);
     	i--;
     }
@@ -148,7 +154,7 @@ void RubyGenetic::eraseBadModels(){ //Checked
 
 //########################################################################################################
 
-std::ostream & operator << (std::ostream &out, const RubyGenetic &r){ //Checked 
+std::ostream & operator << (std::ostream &out, const RubyGenetic &r){ //Print object 
     out << "RubyGenetic: [\n\t  Models: Vector {\n";
 
     for(int i = 0; i < r.models.size(); i++){

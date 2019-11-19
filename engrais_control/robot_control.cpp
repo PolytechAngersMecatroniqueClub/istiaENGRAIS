@@ -20,14 +20,14 @@
 #include <std_msgs/Float64.h>
 #include <std_msgs/String.h>
 
-#define PI 3.1415926535
-#define TO_MILLISECOND 1000
+#define PI 3.1415926535 
+#define TO_MILLISECOND 1000 
 
 using namespace std;
 
-mutex critSec;
+mutex critSec; //Critical section mutex
 
-string mapName, node_name, emergecy_topic, mode, changeModeTopic;
+string mapName, node_name, emergecy_topic, mode, changeModeTopic; 
 
 int SLEEP_TIME;
 
@@ -42,245 +42,272 @@ ros::NodeHandle* node;
 ros::MultiThreadedSpinner spinner(2);
 
 //--------------------------------------------------------------------------------------------------------
-void sendLine(const pair<Model, Model> & models){ 
-    visualization_msgs::Marker line_list;
+void sendLine(const std::pair<vector<Model>, std::vector<bool>> & models){ //Send model's first and last point using the visualization marker, green means it was found, yellow means it was estimated
+    visualization_msgs::Marker line_list_found, line_list_calculated;
     geometry_msgs::Point p;
 
-    line_list.header.frame_id = mapName;
-    line_list.header.stamp = ros::Time::now();
-    line_list.ns = "points_and_lines";
-    line_list.action = visualization_msgs::Marker::ADD;
-    line_list.pose.orientation.w = 1.0;
+    line_list_found.header.frame_id = line_list_calculated.header.frame_id = mapName; //Assign map name
+    line_list_found.header.stamp = line_list_calculated.header.stamp = ros::Time::now(); //Assign time
+    line_list_found.ns = line_list_calculated.ns = "points_and_lines"; //Message type 
+    line_list_found.action = line_list_calculated.action = visualization_msgs::Marker::ADD; //Add points
+    line_list_found.pose.orientation.w = line_list_calculated.pose.orientation.w = 1.0;
 
-    line_list.id = 0;
-    line_list.type = visualization_msgs::Marker::LINE_LIST;
+    line_list_found.id = 0; //Set id
+    line_list_calculated.id = 1; //Set id
 
-    line_list.scale.x = 0.08;
+    line_list_found.type = line_list_calculated.type = visualization_msgs::Marker::LINE_LIST; //Message line list flag
 
-    line_list.color.g = 1.0;
-    line_list.color.a = 0.4;
+    line_list_found.scale.x = line_list_calculated.scale.x = 0.08; //Line list scale
 
-    if(models.first.isPopulated()){
-        pair<Point, Point> points = models.first.getFirstAndLastPoint();
+    line_list_found.color.g = 1.0; //Color
 
-        p.x = points.first.getX();
-        p.y = models.first.getSlope()*p.x + models.first.getIntercept();
+    line_list_calculated.color.g = 1.0; //Line list color
+    line_list_calculated.color.r = 1.0; //Line list color
 
-        line_list.points.push_back(p);
+    line_list_found.color.a = line_list_calculated.color.a = 0.4; //Alpha
 
-        p.x = points.second.getX();
-        p.y = models.first.getSlope()*p.x + models.first.getIntercept();
+    for(int i = 0; i < models.first.size(); i++){ //For every model found
 
-        line_list.points.push_back(p);
-    }
+        if(!models.second[i] && models.first[i].isPopulated() && models.first[i].getPointsSize() >= 2){ //If model was found
+            pair<Point, Point> points = models.first[i].getFirstAndLastPoint(); //Finds negative and positive-most points (x-axis)
 
-    if(models.second.isPopulated()){
-        pair<Point, Point> points = models.second.getFirstAndLastPoint();
+            p.x = points.first.getX(); //Get first point X coordinate
+            p.y = models.first[i].getSlope()*p.x + models.first[i].getIntercept(); //Calculate Y using the model's information
 
-        p.x = points.first.getX();
-        p.y = models.second.getSlope()*p.x + models.second.getIntercept();
+            line_list_found.points.push_back(p); //Push point
 
-        line_list.points.push_back(p);
+            p.x = points.second.getX(); //Last point X coordinate
+            p.y = models.first[i].getSlope()*p.x + models.first[i].getIntercept(); //Calculate using model's information
 
-        p.x = points.second.getX();
-        p.y = models.second.getSlope()*p.x + models.second.getIntercept();
+            line_list_found.points.push_back(p); //Push
+        }
+        else if(models.second[i] && models.first[i].isPopulated()){ //If model was estimated
+            pair<Point, Point> points = models.first[i].getFirstAndLastPoint(); //Finds negative and positive-most points (x-axis)
 
-        line_list.points.push_back(p);
+            p.x = points.first.getX(); //Get first point X coordinate
+            p.y = models.first[i].getSlope()*p.x + models.first[i].getIntercept(); //Calculate Y using the model's information
+
+            line_list_calculated.points.push_back(p); //Push point
+
+            p.x = points.second.getX(); //Last point X coordinate
+            p.y = models.first[i].getSlope()*p.x + models.first[i].getIntercept(); //Calculate using model's information
+
+            line_list_calculated.points.push_back(p);
+        }
     }
     
-    pubSelectedLines.publish(line_list);
+    pubSelectedLines.publish(line_list_found); //Push lines list
+    pubSelectedLines.publish(line_list_calculated); //Push lines list
 }
 
-
 //--------------------------------------------------------------------------------------------------------
-void ModeChangeMsg(const std_msgs::String & msg){ 
-    if(msg.data != "automatic"){
-        mode = "manual";
-        
+void ModeChangeMsg(const std_msgs::String & msg){ //Message to change mode 
+    if(msg.data != "automatic"){ //If received something that is not automatic
+        mode = "manual"; //Change to manual
     }
     else{
-        mode = "automatic";
+        mode = "automatic"; //Change to automatic
     }
 
     Utility::printInColor(node_name + ": Mode changed to " + mode + "\n", CYAN);
-    //ROS_WARN_STREAM(node_name << ": Mode changed to " << mode);
 }
 //--------------------------------------------------------------------------------------------------------
-void changeModeThread(){ 
-    ros::Subscriber subMode = node->subscribe(changeModeTopic, 10, ModeChangeMsg);
+void changeModeThread(){ //Thread to chenge mode 
+    ros::Subscriber subMode = node->subscribe(changeModeTopic, 10, ModeChangeMsg); //Subscribe to topic
 
-    spinner.spin();
+    spinner.spin(); //Spin
 
-    subMode.shutdown();
+    subMode.shutdown(); //shutdown
 }
 
 
-ros::Time lastMsg;
-bool comReady = false;
-bool emergencyCalled = false;
+//--------------------------------------------------------------------------------------------------------
+ros::Time lastMsg; //Store last time
+bool comReady = false; //Flag to say the communication is ready
+bool emergencyCalled = false; //Flag to signal exit
 
 //--------------------------------------------------------------------------------------------------------
-void OnEmergencyBrake(const std_msgs::Bool & msg){
-    lastMsg = ros::Time::now();
+void OnEmergencyBrake(const std_msgs::Bool & msg){ //Emergency message
+    lastMsg = ros::Time::now(); //Store last time
     
-    comReady = true;
+    comReady = true; //Sets flag
 
-    if(msg.data == true){
+    if(msg.data == true){ //If message is true, exit
         Utility::printInColor(node_name + ": Emergency Shutdown Called", RED);
         emergencyCalled = true;
         ros::shutdown();
     }
 }
 //--------------------------------------------------------------------------------------------------------
-void emergencyThread(){
-    lastMsg = ros::Time::now();
+void emergencyThread(){ //Emergency exit 
+    lastMsg = ros::Time::now(); //Sets time to now
 
-    ros::Subscriber emergencySub = node->subscribe(emergecy_topic, 10, OnEmergencyBrake);
-    ros::Publisher emergencyPub = node->advertise<std_msgs::Bool>(emergecy_topic, 10);
+    ros::Subscriber emergencySub = node->subscribe(emergecy_topic, 10, OnEmergencyBrake); //Subscribe to topics
+    ros::Publisher emergencyPub = node->advertise<std_msgs::Bool>(emergecy_topic, 10); //Topic to publish if automatic
 
-    std_msgs::Bool msg;
+    std_msgs::Bool msg; //Sets message
     msg.data = false;
     
-    while(ros::ok() && !comReady && mode != "automatic")
+    while(ros::ok() && !comReady && mode != "automatic") //If mode is manual, wait for comunication to be set
         ros::Duration(0.01).sleep();
     
-    while(ros::ok() && !emergencyCalled){
-        if(mode != "automatic" && !emergencyCalled){
-            ros::Time now = ros::Time::now();
+    while(ros::ok() && !emergencyCalled){ //Until emergency is called
+        if(mode != "automatic" && !emergencyCalled){ //If it's manual
+            ros::Time now = ros::Time::now(); //get time
             
             ros::Duration delta_t = now - lastMsg;
 
-            if(!emergencyCalled && delta_t.toSec() > 0.2){
+            if(!emergencyCalled && delta_t.toSec() > 0.2){ //If last emergency message was received more than 200ms ago, shutdown
                 Utility::printInColor(node_name + ": Emergency Timeout Shutdown", RED);
                 ros::shutdown();
             }
 
         }
-        else{
+        else{ //If automatic, send message to not shutdown
             emergencyPub.publish(msg);
         }
 
-        ros::Duration(0.05).sleep();
+        ros::Duration(0.05).sleep(); //Sleep 50ms
     }
 
-    emergencySub.shutdown();
+    emergencySub.shutdown(); //Shutdown everything
+    emergencyPub.shutdown();
 }
 
 
 //--------------------------------------------------------------------------------------------------------
-void controlThread(){ 
-    while(ros::ok()){
+void controlThread(){ //Control Thread 
+    while(ros::ok()){ //While the program runs
 
-        critSec.lock();
-        control->clearModels();
-        critSec.unlock();
+        critSec.lock(); //Lock critical section
+        control->clearModels(); //Clear all models
+        critSec.unlock(); //Unlock critical section
 
-        usleep(SLEEP_TIME * TO_MILLISECOND);
+        usleep(SLEEP_TIME * TO_MILLISECOND); //Sleep for a time
 
-        critSec.lock();  
+        critSec.lock();  //Lock critical section
 
-        pair<Model, Model> selectedModels = control->selectModels();
-        sendLine(selectedModels);
-        pair<std_msgs::Float64, std_msgs::Float64> wheels = control->getWheelsCommand(selectedModels);
-
-        //cout << control << endl;
-        critSec.unlock();
+        std::pair<vector<Model>, std::vector<bool>> selectedModels = control->selectModels(); //Select models
+        sendLine(selectedModels); //Send selected lines
+        pair<std_msgs::Float64, std_msgs::Float64> wheels = control->getWheelsCommand(); //Calculates wheels' commands
         
+        critSec.unlock(); //Unlock
+
         if(mode == "automatic"){
-            pubLeftControl.publish(wheels.first);
-            pubRightControl.publish(wheels.second);
+            pubLeftControl.publish(wheels.first); //Send left wheel command
+            pubRightControl.publish(wheels.second); //Send right wheel command
         }
-
-        //cout << "Left: " << wheels.first.data <<  ", Right: " << wheels.second.data << endl << endl << endl << endl << endl;
-
     }
 }
-//--------------------------------------------------------------------------------------------------------
-void BackLinesMsg(const visualization_msgs::Marker & msg){ 
-    if(msg.type != 5)
-        return;
 
-    critSec.lock();
-    control->backMessage(msg);
-    critSec.unlock();
-}
+
 //--------------------------------------------------------------------------------------------------------
-void FrontLinesMsg(const visualization_msgs::Marker & msg){ 
-    if(msg.type != 5)
-        return;
+void BackLinesMsg(const visualization_msgs::Marker & msg){ //Back node message received 
+    critSec.lock(); //Lock critical section
+
+    if(msg.type == visualization_msgs::Marker::LINE_LIST) //Check flag to see if it's line list
+        control->backLinesMessage(msg); //Feed back message to control
     
-    critSec.lock();
-    control->frontMessage(msg);
-    critSec.unlock();
+    else if(msg.type == visualization_msgs::Marker::POINTS)
+        control->backPointsMessage(msg); //Feed back message to control
+
+    critSec.unlock(); //Unlock critical section
+}
+//--------------------------------------------------------------------------------------------------------
+void FrontLinesMsg(const visualization_msgs::Marker & msg){ //Front node message received 
+    critSec.lock(); //Lock critical section
+    
+    if(msg.type == visualization_msgs::Marker::LINE_LIST) //Check flag to see if it's line list    
+        control->frontLinesMessage(msg); //Feed front message to control
+ 
+    else if(msg.type == visualization_msgs::Marker::POINTS)
+        control->frontPointsMessage(msg); //Feed front message to control
+    
+    critSec.unlock(); //Unlock critical section
 }
 
 
 //--------------------------------------------------------------------------------------------------------
-int main(int argc, char **argv){
+int main(int argc, char **argv){ //Main funcion
 
-    ros::init(argc, argv, "robot_move_node");
+    ros::init(argc, argv, "robot_move_node"); //Initialize node
     node = new ros::NodeHandle();
 
-    double MAX_VEL, BODY_SIZE, DISTANCE_REFERENCE;
+    int NUM_LINES, N_TIMES_TURN;
+    double MAX_VEL, BODY_SIZE;
 
     string subTopicFront, subTopicBack, pubTopicLeft, pubTopicRight, pubTopicSelected;
    
     node_name = ros::this_node::getName();
 
-    if(!node->getParam(node_name + "/subscribe_topic_front", subTopicFront) || !node->getParam(node_name + "/subscribe_topic_back", subTopicBack) || 
-       !node->getParam(node_name + "/publish_topic_left", pubTopicLeft) || !node->getParam(node_name + "/publish_topic_right", pubTopicRight) ||
-       !node->getParam(node_name + "/max_velocity", MAX_VEL) || !node->getParam(node_name + "/body_size", BODY_SIZE) || 
-       !node->getParam(node_name + "/distance_reference", DISTANCE_REFERENCE) || !node->getParam(node_name + "/sleep_time_ms", SLEEP_TIME) || !node->getParam(node_name + "/mode", mode) || !node->getParam(node_name + "/change_mode_topic", changeModeTopic)) {
 
-        ROS_ERROR_STREAM("Argument missing in node " << node_name << ", expected 'subscribe_topic_front', 'subscribe_topic_back', " <<
-                         "'publish_topic_left', 'publish_topic_right', 'robot_max_velocity', 'robot_body_size', 'robot_distance_reference', 'mode', 'change_mode_topic' and [optional: 'rviz_topic' and 'rviz_frame']\n\n");
-        return -1;
-    }
+    node->param<string>(node_name + "/subscribe_topic_front", subTopicFront, "/default/frontLines"); //Get all parameters, with default values 
+    node->param<string>(node_name + "/subscribe_topic_back", subTopicBack, "/default/backLines");
+
+    node->param<string>(node_name + "/publish_topic_left", pubTopicLeft, "/default/leftWheel");
+    node->param<string>(node_name + "/publish_topic_right", pubTopicRight, "/default/rightWheel");
+
+    node->param<string>(node_name + "/mode", mode, "automatic");
+    node->param<string>(node_name + "/change_mode_topic", changeModeTopic, "none");
+
+    node->param<int>(node_name + "/number_lines", NUM_LINES, 4);
+    node->param<int>(node_name + "/turn_times", N_TIMES_TURN, 2);
+    node->param<int>(node_name + "/sleep_time_ms", SLEEP_TIME, 250);
+
+    node->param<double>(node_name + "/max_velocity", MAX_VEL, 1.0);
+    node->param<double>(node_name + "/body_size", BODY_SIZE, 1.0);
 
     node->param<string>(node_name + "/rviz_frame", mapName, "world");
-    node->param<string>(node_name + "/rviz_topic", pubTopicSelected, "/engrais/robot_move/selected_lines");
+    node->param<string>(node_name + "/rviz_topic", pubTopicSelected, "/default/selectedLines");
     node->param<string>(node_name + "/emergency_topic", emergecy_topic, "none");
 
-    control = new RobotControl(MAX_VEL, BODY_SIZE, DISTANCE_REFERENCE);
 
-    ros::Subscriber subFront = node->subscribe(subTopicFront, 10, FrontLinesMsg);
+    control = new RobotControl(NUM_LINES, N_TIMES_TURN, MAX_VEL, BODY_SIZE); //Create control object
+
+    ros::Subscriber subFront = node->subscribe(subTopicFront, 10, FrontLinesMsg); //Subscribe to topic
     ros::Subscriber subBack = node->subscribe(subTopicBack, 10, BackLinesMsg);
 
-    pubLeftControl = node->advertise<std_msgs::Float64>(pubTopicLeft, 10);
+    pubLeftControl = node->advertise<std_msgs::Float64>(pubTopicLeft, 10); //Topic to publish
     pubRightControl = node->advertise<std_msgs::Float64>(pubTopicRight, 10);
 
     pubSelectedLines = node->advertise<visualization_msgs::Marker>(pubTopicSelected, 10);
 
-    thread control_t(controlThread);
+    thread control_t(controlThread); //launch control thread
 
-
-    thread* emergency_t;
+    thread* emergency_t; //launch emergency thread
     if(emergecy_topic != "none")
         emergency_t = new thread(emergencyThread);
 
-    thread changeMode_t(changeModeThread);
 
+    thread* changeMode_t; //launch change mode thread
+    if(changeModeTopic != "none")
+        changeMode_t = new thread(changeModeThread);
 
     Utility::printInColor(node_name + ": Code Running, press Control+C to end", CYAN);
-    spinner.spin();
+    spinner.spin(); //Spin
     Utility::printInColor(node_name + ": Shutting down...", CYAN);
 
-    if(emergecy_topic != "none"){
+    if(emergecy_topic != "none"){ //Wait for threads to finish
         emergency_t->join();
         delete emergency_t;
     }
 
+    if(changeModeTopic != "none"){
+        changeMode_t->join();
+        delete changeMode_t;
+    }
+
     control_t.join();
-    changeMode_t.join();
 
     delete control;
 
-    subFront.shutdown();
+    subFront.shutdown(); //Shutdown topics
     subBack.shutdown();
+
     pubLeftControl.shutdown();
     pubRightControl.shutdown();
-
     pubSelectedLines.shutdown();
+
     ros::shutdown();
     
     delete node;    

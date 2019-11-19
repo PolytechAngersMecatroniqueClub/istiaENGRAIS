@@ -1,31 +1,45 @@
 <?xml version="1.6" ?>
 <launch>
 
-	<!--> Sick Tim Arguments <-->
-	<arg name="IP_Lidar" default="192.168.10.111"/>
-	<arg name="sick_node_name" default="sick_back_rpi_3"/>
-	<arg name="scan_topic" default="scan_back"/>
-	<arg name="rviz_frame" default="laser_back"/>
+	<!--> Lidar IP <-->
+	<arg name="IP_Lidar" default="192.168.10.112"/>
+
+	<!--> Node Name <-->
+	<arg name="findlines_node_name" default="default_findlines"/>
+	<arg name="sick_node_name" default="default_sick_tim"/>
+
+	<!--> ROS Topic Names <-->
+	<arg name="scan_topic" default="default/lidarPoints"/>
+	<arg name="lines_topic" default="default/foundLines"/>
+
+	<!--> Rviz Frame Name <-->
+	<arg name="rviz_frame_name" default="laser_front"/>
 
 	<!--> Find Lines Arguments <-->
-	<arg name="lines_topic" default="lines_back"/>
+	<arg name="used_algorithm" default="RubyGeneticOnePointPosNeg"/>
     <arg name="emer_topic" default="none"/>
-	<arg name="findlines_node_name" default="engrais_findlines_1"/>
+    <arg name="output_file_name" default="none"/>
 
 
-	<include file="$(find sick_tim)/launch/$(arg rviz_frame).launch">
+    <!--> Launch Sick Tim node <-->
+	<include file="$(find sick_tim)/launch/$(arg rviz_frame_name).launch">
 		<arg name="lidar_IP" value="$(arg IP_Lidar)"/>
 		<arg name="node_name" value="$(arg sick_node_name)"/>
 		<arg name="publish_topic" value="$(arg scan_topic)"/>
-		<arg name="frame_name" value="$(arg rviz_frame)"/>
+		<arg name="frame_name" value="$(arg rviz_frame_name)"/>
 	</include>
 
 
+    <!--> Launch Findlines node <-->
 	<node name="$(arg findlines_node_name)" pkg="engrais_control" type="robot_findlines" output="screen">
 		<param name="subscribe_topic" type="string" value="$(arg scan_topic)"/>
-        <param name="emergency_topic" type="string" value="$(arg emer_topic)"/>
 		<param name="publish_topic" type="string" value="$(arg lines_topic)"/>
-		<param name="frame_name" type="string" value="$(arg rviz_frame)"/>
+
+		<param name="rviz_frame" type="string" value="$(arg rviz_frame_name)"/>
+		<param name="algorithm" type="string" value="$(arg used_algorithm)"/>
+
+        <param name="emergency_topic" type="string" value="$(arg emer_topic)"/>
+        <param name="arq_name" type="string" value="$(arg output_file_name)"/>
 	</node>
 
 </launch>

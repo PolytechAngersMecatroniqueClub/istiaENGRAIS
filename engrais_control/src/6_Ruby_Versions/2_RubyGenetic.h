@@ -13,51 +13,51 @@
 #include <Pearl.h>
 
 
-class RubyGenetic : public Pearl{
+class RubyGenetic : public Pearl{ //Second version that implement a genetic approach to Pearl
 	public:
 
-		static constexpr double numberOfModelsToSearch = 40;
-		static constexpr double factorToDeletePoints = 0.8;
+		static constexpr double numberOfModelsToSearch = 40; //Number of individuals each generation
+		static constexpr double factorToDeletePoints = 0.8; //Percentage of the average points to not delete a model
 
 	public:
 		//------------------------------------------------------------------------------------------------
-		RubyGenetic();
+		RubyGenetic(); //Default Constructor
 		//------------------------------------------------------------------------------------------------
-		void populateOutliers(const sensor_msgs::LaserScan & );
+		void populateOutliers(const sensor_msgs::LaserScan & msg); //Populate outliers vector with laser scan message
 		//------------------------------------------------------------------------------------------------
-		std::vector<Model> findLines();
+		std::vector<Model> findLines(); //Find the best lines into the cloud of points
 
 
 	private:
 		//################################################################################################
 
 		//------------------------------------------------------------------------------------------------
-		std::vector<Point> randomPointsInField(const int) const;
+		std::vector<Point> randomPointsInField(const int num) const; //Picks 'num' different points in the outlier vector
 		//------------------------------------------------------------------------------------------------
-		void searchModels(const int );
+		void searchModels(const int nbOfModels); //Searches for 'nbOfModels' models that are possible
 
 		//################################################################################################
 
 		//------------------------------------------------------------------------------------------------
-		double calculateEnergy() const;
+		double calculateEnergy() const; //Calculate set's total energy
 		//------------------------------------------------------------------------------------------------
-		double meanNumbOfPoints() const;
-
-		//################################################################################################
-		
-		//------------------------------------------------------------------------------------------------
-		void countParallelLines();
-		//------------------------------------------------------------------------------------------------
-		void eraseBadModels();
+		double meanNumOfPoints() const; //Calculate mean number of points in the models
 
 		//################################################################################################
 		
-		friend std::ostream & operator << (std::ostream &out, const RubyGenetic &r);
+		//------------------------------------------------------------------------------------------------
+		void countParallelLines(); //Calculates parallel count for each model
+		//------------------------------------------------------------------------------------------------
+		void eraseBadModels(); //Erases models that are considered bad
+
+		//################################################################################################
+		
+		friend std::ostream & operator << (std::ostream &out, const RubyGenetic &r); //Print object
 };
 
 
 //--------------------------------------------------------------------------------------------------------
-inline RubyGenetic::RubyGenetic(){}
+inline RubyGenetic::RubyGenetic(){} //Default Constructor
 
 #endif
 //********************************************************************************************************

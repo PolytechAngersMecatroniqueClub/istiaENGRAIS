@@ -5,6 +5,7 @@
 #include <thread>
 #include <stdio.h> 
 #include <stdlib.h>   
+#include <fstream>
 #include <iostream>
 #include <algorithm>
 
@@ -27,94 +28,88 @@
 #include <5_RubyGeneticOnePointPosNegInfinite.h>
 
 using namespace std;
-	
 
-string mapName, node_name, emergecy_topic;
+Pearl* usedAlgo; //Used algorithm
 
-RubyGeneticOnePointPosNeg rubyGenOPPN;
+ofstream arq; //Output file
 
+string mapName, node_name, emergecy_topic, arq_name;
 
 ros::NodeHandle* node;
 
-ros::Publisher pubLineNode;
-ros::Publisher resultsPubNode;
+ros::Publisher pubLineNode; //Found lines publisher
 
 //--------------------------------------------------------------------------------------------------------
-void sendLine(const vector<Model> & models, const Pearl & pearl){ 
+void sendLine(const vector<Model> & models, const Pearl & pearl){ //Send model's first and last point using the visualization marker 
     visualization_msgs::Marker line_list, points;
     geometry_msgs::Point p;
 
-    points.header.frame_id = line_list.header.frame_id = mapName;
-    points.header.stamp = line_list.header.stamp = ros::Time::now();
-    points.ns = line_list.ns = "points_and_lines";
-    points.action = line_list.action = visualization_msgs::Marker::ADD;
+    points.header.frame_id = line_list.header.frame_id = mapName; //Assign map name
+    points.header.stamp = line_list.header.stamp = ros::Time::now(); //Assign time
+    points.ns = line_list.ns = "points_and_lines"; //Message type
+    points.action = line_list.action = visualization_msgs::Marker::ADD; //Add points
     points.pose.orientation.w = line_list.pose.orientation.w = 1.0;
 
-    line_list.id = 0;
+    line_list.id = 0; //Set id
     points.id = 1;
 
-    points.type = visualization_msgs::Marker::POINTS;
-    line_list.type = visualization_msgs::Marker::LINE_LIST;
+    points.type = visualization_msgs::Marker::POINTS; //Message points flag
+    line_list.type = visualization_msgs::Marker::LINE_LIST; //Message line list flag
 
-    points.scale.x = 0.05;
+    points.scale.x = 0.05; //Points size
     points.scale.y = 0.05;
 
-    points.color.r = 1.0;
+    points.color.r = 1.0; //Points color
     points.color.a = 1.0;
 
-    line_list.scale.x = 0.03;
+    line_list.scale.x = 0.03; //Line list scale
 
-    line_list.color.b = 1.0;
+    line_list.color.b = 1.0; //Line list color
     line_list.color.a = 1.0;
 
 
-    for(Point point : pearl.getInitialField()){
-		p.x = point.getX();
-		p.y = point.getY();
-		p.z = 0.05;
+    for(Point point : pearl.getInitialField()){ //Get initial field to compare with the sensor's data
+        p.x = point.getX(); //Get X coordinate
+        p.y = point.getY(); //Get Y coordinate
+        p.z = 0.05; //Set a bit higher to help visualize
 
-		points.points.push_back(p);
+        points.points.push_back(p); //Add points
     }
-    p.z = 0;
+    p.z = 0; //Reset hight
 
-    for(int i = 0; i < models.size(); i++){
-        if(models[i].isPopulated() && models[i].getPointsSize() >= 2){
-            pair<Point, Point> points = models[i].getFirstAndLastPoint();
+    for(int i = 0; i < models.size(); i++){ //For every model found
+        if(models[i].isPopulated() && models[i].getPointsSize() >= 2){ //If model is populated
+            pair<Point, Point> points = models[i].getFirstAndLastPoint(); //Finds negative and positive-most points (x-axis)
 
-    	    p.x = points.first.getX();
-    	    p.y = models[i].getSlope()*p.x + models[i].getIntercept();
+            p.x = points.first.getX(); //Get first point X coordinate
+            p.y = models[i].getSlope()*p.x + models[i].getIntercept(); //Calculate Y using the model's information
 
-            //cout << "Line [" << i << "] x_1: " << p.x << ", y_1: " << p.y;
+            line_list.points.push_back(p); //Push point
 
-    	    line_list.points.push_back(p);
+            p.x = points.second.getX(); //Last point X coordinate
+            p.y = models[i].getSlope()*p.x + models[i].getIntercept(); //Calculate using model's information
 
-    	    p.x = points.second.getX();
-    	    p.y = models[i].getSlope()*p.x + models[i].getIntercept();
-
-            //cout << ", x_2: " << p.x << ", y_2: " << p.y << endl;
-    	    line_list.points.push_back(p);
-    	}
-
-        //cout << endl << endl;
+            line_list.points.push_back(p);
+        }
     }
 
-    pubLineNode.publish(points);
-    pubLineNode.publish(line_list);
+    pubLineNode.publish(points); //Publish field points
+    pubLineNode.publish(line_list); //Publish line list
 }
 
-
-ros::Time lastMsg;
-bool comReady = false;
-bool emergencyCalled = false;
+//--------------------------------------------------------------------------------------------------------
+ros::Time lastMsg; //Store last time
+bool comReady = false; //Flag to say the communication is ready
+bool emergencyCalled = false; //Flag to signal exit
 
 //--------------------------------------------------------------------------------------------------------
-void OnEmergencyBrake(const std_msgs::Bool & msg){
-    lastMsg = ros::Time::now();
+void OnEmergencyBrake(const std_msgs::Bool & msg){ //Emergency message
+    lastMsg = ros::Time::now(); //Store last time
+    
+    comReady = true; //Sets flag
 
-    comReady = true;
-
-    if(msg.data == true){
-        ROS_ERROR_STREAM(node_name << ": Emergency Shutdown Called");
+    if(msg.data == true){ //If message is true, exit
+        Utility::printInColor(node_name + ": Emergency Shutdown Called", RED);
         emergencyCalled = true;
         ros::shutdown();
     }
@@ -123,110 +118,144 @@ void OnEmergencyBrake(const std_msgs::Bool & msg){
 void emergencyThread(){
     lastMsg = ros::Time::now();
 
-    ros::Subscriber emergencySub = node->subscribe(emergecy_topic, 10, OnEmergencyBrake);
-    ros::Publisher emergencyPub = node->advertise<std_msgs::Bool>(emergecy_topic, 10);
+    ros::Subscriber emergencySub = node->subscribe(emergecy_topic, 10, OnEmergencyBrake); //Subscribe to topics
+    ros::Publisher emergencyPub = node->advertise<std_msgs::Bool>(emergecy_topic, 10); //Topic to publish if automatic
 
-    std_msgs::Bool msg;
+    std_msgs::Bool msg; //Sets message
     msg.data = false;
     
-    while(ros::ok() && !comReady)
+    while(ros::ok() && !comReady) //If mode is manual, wait for comunication to be set
         ros::Duration(0.01).sleep();
 
-    while(ros::ok() && !emergencyCalled){
-        ros::Time now = ros::Time::now();
+    while(ros::ok() && !emergencyCalled){ //Until emergency is called
+        ros::Time now = ros::Time::now(); //get time
         
         ros::Duration delta_t = now - lastMsg;
 
-        if(!emergencyCalled && delta_t.toSec() > 0.2){
-            ROS_ERROR_STREAM(node_name << ": Emergency Timeout Shutdown");
+        if(!emergencyCalled && delta_t.toSec() > 0.2){ //If last emergency message was received more than 200ms ago, shutdown
+            Utility::printInColor(node_name + ": Emergency Timeout Shutdown", RED);
             ros::shutdown();
         }
 
         ros::Duration(0.05).sleep();
     }
 
-    emergencySub.shutdown();
+    emergencySub.shutdown(); //Shutdown everything
+    emergencyPub.shutdown();
 }
 
 //--------------------------------------------------------------------------------------------------------
-void OnRosMsg(const sensor_msgs::LaserScan & msg){
-    static int msgCont = 0;
-    const static ros::Time firstMsgTime = ros::Time::now();
+void OnRosMsg(const sensor_msgs::LaserScan & msg){ //ROS message received 
+    static ros::Time last = ros::Time::now();
 
-    ros::Time start = ros::Time::now();
+    ros::Time exec_start, exec_end;
 
-    ros::Duration total_time = start - firstMsgTime;
-    ros::Duration elapsed_seconds;
+    ros::Time start = ros::Time::now(); //Get time now
 
-    const double msgPeriod = msgCont == 0 ? 0 : total_time.toSec() / msgCont;
+    ros::Duration diff = start - last; //Get elapsed time from first message
+    ros::Duration elapsed_seconds; //Set 0
 
-    while(ros::ok() && elapsed_seconds.toSec() <= msgPeriod * 0.8){
+    while(ros::ok() && elapsed_seconds.toSec() <= diff.toSec() * 0.7){ //Continue calculating until hit 70% of message period
+        usedAlgo->populateOutliers(msg); //Populate outliers
 
-        rubyGenOPPN.populateOutliers(msg);
+        if(arq_name != "none")
+            exec_start = ros::Time::now(); //Get time now
 
-        vector <Model> lines = rubyGenOPPN.findLines();
-        //cout << rubyGenOPPN << endl << endl;
+        vector <Model> lines = usedAlgo->findLines(); //Find models in cloud
 
-        sendLine(lines, rubyGenOPPN);
+        if(arq_name != "none"){
+            exec_end = ros::Time::now(); //Get time now
+
+            ros::Duration elapsed_exec = exec_end - exec_start;
+
+            arq << usedAlgo->getInitialField().size() << ";" << elapsed_exec.toSec() * 1000.0 << endl;
+        }
+
+        sendLine(lines, *usedAlgo); //Send found models via ROS
 
         ros::Time end = ros::Time::now();
 
-        elapsed_seconds = end - start;
+        elapsed_seconds = end - start; //Update elapsed time
     }
-    
-    msgCont++;
-}
-//--------------------------------------------------------------------------------------------------------
-int main(int argc, char **argv){
 
+    last = start;
+}
+
+
+//--------------------------------------------------------------------------------------------------------
+int main(int argc, char **argv){ //Main function 
     srand (time(NULL));
     ros::init(argc, argv, "engrais_findlines");
     
     node = new ros::NodeHandle();
 
-    string sub_topic, pub_topic;
+    string algorithm, sub_topic, pub_topic;
 
     node_name = ros::this_node::getName();
 
-    if(!node->getParam(node_name + "/subscribe_topic", sub_topic) || !node->getParam(node_name + "/publish_topic", pub_topic)){
-
-        ROS_ERROR_STREAM("Argument missing in node " << node_name << ", expected 'subscribe_topic', 'publish_topic' and [optional: 'frame_name']\n\n");
-        return -1;
-    }
+    node->param<string>(node_name + "/subscribe_topic", sub_topic, "default/lidarMsg"); //Get parameters or set default values
+    node->param<string>(node_name + "/publish_topic", pub_topic, "default/foundLines");
     
-    node->param<string>(node_name + "/emergency_topic", emergecy_topic, "none");
+    node->param<string>(node_name + "/rviz_frame", mapName, "world");
+    node->param<string>(node_name + "/algorithm", algorithm, "RubyGeneticOnePointPosNeg");
 
-    node->param<string>(node_name + "/frame_name", mapName, "world");
+    node->param<string>(node_name + "/emergency_topic", emergecy_topic, "none");
+    node->param<string>(node_name + "/arq_name", arq_name, "none");
+
+    if(arq_name != "none"){ //Open file if necessary
+        arq.open(arq_name, std::ofstream::out | std::ofstream::trunc);
+        arq << "nPoints;execution_time" << endl;
+    }
+
+    if(algorithm == "Pearl") //Declare used findlines algorithm
+        usedAlgo = new Pearl();
+
+    else if(algorithm == "RubyPure")
+        usedAlgo = new RubyPure();
+
+    else if(algorithm == "RubyGenetic")
+        usedAlgo = new RubyGenetic();
+
+    else if(algorithm == "RubyGeneticOnePoint")
+        usedAlgo = new RubyGeneticOnePoint();
+
+    else if(algorithm == "RubyGeneticOnePointPosNeg")
+        usedAlgo = new RubyGeneticOnePointPosNeg();
+
+    else if(algorithm == "RubyGeneticOnePointPosNegInfinite")
+        usedAlgo = new RubyGeneticOnePointPosNegInfinite();
+
 
     ros::Subscriber sub = node->subscribe(sub_topic, 10, OnRosMsg); // /engrais/laser_front/scan or /engrais/laser_back/scan
 
     pubLineNode = node->advertise<visualization_msgs::Marker>(pub_topic, 10);// /engrais/laser_front/lines or /engrais/laser_back/lines
- 
-    thread* emergency_t;
+
+    thread* emergency_t; //Run thread to exit
     if(emergecy_topic != "none")
         emergency_t = new thread(emergencyThread);
 
 
-    ROS_INFO_STREAM(node_name << ": Code Running, press Control+C to end");
+    Utility::printInColor(node_name + ": Code Running, press Control+C to end", CYAN);
     ros::spin();
-    ROS_INFO_STREAM(node_name << ": Shutting down...");
+    Utility::printInColor(node_name + ": Shutting down...", CYAN);
     
     if(emergecy_topic != "none"){
         emergency_t->join();
         delete emergency_t;
     }
 
-    sub.shutdown(); 
+    sub.shutdown(); //Shutdown everything
     pubLineNode.shutdown();
-    resultsPubNode.shutdown();
 
     ros::shutdown();
        
     delete node;
 
+    if(arq_name != "none"){ //Close file
+        arq.close();
+    }
+
     Utility::printInColor(node_name + ": Code ended without errors", BLUE);
 
     return 0;
 }
-
-//********************************************************************************************************

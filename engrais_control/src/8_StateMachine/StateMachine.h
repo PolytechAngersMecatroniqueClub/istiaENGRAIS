@@ -18,12 +18,18 @@
 class StateMachine{ //Class to implement a state machine 
     private:
 
-        const double MAX_VEL;
-        const double BODY_SIZE;
-        const double DISTANCE_REFERENCE;
+        int errorCount = 0; //Error count to stop the robot's movement
+        int currentRowPos = 1; //Current Row
+
+        const int NUM_OF_LINES; //Number of lines present in selected models
+        const int NUM_OF_TIMES_TURN; //Number of times the robot will turn
+
+        const double MAX_VEL; //Robot's max velocity
+        const double BODY_SIZE; //Robot's X length
 
         //------------------------------------------------------------------------------------------------
-        enum States { BACKWARD = -1, INITIAL = 0, FORWARD = 1, LINEAR_STOP, ANGULAR_STOP, LEFT_TURN_BEGIN, LEFT_TURN_MID, LEFT_TURN_MERGE, IMPOSSIBLE }; //All possible states
+        enum States { BACKWARD = -1, INITIAL = 0, FORWARD = 1, LINEAR_STOP, ANGULAR_STOP, LEFT_TURN_BEGIN, LEFT_TURN_MID, 
+                      LEFT_TURN_MERGE, RIGHT_TURN_BEGIN, RIGHT_TURN_MID, RIGHT_TURN_MERGE, IMPOSSIBLE, END}; //All possible states
         //------------------------------------------------------------------------------------------------
         enum Turn { LEFT, RIGHT }; //Where to turn
         //------------------------------------------------------------------------------------------------
@@ -45,31 +51,40 @@ class StateMachine{ //Class to implement a state machine
 
         FuzzyController fuzzy; //Fuzzy controller to Backward / Forward motion
 
+
     public:
         //------------------------------------------------------------------------------------------------
-        StateMachine(double MVel, double BSize, double DReference); //Default Constructor
+        StateMachine(const int NLines, const int NTimesTurn, const double MVel, const double BSize); //Default Constructor
         //------------------------------------------------------------------------------------------------
-        std::pair<double, double> makeTransition(const std::pair<Model, Model> & models); //Compute a transition from the State machine, imagine this as a way to make this machine without a clock, and the user calls this function as a way to customize the clock frequency 
+        std::pair<double, double> makeTransition(std::vector<Model> & allModels, const double dist); //Compute a transition from the State machine, imagine this as a way to make this machine without a clock, and the user calls this function as a way to customize the clock frequency 
 
     private:
         //------------------------------------------------------------------------------------------------
-        Transition initialStateRoutine(const std::pair<Model, Model> & models); //Initial State
+        Transition initialStateRoutine(std::vector<Model> & models); //Initial State
         //------------------------------------------------------------------------------------------------
-        Transition forwardStateRoutine(const std::pair<Model, Model> & models); //Forward State
+        Transition forwardStateRoutine(std::vector<Model> & models); //Forward State
         //------------------------------------------------------------------------------------------------
-        Transition backwardStateRoutine(const std::pair<Model, Model> & models); //Backward State
+        Transition backwardStateRoutine(std::vector<Model> & models); //Backward State
         //------------------------------------------------------------------------------------------------
-        Transition linearStopStateRoutine(const std::pair<Model, Model> & models); //Linear Stop State
+        Transition linearStopStateRoutine(std::vector<Model> & models); //Linear Stop State
         //------------------------------------------------------------------------------------------------
-        Transition angularStopStateRoutine(const std::pair<Model, Model> & models); //Angular Stop State
+        Transition angularStopStateRoutine(std::vector<Model> & models); //Angular Stop State
         //------------------------------------------------------------------------------------------------
-        Transition leftTurnBeginStateRoutine(const std::pair<Model, Model> & models); //Lert Turn Begin State
+        Transition leftTurnBeginStateRoutine(std::vector<Model> & models); //Lert Turn Begin State
         //------------------------------------------------------------------------------------------------
-        Transition leftTurnMidStateRoutine(const std::pair<Model, Model> & models); //Lert Turn Mid State
+        Transition leftTurnMidStateRoutine(std::vector<Model> & models, const double dist); //Lert Turn Mid State
         //------------------------------------------------------------------------------------------------
-        Transition leftTurnMergeStateRoutine(const std::pair<Model, Model> & models); //Lert Turn Merge State
+        Transition leftTurnMergeStateRoutine(std::vector<Model> & models); //Lert Turn Merge State
         //------------------------------------------------------------------------------------------------
-        Transition impossibleStateRoutine(const std::pair<Model, Model> & models); //Impossible State, it shouldn't be here!
+        Transition rightTurnBeginStateRoutine(std::vector<Model> & models); //Right Turn Begin State
+        //------------------------------------------------------------------------------------------------
+        Transition rightTurnMidStateRoutine(std::vector<Model> & models, const double dist); //Right Turn Mid State
+        //------------------------------------------------------------------------------------------------
+        Transition rightTurnMergeStateRoutine(std::vector<Model> & models); //Right Turn Merge State
+        //------------------------------------------------------------------------------------------------
+        Transition endStateRoutine(std::vector<Model> & models); //End State 
+        //------------------------------------------------------------------------------------------------
+        Transition impossibleStateRoutine(std::vector<Model> & models); //Impossible State, it shouldn't be here!
 
         //################################################################################################
 
@@ -82,7 +97,7 @@ class StateMachine{ //Class to implement a state machine
 };
 
 //--------------------------------------------------------------------------------------------------------
-inline StateMachine::StateMachine(double MVel, double BSize, double DReference) : tAfterStop(INITIAL, std::pair<double, double> (0,0)), MAX_VEL(MVel), BODY_SIZE(BSize), DISTANCE_REFERENCE(DReference) {} //Initialize class members
+inline StateMachine::StateMachine(const int NLines, const int NTimesTurn, const double MVel, const double BSize) : NUM_OF_TIMES_TURN(NTimesTurn), MAX_VEL(MVel), BODY_SIZE(BSize), NUM_OF_LINES(NLines), tAfterStop(INITIAL, std::pair<double, double> (0,0)) {} //Initialize class members
 
 #endif
 //********************************************************************************************************

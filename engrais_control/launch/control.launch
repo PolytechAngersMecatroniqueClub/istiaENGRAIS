@@ -1,48 +1,59 @@
 <?xml version="1.6" ?>
 <launch>
 
-	<!--> Robot Control Arguments <-->
-    <arg name="control_node_name" default="engrais_central"/>
-
-	<arg name="robot_max_velocity" default="4.0"/>
-	<arg name="robot_body_size" default="2.0"/>
-	<arg name="robot_distance_reference" default="1.5"/>
-	<arg name="control_sleep_time_ms" default="500"/>
+	<!--> Node Name <-->
+    <arg name="control_node_name" default="default_central"/>
 
 
-    <arg name="emer_topic" default="none"/>
-    <arg name="change_mode_topic_name" default="mode_control"/>
+    <!--> ROS Topic Name <-->
+	<arg name="sub_topic_back" default="/default/frontLines"/>
+	<arg name="sub_topic_front" default="/default/backLines"/>
 
-	<arg name="subscribe_topic_back" default="lines_back"/>
-	<arg name="subscribe_topic_front" default="lines_front"/>
-	<arg name="publish_topic_left" default="leftCommand"/>
-	<arg name="publish_topic_right" default="rightCommand"/>
+	<arg name="pub_topic_left" default="/default/leftWheel"/>
+	<arg name="pub_topic_right" default="/default/rightWheel"/>
 
+    <arg name="change_mode_topic_name" default="none"/>
+    <arg name="emer_topic_name" default="none"/>
+
+    <arg name="selected_lines_topic" default="/default/selectedLines"/>
+
+
+	<!--> Robot Infos <-->
+	<arg name="robot_mode" default="automatic"/>
+
+	<arg name="robot_number_lines" default="4"/>
+	<arg name="robot_turn_times" default="2"/>
+	<arg name="control_sleep_time_ms" default="250"/>
+
+	<arg name="robot_max_velocity" default="1.0"/>
+	<arg name="robot_body_size" default="1.0"/>
 
 	<arg name="global_frame" default="body"/>
-    <arg name="robot_mode" default="automatic"/>
-	<arg name="selected_lines_topic" default="selectedLines"/>
 
 
-	<node name="$(arg control_node_name)" pkg="engrais_control" type="robot_control" output="screen">
-		<param name="max_velocity" type="double" value="$(arg robot_max_velocity)"/>
-		<param name="body_size" type="double" value="$(arg robot_body_size)"/>
-		<param name="distance_reference" type="double" value="$(arg robot_distance_reference)"/>
-		<param name="sleep_time_ms" type="int" value="$(arg control_sleep_time_ms)"/>
+	<!--> Launch node <-->
+	<node name="$(arg control_node_name)" pkg="engrais_control" type="robot_control">
 
+		<param name="subscribe_topic_back" type="string" value="$(arg sub_topic_back)"/>
+		<param name="subscribe_topic_front" type="string" value="$(arg sub_topic_front)"/>
 
-        <param name="emergency_topic" type="string" value="$(arg emer_topic)"/>
+		<param name="publish_topic_left" type="string" value="$(arg pub_topic_left)"/>
+		<param name="publish_topic_right" type="string" value="$(arg pub_topic_right)"/>
+
+        <param name="mode" type="string" value="$(arg robot_mode)"/>
         <param name="change_mode_topic" type="string" value="$(arg change_mode_topic_name)"/>
 
-		<param name="subscribe_topic_back" type="string" value="$(arg subscribe_topic_back)"/>
-		<param name="subscribe_topic_front" type="string" value="$(arg subscribe_topic_front)"/>
-		<param name="publish_topic_left" type="string" value="$(arg publish_topic_left)"/>
-		<param name="publish_topic_right" type="string" value="$(arg publish_topic_right)"/>
+		<param name="number_lines" type="int" value="$(arg robot_number_lines)"/>
+		<param name="turn_times" type="int" value="$(arg robot_turn_times)"/>
+		<param name="sleep_time_ms" type="int" value="$(arg control_sleep_time_ms)"/>
 
+		<param name="max_velocity" type="double" value="$(arg robot_max_velocity)"/>
+		<param name="body_size" type="double" value="$(arg robot_body_size)"/>
 
 		<param name="rviz_frame" type="string" value="$(arg global_frame)"/>
-        <param name="mode" type="string" value="$(arg robot_mode)"/>
 		<param name="rviz_topic" type="string" value="$(arg selected_lines_topic)"/>
+        <param name="emergency_topic" type="string" value="$(arg emer_topic_name)"/>
+
 	</node>
 
 </launch>
