@@ -15,15 +15,11 @@
 #include <string>
 #include <vector>
 
-#define SLEEP_TIME 500
-
 using namespace std;
 
 string side;
 
 mutex critSec;
-
-
 
 string node_name, emergecy_topic;
 
@@ -185,18 +181,22 @@ int main(int argc, char **argv){
 
     node_name = ros::this_node::getName();
 
-    if(!node->getParam(node_name + "/back_port", back_port_name) || !node->getParam(node_name + "/front_port", front_port_name) ||
-       !node->getParam(node_name + "/side", side) || !node->getParam(node_name + "/baud", baud) || !node->getParam(node_name + "/timeout", timeout) || 
-       !node->getParam(node_name + "/data_bits", bytesize) || !node->getParam(node_name + "/parity", parity) || !node->getParam(node_name + "/timeout", timeout) ||
-       !node->getParam(node_name + "/hdw_flow_ctrl", flowctrl) || !node->getParam(node_name + "/stop_bit", stop_bit) || !node->getParam(node_name + "/sub_topic", sub_topic)){ //Get mandatory parameters
 
-	    ROS_ERROR_STREAM("Argument missing in node " << node_name << ", expected sub_topic, 'back_port_name', 'front_port_name', " <<
-	             "'side', 'baud', 'timeout', 'data_bits', 'parity', 'timeout', 'hdw_flow_ctrl' and 'stop_bit'.\n\n");
+    node->param<string>(node_name + "/back_port", back_port_name, "/dev/ttyUSB0");
+    node->param<string>(node_name + "/front_port", front_port_name, "/dev/ttyUSB1");
 
-        return -1;
-    }
+    node->param<string>(node_name + "/side", side, "right");
 
+    node->param<int>(node_name + "/baud", baud, 57600);
+    node->param<int>(node_name + "/timeout", timeout, 50);
+    node->param<int>(node_name + "/data_bits", bytesize, 8);
+    node->param<int>(node_name + "/parity", parity, 0);
+    node->param<int>(node_name + "/hdw_flow_ctrl", flowctrl, 0);
+    node->param<int>(node_name + "/stop_bit", stop_bit, 1);
+
+    node->param<string>(node_name + "/sub_topic", sub_topic, "default/wheelCommand");
     node->param<string>(node_name + "/emergency_topic", emergecy_topic, "none");
+
 
     initializeSerialPorts(back_port_name, front_port_name, baud, timeout, bytesize, parity, stop_bit, flowctrl);
 

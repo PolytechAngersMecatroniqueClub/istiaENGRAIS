@@ -9,9 +9,6 @@ from evdev import *
 from select import select
 from Queue import Queue
 
-import roslib
-roslib.load_manifest("engrais")
-
 from std_msgs.msg import Bool
 from std_msgs.msg import String
 from std_msgs.msg import Float64
@@ -106,7 +103,7 @@ class ControllerCom(threading.Thread):
             # we loop over those devices looking for the wireless controller
             for device in devices:
                 if (device.phys == self.__DEFAULT_DEVADD) and (device.name == self.__DEFAULT_DEVNAME) :
-                    rospy.loginfo("<"+str(self.__DEFAULT_DEVNAME)+"> is connected to <"+str(device.path)+">")
+                    rospy.loginfo("<"+str(device.name)+"> is connected <"+str(device.phys)+">")
                     self.__gamepad = device
                     controller_ready = True
 

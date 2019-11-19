@@ -9,8 +9,8 @@
 	<arg name="sick_node_name" default="default_sick_tim"/>
 
 	<!--> ROS Topic Names <-->
-	<arg name="scan_topic" default="default/lidarPoints"/>
-	<arg name="lines_topic" default="default/foundLines"/>
+	<arg name="scan_topic" default="default/lidar_points"/>
+	<arg name="lines_topic" default="default/found_lines"/>
 
 	<!--> Rviz Frame Name <-->
 	<arg name="rviz_frame_name" default="laser_front"/>

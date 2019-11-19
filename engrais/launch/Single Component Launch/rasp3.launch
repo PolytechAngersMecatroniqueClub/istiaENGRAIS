@@ -1,5 +1,6 @@
 <?xml version="1.6" ?>
 <launch>
+	
 	<!--> Periferals IPs <-->
     <arg name="rasp3_IP" default="192.168.10.103" />
 	<arg name="lidar_IP" default="192.168.10.111"/>

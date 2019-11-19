@@ -4,35 +4,33 @@
 	<!--> Node Name <-->
     <arg name="control_node_name" default="default_central"/>
 
-
     <!--> ROS Topic Name <-->
-	<arg name="sub_topic_back" default="/default/frontLines"/>
-	<arg name="sub_topic_front" default="/default/backLines"/>
+	<arg name="sub_topic_back" default="/default/front_lines"/>
+	<arg name="sub_topic_front" default="/default/back_lines"/>
 
-	<arg name="pub_topic_left" default="/default/leftWheel"/>
-	<arg name="pub_topic_right" default="/default/rightWheel"/>
+	<arg name="pub_topic_left" default="/default/left_wheel"/>
+	<arg name="pub_topic_right" default="/default/right_wheel"/>
 
     <arg name="change_mode_topic_name" default="none"/>
-    <arg name="emer_topic_name" default="none"/>
+    <arg name="emer_topic" default="none"/>
 
-    <arg name="selected_lines_topic" default="/default/selectedLines"/>
-
+    <arg name="selected_lines_topic" default="/default/selected_lines"/>
 
 	<!--> Robot Infos <-->
 	<arg name="robot_mode" default="automatic"/>
 
 	<arg name="robot_number_lines" default="4"/>
-	<arg name="robot_turn_times" default="2"/>
+	<arg name="robot_turn_times" default="5"/>
 	<arg name="control_sleep_time_ms" default="250"/>
 
-	<arg name="robot_max_velocity" default="1.0"/>
-	<arg name="robot_body_size" default="1.0"/>
+	<arg name="robot_max_velocity" default="2.0"/>
+	<arg name="robot_body_size" default="1.1"/>
 
 	<arg name="global_frame" default="body"/>
 
 
 	<!--> Launch node <-->
-	<node name="$(arg control_node_name)" pkg="engrais_control" type="robot_control">
+	<node name="$(arg control_node_name)" pkg="engrais_control" type="robot_control" output="screen">
 
 		<param name="subscribe_topic_back" type="string" value="$(arg sub_topic_back)"/>
 		<param name="subscribe_topic_front" type="string" value="$(arg sub_topic_front)"/>
@@ -52,7 +50,7 @@
 
 		<param name="rviz_frame" type="string" value="$(arg global_frame)"/>
 		<param name="rviz_topic" type="string" value="$(arg selected_lines_topic)"/>
-        <param name="emergency_topic" type="string" value="$(arg emer_topic_name)"/>
+        <param name="emergency_topic" type="string" value="$(arg emer_topic)"/>
 
 	</node>
 

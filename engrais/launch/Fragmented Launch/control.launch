@@ -1,17 +1,17 @@
 <?xml version="1.6" ?>
 <launch>
 
-    <!-- IP Values -->
+	<!-- IP Values -->
     <arg name="rasp3_IP" default="192.168.10.103" />
     <arg name="rasp4_IP" default="192.168.10.104" />
-
-    <arg name="central_IP" default="$(optenv ROS_MASTER_IP 192.168.10.105)" />
 
     <arg name="back_Lidar_IP" default="192.168.10.111"/>
 	<arg name="front_Lidar_IP" default="192.168.10.112"/>
 
+    <arg name="central_IP" default="$(optenv ROS_MASTER_IP 192.168.10.105)" />
 
-    <!--Node Names -->
+
+	<!-- Node Names -->
 	<arg name="back_sick_node_name" default="sick_back_rpi_3"/>
 	<arg name="front_sick_node_name" default="sick_front_rpi_4"/>
 
@@ -21,93 +21,121 @@
     <arg name="central_node_name" default="engrais_central"/>
 
 
-    <!-- ROS Topics -->
-	<arg name="back_scan_topic" default="scan_back"/>
-	<arg name="front_scan_topic" default="scan_front"/>
+	<!-- ROS Topics -->
+	<arg name="back_scan_topic" default="/lidar_points/scan_back"/>
+	<arg name="front_scan_topic" default="/lidar_points/scan_front"/>
 
-	<arg name="back_rviz_frame" default="laser_back"/>
-	<arg name="front_rviz_frame" default="laser_front"/>
+	<arg name="back_lines_topic" default="/lines/lines_back"/>
+	<arg name="front_lines_topic" default="/lines/lines_front"/>
 
-    <arg name="change_mode_topic" default="mode_control"/>
+    <arg name="emer_topic_name" default="none"/>
+    <arg name="change_mode_topic" default="none"/>
 
-    <arg name="left_wheel_control_signal" default="leftCommand" />
-    <arg name="right_wheel_control_signal" default="rightCommand" />
+	<arg name="left_wheel_control_signal" default="/control_signal/left_wheel"/>
+	<arg name="right_wheel_control_signal" default="/control_signal/right_wheel"/>
 
-    <arg name="central_selected_lines_topic" default="selectedLines"/>
-
-    <arg name="emer_topic_name" default="emergency_topic"/>
-    <arg name="change_mode_topic_name" default="mode_control"/>
+    <arg name="central_selected_lines_topic" default="/lines/selected_lines"/>
 
 
 	<!-- Rviz Frame Names -->
-	<arg name="back_lines_topic" default="lines_back"/>
-	<arg name="front_lines_topic" default="lines_front"/>
-	
+	<arg name="back_rviz_frame" default="laser_back"/>
+	<arg name="front_rviz_frame" default="laser_front"/>
+
+
+	<!--> Findlines Arguments <-->
+	<arg name="algorithm" default="RubyGeneticOnePointPosNeg"/>
+    <arg name="output_file" default="none"/>
+
+
+	<!--> Robot Infos <-->
+	<arg name="mode" default="automatic"/>
+
+	<arg name="number_lines" default="4"/>
+	<arg name="turn_times" default="2"/>
+	<arg name="sleep_time_ms" default="250"/>
+
+	<arg name="max_velocity" default="1.0"/>
+	<arg name="body_size" default="1.0"/>
+
 	<arg name="central_global_frame" default="body"/>
-
-	<!-- Robot's Infos -->
-    <arg name="mode" default="automatic"/>
-	<arg name="max_velocity" default="4.0"/>
-	<arg name="body_size" default="2.0"/>
-	<arg name="distance_reference" default="1.5"/>
-
-	<!-- Control Period -->
-	<arg name="sleep_time_ms" default="500"/>
-
 
 
 	<!-- Connect to Rasp3 -->
  	<machine name="rasp3" address="$(arg rasp3_IP)" user="engrais" password="engrais" env-loader="~/catkin_ws/src/istiaENGRAIS/config/config.sh" default="true"/>
 
- 	<include file="$(find engrais_control)/launch/findlines.launch">
-	    <arg name="IP_Lidar" value="$(arg front_Lidar_IP)" />
-	    <arg name="sick_node_name" value="$(arg front_sick_node_name)" />
-	    <arg name="scan_topic" value="$(arg front_scan_topic)" />
-	    <arg name="rviz_frame" value="$(arg front_rviz_frame)" />
+	<include file="$(find engrais_control)/launch/findlines.launch">
 
-	    <arg name="lines_topic" value="$(arg front_lines_topic)" />
-	    <arg name="findlines_node_name" value="$(arg front_findlines_node_name)" />
+	    <arg name="IP_Lidar" value="$(arg back_Lidar_IP)"/>
+
+	    <arg name="findlines_node_name" value="$(arg back_findlines_node_name)"/>
+	    <arg name="sick_node_name" value="$(arg back_sick_node_name)"/>
+
+	    <arg name="scan_topic" value="$(arg back_scan_topic)"/>
+	    <arg name="lines_topic" value="$(arg back_lines_topic)"/>
+
+	    <arg name="rviz_frame_name" value="$(arg back_rviz_frame)"/>
+	    
+	    <arg name="used_algorithm" value="$(arg algorithm)"/>
         <arg name="emer_topic" value="$(arg emer_topic_name)"/>
- 	</include>
+	    <arg name="output_file_name" value="$(arg output_file)"/>
+
+	</include>
 
 
  	<!-- Connect to Rasp4 -->
  	<machine name="rasp4" address="$(arg rasp4_IP)" user="engrais" password="engrais" env-loader="~/catkin_ws/src/istiaENGRAIS/config/config.sh" default="true"/>
 
- 	<include file="$(find engrais_control)/launch/findlines.launch">
-	    <arg name="IP_Lidar" value="$(arg back_Lidar_IP)" />
-	    <arg name="sick_node_name" value="$(arg back_sick_node_name)" />
-	    <arg name="scan_topic" value="$(arg back_scan_topic)" />
-	    <arg name="rviz_frame" value="$(arg back_rviz_frame)" />
+	<include file="$(find engrais_control)/launch/findlines.launch">
 
-	    <arg name="lines_topic" value="$(arg back_lines_topic)" />
-	    <arg name="findlines_node_name" value="$(arg back_findlines_node_name)" />
+	    <arg name="IP_Lidar" value="$(arg front_Lidar_IP)"/>
+
+	    <arg name="findlines_node_name" value="$(arg front_findlines_node_name)"/>
+	    <arg name="sick_node_name" value="$(arg front_sick_node_name)"/>
+
+	    <arg name="scan_topic" value="$(arg front_scan_topic)"/>
+	    <arg name="lines_topic" value="$(arg front_lines_topic)"/>
+
+	    <arg name="rviz_frame_name" value="$(arg front_rviz_frame)"/>
+	    
+	    <arg name="used_algorithm" value="$(arg algorithm)"/>
         <arg name="emer_topic" value="$(arg emer_topic_name)"/>
- 	</include>
+	    <arg name="output_file_name" value="$(arg output_file)"/>
+
+	</include>
 
 
  	<!-- Connect to Central -->
- 	<machine name="central" address="$(arg central_IP)" user="jetson-tx2" password="jetsontx2" env-loader="~/catkin_ws/src/istiaENGRAIS/config/config.sh" default="true"/>
+ 	<machine name="central" address="$(arg central_IP)" user="usrlocal" password="usrlocal2019" env-loader="~/catkin_ws/src/istiaENGRAIS/config/config.sh" default="true"/>
 
  	<include file="$(find engrais_control)/launch/control.launch">
-        <arg name="control_node_name" value="$(arg central_node_name)"/>
+
+		<!--> Node Name <-->
+	    <arg name="control_node_name" value="$(arg central_node_name)"/>
+
+	    <!--> ROS Topic Name <-->
+		<arg name="sub_topic_back" value="$(arg back_lines_topic)"/>
+		<arg name="sub_topic_front" value="$(arg front_lines_topic)"/>
+
+		<arg name="pub_topic_left" value="$(arg left_wheel_control_signal)"/>
+		<arg name="pub_topic_right" value="$(arg right_wheel_control_signal)"/>
+
+	    <arg name="change_mode_topic_name" value="$(arg change_mode_topic)"/>
+	    <arg name="emer_topic" value="$(arg emer_topic_name)"/>
+
+	    <arg name="selected_lines_topic" value="$(arg central_selected_lines_topic)"/>
+
+		<!--> Robot Infos <-->
+		<arg name="robot_mode" value="$(arg mode)"/>
+
+		<arg name="robot_number_lines" value="$(arg number_lines)"/>
+		<arg name="robot_turn_times" value="$(arg turn_times)"/>
+		<arg name="control_sleep_time_ms" value="$(arg sleep_time_ms)"/>
 
 		<arg name="robot_max_velocity" value="$(arg max_velocity)"/>
 		<arg name="robot_body_size" value="$(arg body_size)"/>
-		<arg name="robot_distance_reference" value="$(arg distance_reference)"/>
-        <arg name="control_sleep_time_ms" value="$(arg sleep_time_ms)"/>
-
-        <arg name="emer_topic" value="$(arg emer_topic_name)"/>
-		<arg name="change_mode_topic_name" value="$(arg change_mode_topic)"/>
-		
-		<arg name="subscribe_topic_back" value="$(arg back_lines_topic)"/>
-		<arg name="subscribe_topic_front" value="$(arg front_lines_topic)"/>
-		<arg name="publish_topic_left" value="$(arg left_wheel_control_signal)"/>
-		<arg name="publish_topic_right" value="$(arg right_wheel_control_signal)"/>
 
 		<arg name="global_frame" value="$(arg central_global_frame)"/>
-        <arg name="robot_mode" value="$(arg mode)"/>
-		<arg name="selected_lines_topic" value="$(arg central_selected_lines_topic)"/>
+
  	</include>
 
 </launch>

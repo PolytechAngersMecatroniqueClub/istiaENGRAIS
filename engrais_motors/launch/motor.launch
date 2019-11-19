@@ -2,22 +2,27 @@
 
 <launch>
 
-    <!-- PARAMETERS -->
-    <arg name="motor_node_name" default="left_side_wheels" />
-    <arg name="sub_topic_name" default="leftCommand" />
+    <!-- Node name -->
+    <arg name="motor_node_name" default="default_wheels" />
+
+    <!-- ROS topic name -->
+    <arg name="sub_topic_name" default="default/wheel_command" />
     <arg name="emer_topic" default="none"/>
 
+    <!-- USB ports names -->
     <arg name="back_port_name" default="/dev/ttyUSB0" />
     <arg name="front_port_name" default="/dev/ttyUSB1" />
 
+    <!-- Robot side -->
     <arg name="robot_side" default="left" />
 
+    <!-- Serial configs -->
     <arg name="serial_baud" default="57600" />
     <arg name="serial_parity" default="0" /> <!-- 0:None, 1:odd, 2:even -->
     <arg name="serial_stop_bit" default="1" /> <!-- 1:One, 2:Two, 3:One point five -->
     <arg name="serial_data_bits" default="8" /> <!-- 5, 6, 7 or 8 -->
     <arg name="serial_hdw_flow_ctrl" default="0" /> <!-- 0:None, 1:software, 2:hardware -->
-    <arg name="serial_timeout" default="10" />
+    <arg name="serial_timeout" default="50" />
     
     
     <!-- The motor node -->
