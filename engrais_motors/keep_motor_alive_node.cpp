@@ -12,7 +12,7 @@
 using namespace std;
 
 int main(int argc, char **argv){
-    ros::init(argc, argv, "keep_motor_alive_node");
+    /*ros::init(argc, argv, "keep_motor_alive_node");
     ros::NodeHandle node;
 
     // ********************************************************************
@@ -136,15 +136,15 @@ int main(int argc, char **argv){
     com.fill('0');
     arq.fill('0');
 
-    /*for(int i = 0; i < 40; i++){
+    for(int i = 0; i < 40; i++){
 	    my_serial_1.write(tramme_1, tramme_1_size);
 	    ros::Duration(0.05).sleep();
-	}*/
+	}
 
     int vel = 0;
 
-    /*tramme_2[18] = 0x00;
-    addCRC(tramme_2, tramme_2_size);*/
+    tramme_2[18] = 0x00;
+    addCRC(tramme_2, tramme_2_size);
 
     int requestCont = 1;
 
@@ -228,19 +228,19 @@ int main(int argc, char **argv){
 	    cout << endl << endl;
 	    com << endl << endl;*/
         
-        if(++cont == 0x10){
+        /*if(++cont == 0x10){
             cont = 0;
         }
 
         tramme_1[3] = 0x10 + cont;
-        addCRC(tramme_1, tramme_1_size);
+        addCRC(tramme_1, tramme_1_size);*/
 
         /*tramme_1[3] = 0x10 + cont;
         addCRC(tramme_1, tramme_1_size);*/
 
 
         /*requestCont++;*/
-        ros::Duration(0.01).sleep();
+        /*ros::Duration(0.01).sleep();
 
     }
 

@@ -120,9 +120,6 @@ void emergencyThread(){
 
     ros::Subscriber emergencySub = node->subscribe(emergecy_topic, 10, OnEmergencyBrake); //Subscribe to topics
     ros::Publisher emergencyPub = node->advertise<std_msgs::Bool>(emergecy_topic, 10); //Topic to publish if automatic
-
-    std_msgs::Bool msg; //Sets message
-    msg.data = false;
     
     while(ros::ok() && !comReady) //If mode is manual, wait for comunication to be set
         ros::Duration(0.01).sleep();
