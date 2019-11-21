@@ -1,5 +1,6 @@
 
 
+
 # ENGRAIS Master
 This repository contains all the packages to simulate and control a robot through an unknown field, using LIDAR sensors.
 
@@ -75,8 +76,10 @@ To get the graph analysis you will have to install:
   3) Orca : conda install -c plotly plotly-orca psutil requests
 
   4) These libraries:
-    * sudo apt -y install libgconf2-4
-    * sudo apt install libcanberra-gtk-module libcanberra-gtk3-module
+    ```
+    sudo apt -y install libgconf2-4
+    sudo apt install libcanberra-gtk-module libcanberra-gtk3-module
+    ```
 
 Then, reopen terminal and run ./analysis.sh All the graphs will be saved in <catkin_ws_name>/src/Results. The folder Plants Position has the plants positions for engrais3 and 4, and the folder Analysis results will have all the graphs
 
