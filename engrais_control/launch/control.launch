@@ -32,7 +32,7 @@
 
 
 	<!--> Launch node <-->
-	<node name="$(arg control_node_name)" pkg="engrais_control" type="robot_control">
+	<node name="$(arg control_node_name)" pkg="engrais_control" type="robot_control" output="screen">
 
 		<param name="subscribe_topic_back" type="string" value="$(arg sub_topic_back)"/>
 		<param name="subscribe_topic_front" type="string" value="$(arg sub_topic_front)"/>

@@ -1,4 +1,5 @@
 
+
 # ENGRAIS Master
 This repository contains all the packages to simulate and control a robot through an unknown field, using LIDAR sensors.
 
@@ -73,9 +74,9 @@ To get the graph analysis you will have to install:
 
   3) Orca : conda install -c plotly plotly-orca psutil requests
 
-  4) These libraries
-    sudo apt -y install libgconf2-4
-    sudo apt install libcanberra-gtk-module libcanberra-gtk3-module
+  4) These libraries:
+    * sudo apt -y install libgconf2-4
+    * sudo apt install libcanberra-gtk-module libcanberra-gtk3-module
 
 Then, reopen terminal and run ./analysis.sh All the graphs will be saved in <catkin_ws_name>/src/Results. The folder Plants Position has the plants positions for engrais3 and 4, and the folder Analysis results will have all the graphs
 
@@ -106,7 +107,7 @@ With this selection commented, ROS will run normally. If you want to run the ana
 
 # engrais_control
 
-This package allows to deal with the controllers to interract from ROS to gazebo
+This package implements the algorithm to receive the cloud of points, calculates the better lines, and use this information to calculate the control signals.
 
 ## organisation
 
@@ -116,15 +117,25 @@ engrais_control - package created with catkin_create_pkg
 * config
   * engrais_control.yaml : configuration file for the controllers
 * launch
-  * engrais_control.launch : to start the controllers
+  * findlines.launch : Launches node that receives the point cloud and sends the better lines
+  * control.launch : Launches node that receives lines and calculates control signal
 
 ## how to use
 
-You should not have to deal with this package, the launch file is started from the main launch file (cf the package engrais_gazebo)
+One can launch each node with default parameters:
+```
+rosrun engrais_control robot_findlines
+rosrun engrais_control robot_control
+```
+One can change these parameters in command line : 
+```
+rosrun engrais_control robot_findlines _parameter:="p" (you can find parameters names in the .cpp). 
+```
 
-## work to do
-
-The physical behavior of the robot is not as expected, some parameters of the controllers (PID values for instance) should be optimized.
+roslaunch will launch the node with custom parameters. You can change in the launch file all values to be sent, or in the command line :
+```
+roslaunch engrais_control control.launch parameter:="p"
+```
 
 # engrais_description
 
@@ -155,10 +166,6 @@ The only thing to do from this package it is to start rviz
 roslaunch engrais_description rviz.launch
 ```
 
-## Work to do
-
-The behavior of the robot is not quite as expected, some parameters may be changed...
-
 # engrais_gazebo
 
 This package contains the launch files to start the simulation, and the world configuration
@@ -183,10 +190,13 @@ engrais_gazebo - package created with catkin_create_pkg
 * worlds : cf "how to use -> modify the worlds"
   * engrais.world : file generated automatically, should not be modified
   * engrais2.world : file generated automatically, should not be modified
-  * engrais3.world : file generated automatically, should not be modified
+  * engrais3.world : file generated automatically, should not be modified  
+  * engrais4.world : file generated automatically, should not be modified
   * engrais.world.xacro : xacro file that uses population tags to generate the default world
+  * engrais.world.py : python3 code that uses population tags to generate a world
   * engrais2.world.py : python3 code that uses population tags to generate a world
   * engrais3.world.py : python3 code that fully generates a customable random world
+  * engrais4.world.py : python3 code that fully generates a customable random world
 
 ## how to use
 
@@ -245,13 +255,28 @@ To generate the world engrais3.world (random plants and weeds)
 ```
 make engrais3
 ```
+# engrais
+This package is to unite everything to make launching multiple nodes easier.
 
-### control the robot
+## organisation
 
-## work to do
+engrais - package created with catkin_create_pkg
+* package.xml
+* CMakeLists.txt
+* launch
+  * system.launch : Launches all findlines node and control node to control the gazebo's robot
+  * simulation.launch : Launches gazebo simulation, findlines and control node.
+  
+## how to use
 
-* optimize the plant model by maybe removing the joint
-* create new worlds
+One can load a custom environment and control the simulation with
+```
+roslaunch engrais system.launch
+```
+Or launch gazebo with our environments using
+```
+roslaunch engrais simulation.launch
+```
 
 # general usefull commands
 

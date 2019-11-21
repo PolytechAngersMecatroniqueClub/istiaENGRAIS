@@ -18,7 +18,7 @@
 
 
     <!--> Launch node <-->
-	<node name="$(arg findlines_node_name)" pkg="engrais_control" type="robot_findlines" output="screen">
+	<node name="$(arg findlines_node_name)" pkg="engrais_control" type="robot_findlines">
 		<param name="subscribe_topic" type="string" value="$(arg scan_topic)"/>
 		<param name="publish_topic" type="string" value="$(arg lines_topic)"/>
 
