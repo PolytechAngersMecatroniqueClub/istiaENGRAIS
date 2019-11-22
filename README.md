@@ -16,7 +16,7 @@ Since we use ROS TCP/IP architecture, we have to define an IP for each object co
 * Sick Tim LIDAR 1 : 192.168.10.111
 * Sick Tim LIDAR 2 : 192.168.10.112
 
-* ROS core master : 192.168.10.105
+* ROS core master : 192.168.10.110 (PC connected via Wi-fi)
 
 To change the default ROS core master, just run: 
 
@@ -25,6 +25,9 @@ To change the default ROS core master, just run:
 -export ROS_IP='YourMachineIP'
 
 Or change the ~/.bashrc
+
+# Easy Install
+If you want, we have prepared a shell script to install everything you need in order to make a brand new system work properly. First, clone this repository wherever you want. Then, in the master branch, run the "install.sh" inside the "scripts" folder. This will install all dependencies, create "catkin_ws" and compile everything needed. In this branch, you will find "network.sh", this file will do the network setup automatically, but you will need to change all IPs, usernames and passwords in order for it to work properly.
 
 # ROS Setup
 
