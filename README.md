@@ -65,10 +65,10 @@ To use all ROS nodes and liberaries created, we have a few settings to make.
         source /opt/ros/melodic/setup.bash
         source ~/catkin_ws/devel/setup.bash 
 
-        IP=`ifconfig wlo1 | grep "inet " | cut -d' ' -f10`
+        IP=`hostname -I`
         
-        export ROS_MASTER_URI=http://192.168.10.105:11311
         export ROS_MASTER_IP=192.168.10.105
+        export ROS_MASTER_URI=http://$ROS_MASTER_IP:11311
         export ROS_IP=$IP
 
 Now your pc should be able to launch ENGRAIS' ROS nodes
