@@ -1,7 +1,7 @@
 //********************************************************************************************************
 #include "RobotControl.h"
 
-
+using namespace std;
 //--------------------------------------------------------------------------------------------------------
 void RobotControl::SavedInfos::initializeValues(const std::vector<Model> & models, int numLines){
     double model_a = (models[numLines/2 - 1].getSlope() + models[numLines/2].getSlope()) / 2.0; //Calculate mean slope
@@ -61,6 +61,7 @@ void RobotControl::backLinesMessage(const visualization_msgs::Marker & msg){ //R
 
 //--------------------------------------------------------------------------------------------------------
 std::pair<std::vector<Model>, std::vector<bool>> RobotControl::selectModels(){ //Finds and calculates best models 
+    cout << si << endl;
     if(this->si.cont < 10){ //If counter < 10, continue to initialize
         selected = initializeRobot(); //Searches for models that are coherent with initialization phase
 
@@ -209,14 +210,14 @@ std::pair<std::vector<Model>, std::vector<bool>> RobotControl::findBestModels() 
 
 //--------------------------------------------------------------------------------------------------------
 std::pair<std_msgs::Float64, std_msgs::Float64> RobotControl::getWheelsCommand(){ //Get wheel command from finite state machine 
-    std::pair<double, double> controls = robotFSM.makeTransition(selected, si.dist); //Calculate FSM's transition based on selected models
+    std::pair<double, double> controls = si.cont >= 10 ? robotFSM.makeTransition(selected, si.dist) : std::pair<double, double> (0,0); //Calculate FSM's transition based on selected models
 
     std::pair<std_msgs::Float64, std_msgs::Float64> ret;
 
     ret.first.data = controls.first; //Cenvert to ROS message
     ret.second.data = controls.second;
 
-    return ret;
+    return ret; cout << endl;
 }
 //--------------------------------------------------------------------------------------------------------
 void RobotControl::addMsgModels(const std::vector<Model> & modelsInMsg, bool isFrontMsg){ //Add models found to weighted models 

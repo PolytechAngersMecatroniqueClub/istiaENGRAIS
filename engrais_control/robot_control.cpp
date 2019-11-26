@@ -197,6 +197,10 @@ void controlThread(){ //Control Thread
             pubLeftControl.publish(wheels.first); //Send left wheel command
             pubRightControl.publish(wheels.second); //Send right wheel command
         }
+
+        cout << "First: " << wheels.first.data << ", second: " << wheels.second.data << endl;
+
+        cout << "----------------------------------------------------------" << endl; 
     }
 }
 
