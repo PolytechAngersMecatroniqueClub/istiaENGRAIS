@@ -27,7 +27,7 @@ ros::NodeHandle* node;
 
 
 EzWheelSerial* back_wheel; //Declare serial communication
-EzWheelSerial* front_wheel;
+//EzWheelSerial* front_wheel;
 
 struct Message{
 	double data;
@@ -93,7 +93,7 @@ void sendSpeed(){ //Send wheel target speed
             exit(-2);
         }
 
-        if(back_wheel->getStateOfCharge() != -1 && front_wheel->getStateOfCharge() != -1) //Sends message to both wheels in order to wake them
+        if(back_wheel->getStateOfCharge() != -1 /*&& front_wheel->getStateOfCharge() != -1*/) //Sends message to both wheels in order to wake them
             break;
 
         ros::Duration(0.05).sleep(); //Sleep 50ms
@@ -116,8 +116,8 @@ void sendSpeed(){ //Send wheel target speed
         if(!back_wheel->setWheelSpeed(data, isClockwise)) //Send message to back wheel
             ROS_ERROR("ERROR SENDING COMMAND TO BACK WHEEL");
 
-        if(!front_wheel->setWheelSpeed(data, isClockwise))
-            ROS_ERROR("ERROR SENDING COMMAND TO FRONT WHEEL"); //Send message to front wheel
+        /*if(!front_wheel->setWheelSpeed(data, isClockwise))
+            ROS_ERROR("ERROR SENDING COMMAND TO FRONT WHEEL"); //Send message to front wheel*/
 
         loop_rate.sleep(); //Wait 20ms
 	}
@@ -164,7 +164,7 @@ int main(int argc, char **argv){
 
 
     back_wheel = new EzWheelSerial(back_port_name, baud, timeout, bytesize, parity, stop_bit, flowctrl); //Sets serial communication for back wheel
-    front_wheel = new EzWheelSerial(front_port_name, baud, timeout, bytesize, parity, stop_bit, flowctrl); //Sets serial communication for front wheel
+    //front_wheel = new EzWheelSerial(front_port_name, baud, timeout, bytesize, parity, stop_bit, flowctrl); //Sets serial communication for front wheel
 
     ros::Subscriber sub = node->subscribe(sub_topic, 10, OnRosMsg); //Subscribe to topic
 
@@ -186,7 +186,7 @@ int main(int argc, char **argv){
     }
 
     delete back_wheel; //Closes communication
-    delete front_wheel;
+    //delete front_wheel;
 
     ROS_INFO("Code ended without errors");
 

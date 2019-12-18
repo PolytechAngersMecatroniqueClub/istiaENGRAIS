@@ -43,7 +43,7 @@
 
 
     <!-- Robot Max Vel -->
-    <arg name="velocity" default="1.5" />
+    <arg name="velocity" default="1.0" />
 
 
     <!-- Connect to Rasp1 -->
