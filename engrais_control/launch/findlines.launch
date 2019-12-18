@@ -4,29 +4,32 @@
 	<!--> Node Name <-->
 	<arg name="findlines_node_name" default="default_findlines"/>
 
+
 	<!--> ROS Topic Names <-->
-	<arg name="scan_topic" default="default/lidarPoints"/>
-	<arg name="lines_topic" default="default/foundLines"/>
+	<arg name="subscribe_topic" default="default/lidarPoints"/>
+	<arg name="publish_topic" default="default/foundLines"/>
+
 
 	<!--> Rviz Frame Name <-->
-	<arg name="world_frame" default="world"/>
+	<arg name="rviz_frame" default="world"/>
+
 
 	<!--> Find Lines Arguments <-->
-	<arg name="used_algorithm" default="RubyGeneticOnePointPosNeg"/>
-    <arg name="emer_topic" default="none"/>
-    <arg name="output_file_name" default="none"/>
+	<arg name="algorithm" default="RubyGeneticOnePointPosNeg"/>
+    <arg name="emergency_topic" default="none"/>
+    <arg name="arq_name" default="none"/>
 
 
     <!--> Launch node <-->
 	<node name="$(arg findlines_node_name)" pkg="engrais_control" type="robot_findlines">
-		<param name="subscribe_topic" type="string" value="$(arg scan_topic)"/>
-		<param name="publish_topic" type="string" value="$(arg lines_topic)"/>
+		<param name="subscribe_topic" type="string" value="$(arg subscribe_topic)"/>
+		<param name="publish_topic" type="string" value="$(arg publish_topic)"/>
 
-		<param name="rviz_frame" type="string" value="$(arg world_frame)"/>
-		<param name="algorithm" type="string" value="$(arg used_algorithm)"/>
+		<param name="rviz_frame" type="string" value="$(arg rviz_frame)"/>
+		<param name="algorithm" type="string" value="$(arg algorithm)"/>
 
-        <param name="emergency_topic" type="string" value="$(arg emer_topic)"/>
-        <param name="arq_name" type="string" value="$(arg output_file_name)"/>
+        <param name="emergency_topic" type="string" value="$(arg emergency_topic)"/>
+        <param name="arq_name" type="string" value="$(arg arq_name)"/>
 	</node>
 
 </launch>

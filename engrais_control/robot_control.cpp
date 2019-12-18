@@ -265,6 +265,11 @@ int main(int argc, char **argv){ //Main funcion
     node->param<string>(node_name + "/rviz_topic", pubTopicSelected, "/default/selectedLines");
     node->param<string>(node_name + "/emergency_topic", emergecy_topic, "none");
 
+    if(NUM_LINES % 2 == 1){
+        ROS_ERROR_STREAM(node_name << "/PARAMETER ERROR: NUMBER OF LINES MUST BE PAIR\n");
+        return -5;
+    }
+
 
     control = new RobotControl(NUM_LINES, N_TIMES_TURN, MAX_VEL, BODY_SIZE); //Create control object
 

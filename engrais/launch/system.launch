@@ -19,15 +19,14 @@
 
     <arg name="change_mode_topic" default="none"/>
     <arg name="emergency_topic" default="none"/>
-    <arg name="position_file" default="none" />
 
-    <arg name="selected_lines_topic_name" default="/default/selectedLines"/>
+    <arg name="selected_lines_topic_name" default="/engrais/robot_move/selected_lines"/>
 
 
 	<!--> Rviz Frame Name <-->
 	<arg name="rviz_frame" default="world"/>
-	<arg name="front_rviz_frame" value="sick_front_link"/>
-	<arg name="back_rviz_frame" value="sick_back_link"/>
+	<arg name="front_rviz_frame" default="sick_front_link"/>
+	<arg name="back_rviz_frame" default="sick_back_link"/>
 
 
 	<!--> Find Lines Arguments <-->
@@ -49,59 +48,55 @@
 	<include file="$(find engrais_control)/launch/findlines.launch">
 		<arg name="findlines_node_name" value="$(arg front_findlines_node_name)"/>
 
-		<arg name="scan_topic" value="$(arg front_scan_topic)"/>
-		<arg name="lines_topic" value="$(arg front_lines_topic)"/>
+		<arg name="subscribe_topic" value="$(arg front_scan_topic)"/>
+		<arg name="publish_topic" value="$(arg front_lines_topic)"/>
 
-		<arg name="world_frame" value="$(arg front_rviz_frame)"/>
+		<arg name="rviz_frame" value="$(arg front_rviz_frame)"/>
 
-		<arg name="used_algorithm" value="$(arg algorithm)"/>
-	    <arg name="emer_topic" value="$(arg emergency_topic)"/>
-	    <arg name="output_file_name" value="$(arg execution_time_file)"/>
+		<arg name="algorithm" value="$(arg algorithm)"/>
+	    <arg name="emergency_topic" value="$(arg emergency_topic)"/>
+	    <arg name="arq_name" value="$(arg execution_time_file)"/>
 	</include>
 
 
 	<include file="$(find engrais_control)/launch/findlines.launch">
 		<arg name="findlines_node_name" value="$(arg back_findlines_node_name)"/>
 
-		<arg name="scan_topic" value="$(arg back_scan_topic)"/>
-		<arg name="lines_topic" value="$(arg back_lines_topic)"/>
+		<arg name="subscribe_topic" value="$(arg back_scan_topic)"/>
+		<arg name="publish_topic" value="$(arg back_lines_topic)"/>
 
-		<arg name="world_frame" value="$(arg back_rviz_frame)"/>
+		<arg name="rviz_frame" value="$(arg back_rviz_frame)"/>
 
-		<arg name="used_algorithm" value="$(arg algorithm)"/>
-	    <arg name="emer_topic" value="$(arg emergency_topic)"/>
-	    <arg name="output_file_name" value="$(arg execution_time_file)"/>
+		<arg name="algorithm" value="$(arg algorithm)"/>
+	    <arg name="emergency_topic" value="$(arg emergency_topic)"/>
+	    <arg name="arq_name" value="$(arg execution_time_file)"/>
 	</include>
 
 
 	<include file="$(find engrais_control)/launch/control.launch">
 		<arg name="control_node_name" value="$(arg central_node_name)"/>
 
-		<arg name="sub_topic_back" value="$(arg back_lines_topic)"/>
-		<arg name="sub_topic_front" value="$(arg front_lines_topic)"/>
+		<arg name="subscribe_topic_back" value="$(arg back_lines_topic)"/>
+		<arg name="subscribe_topic_front" value="$(arg front_lines_topic)"/>
 
-		<arg name="pub_topic_left" value="$(arg left_weel_topic)"/>
-		<arg name="pub_topic_right" value="$(arg right_weel_topic)"/>
+		<arg name="publish_topic_left" value="$(arg left_weel_topic)"/>
+		<arg name="publish_topic_right" value="$(arg right_weel_topic)"/>
 
-		<arg name="change_mode_topic_name" value="$(arg change_mode_topic)"/>
-		<arg name="emer_topic_name" value="$(arg emergency_topic)"/>
-		<arg name="selected_lines_topic" value="$(arg selected_lines_topic_name)"/>
+		<arg name="change_mode_topic" value="$(arg change_mode_topic)"/>
+		<arg name="emergency_topic" value="$(arg emergency_topic)"/>
+		<arg name="rviz_topic" value="$(arg selected_lines_topic_name)"/>
 
-	    <arg name="robot_mode" value="$(arg mode)"/>
+	    <arg name="mode" value="$(arg mode)"/>
 
-	    <arg name="robot_number_lines" value="$(arg number_lines)"/>
-	    <arg name="robot_turn_times" value="$(arg turn_times)"/>
-	    <arg name="control_sleep_time_ms" value="$(arg sleep_time_ms)"/>
+	    <arg name="number_lines" value="$(arg number_lines)"/>
+	    <arg name="turn_times" value="$(arg turn_times)"/>
+	    <arg name="sleep_time_ms" value="$(arg sleep_time_ms)"/>
 
-	    <arg name="robot_max_velocity" value="$(arg max_velocity)"/>
-	    <arg name="robot_body_size" value="$(arg body_size)"/>
+	    <arg name="max_velocity" value="$(arg max_velocity)"/>
+	    <arg name="body_size" value="$(arg body_size)"/>
 
-    	<arg name="global_frame" value="$(arg rviz_frame)"/>
+    	<arg name="rviz_frame" value="$(arg rviz_frame)"/>
 
 	</include>
-
-	<node name="robot_pose" pkg="engrais_gazebo" type="robot_get_pose">
-		<param name="arq_name" type="string" value="$(arg position_file)"/>
-	</node>
 
 </launch>

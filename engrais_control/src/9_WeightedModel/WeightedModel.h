@@ -32,7 +32,7 @@ class WeightedModel{ //Class to combine models into a "Center Of Mass" model
         //------------------------------------------------------------------------------------------------
         WeightedModel(); //Default Constructor
         //------------------------------------------------------------------------------------------------
-        WeightedModel(const Model & m, bool isFrontMsg = true); //Constructor using a model
+        WeightedModel(const Model & m, const bool isFrontMsg = true); //Constructor using a model
         //------------------------------------------------------------------------------------------------
         WeightedModel(const double aa, const double bb); //Constructor to assign slope and intercept
 
@@ -48,11 +48,11 @@ class WeightedModel{ //Class to combine models into a "Center Of Mass" model
         //################################################################################################
 
         //------------------------------------------------------------------------------------------------
-        void assignPoints(const Model & m, bool isFrontMsg = true); //Assign points to weighted model
+        void assignPoints(const Model & m, const bool isFrontMsg = true); //Assign points to weighted model
         //------------------------------------------------------------------------------------------------
         bool checkIfSameModel(const Model & m) const; //Check if the two models are approximately the same
         //------------------------------------------------------------------------------------------------
-        void fuseModels(const Model & m, bool isFrontMsg = true); //Fuse two models
+        void fuseModels(const Model & m, const bool isFrontMsg = true); //Fuse two models
         //------------------------------------------------------------------------------------------------
         Model toModel() const; //Converts to regular model
 
@@ -67,7 +67,7 @@ class WeightedModel{ //Class to combine models into a "Center Of Mass" model
 //--------------------------------------------------------------------------------------------------------
 inline WeightedModel::WeightedModel() : cont(2,0) {} //Default Constructor
 //--------------------------------------------------------------------------------------------------------
-inline WeightedModel::WeightedModel(const Model & m, bool isFrontMsg) : a(m.getSlope()), b(m.getIntercept()), cont(2,0) { this->assignPoints(m, isFrontMsg); this->cont[isFrontMsg] = 1; } //Constructor using a model
+inline WeightedModel::WeightedModel(const Model & m, const bool isFrontMsg) : a(m.getSlope()), b(m.getIntercept()), cont(2,0) { this->assignPoints(m, isFrontMsg); this->cont[isFrontMsg] = 1; } //Constructor using a model
 //--------------------------------------------------------------------------------------------------------
 inline WeightedModel::WeightedModel(const double aa, const double bb) : a(aa), b(bb), cont(2,0) {} //Constructor to assign slope and intercept
 

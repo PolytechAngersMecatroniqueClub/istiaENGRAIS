@@ -79,7 +79,7 @@ def main():
 		movementRange = [1, 8]
 
 	elif(environment == "engrais4"):
-		fig.update_xaxes(range=[-2.0, 30.0])
+		fig.update_xaxes(range=[-2.0, 27.0])
 		fig.update_yaxes(range=[-1.0, 5.5])
 		maxX = 23.0
 		maxY = 3.5
@@ -112,6 +112,10 @@ def main():
 	fig.add_trace(go.Scatter(x=red_plant_pos_x, y=red_plant_pos_y, marker_color='rgba(200, 0, 0, .8)', name="Weed"))
 	fig.add_trace(go.Scatter(x=green_plant_pos_x, y=green_plant_pos_y, marker_color='rgba(0, 200, 0, .8)', name ="Plants"))
 	fig.update_traces(mode='markers', marker_line_width=1.5, marker_size=4)
+
+	#plts = fig
+	
+	#plts.write_image(output_directory + "/Plants_" + environment + ".png")
 
 	resume_file = open_file(output_directory + "/" + algorithm + "_" + environment + "_results.csv", "w") # ~/<path>/engrais4/Pearl/Pearl_results_0.csv
 	resume_file.write("iteration;Mean Err^2;Mean Points;Mean Exec Time(ms)\n")
@@ -178,7 +182,8 @@ def main():
 
 		resume_file.write(str(i) + ";" + str(sum(err) / len(err)) + ";" + str(nPointsSum/float(cont)) + ";" + str(execTimeSum/float(cont)) + "\n")
 
-	fig.write_image(output_directory + "/" + algorithm + "_" + environment + ".svg")
+	fig.show()
+	fig.write_image(output_directory + "/" + algorithm + "_" + environment + ".png")
 
 	#fig.show()
 

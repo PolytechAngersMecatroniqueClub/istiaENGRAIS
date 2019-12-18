@@ -166,7 +166,7 @@ std::pair<std::vector<Model>, std::vector<bool>> RobotControl::findBestModels() 
     double minErr = MAX_DBL; //Stores minimum error
     int minErrPos = MAX_INT; //Stores minimum error position
 
-    for(double delta = 0.05; findCont < 1 && delta < 0.3; delta += 0.05){ //Increment delta until something is found
+    for(double delta = 0.05; findCont < 1 && delta <= 0.3; delta += 0.05){ //Increment delta until something is found
         findCont = newSlope = 0;
 
         for(int i = 0; i < selected.size(); i++){ //For each selected model position
