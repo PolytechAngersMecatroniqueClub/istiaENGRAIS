@@ -36,7 +36,7 @@ do
 
 		mkdir -p "$baseDir/$resultsDir/$environment/$algo"
 
-		./resultAnalysis.py "$algo" "$environment" "$baseDir/$simResDir" "$baseDir/$resultsDir/$environment/$algo" "$baseDir/$plantsDir" "$numIterations"
+		python3 .resultAnalysis.py "$algo" "$environment" "$baseDir/$simResDir" "$baseDir/$resultsDir/$environment/$algo" "$baseDir/$plantsDir" "$numIterations"
 
 		printf "OK\n"
 	done
