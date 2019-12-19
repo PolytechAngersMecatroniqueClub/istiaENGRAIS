@@ -60,6 +60,7 @@ To use all ROS nodes and liberaries created, we have a few settings to make.
 
     7) Copy the binaries in folder "~/Downloads/fuzzylite-6.0-linux64/fuzzylite-6.0/fuzzylite/release/bin/" to "~/catkin_ws/src/istiaENGRAIS/engrais_control/src/.fuzzylite-6.0/bin/"
 
+
     8) Build everything
         ~$ cd catkin_ws/
         ~/catkin_ws$ catkin_make 
@@ -69,8 +70,10 @@ To use all ROS nodes and liberaries created, we have a few settings to make.
         source ~/catkin_ws/devel/setup.bash 
 
         IP=`hostname -I`
-        
-        export ROS_MASTER_IP=192.168.10.105
+
+        IP=`echo "$IP" | cut -d' ' -f 1`
+
+        export ROS_MASTER_IP=$IP
         export ROS_MASTER_URI=http://$ROS_MASTER_IP:11311
         export ROS_IP=$IP
 
