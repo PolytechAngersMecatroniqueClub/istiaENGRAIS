@@ -71,43 +71,27 @@ and then run it with ./simulation.sh All the results will be saved in <catkin_ws
 
 To get the graph analysis you will have to install:
   1) Miniconda using the installer found in https://docs.conda.io/en/latest/miniconda.html
-
+        \***WARNING**\* Say "no" when the installer asks "Do you wish the installer to initialize Miniconda3 by running conda init?"
+        
   2) Plotly : conda install -c plotly plotly=4.2.1
 
   3) Orca : conda install -c plotly plotly-orca psutil requests
+  
+  4) Pip : sudo apt-get install python-pip
 
-  4) These libraries:
+  5) These libraries:
 ```
 sudo apt -y install libgconf2-4
 sudo apt install libcanberra-gtk-module libcanberra-gtk3-module
+pip install plotly
+pip install cufflinks
 ```
 
-Then, reopen terminal and run ./analysis.sh All the graphs will be saved in <catkin_ws_name>/src/Results. The folder Plants Position has the plants positions for engrais3 and 4, and the folder Analysis results will have all the graphs
-
-Then, reopen terminal and run ./analysis.sh All the graphs will be saved in <catkin_ws_name>/src/Results. The folder Plants Position has the plants positions for engrais3 and 4, and the folder Analysis results will have all the graphs
+Then, reopen terminal, run **export PATH="$HOME/miniconda3/bin:$PATH"** or wherever you installed miniconda, then run ./analysis.sh. All the graphs will be saved in <catkin_ws_name>/src/Results. The folder Plants Position has the plants positions for engrais3 and 4, and the folder Analysis results will have all the graphs
 
 \***WARNING**\*
 
-Conda will add some lines to ~/.bashrc that will interfere with ROS, thus they CANNOT run at the same time. The best solotion is to comment the section :
-
-    # >>> conda initialize >>>
-    # !! Contents within this block are managed by 'conda init' !!
-    __conda_setup="$('/home/laris/miniconda3/bin/conda' 'shell.bash' 'hook' 2> /dev/null)"
-    if [ $? -eq 0 ]; then
-        eval "$__conda_setup"
-    else
-        if [ -f "/home/laris/miniconda3/etc/profile.d/conda.sh" ]; then
-            . "/home/laris/miniconda3/etc/profile.d/conda.sh"
-        else
-            export PATH="/home/laris/miniconda3/bin:$PATH"
-        fi
-    fi
-    unset __conda_setup
-    # <<< conda initialize <<<
-
-
-With this selection commented, ROS will run normally. If you want to run the analysis script, you will have to either uncomment those lines or run the export line before running the script.
-
+Conda PATH will interfere with ROS, thus they CANNOT run at the same time. Every time you want to run the analysis script, you will have to run **export PATH="$HOME/miniconda3/bin:$PATH"**
 
 # engrais_control
 
