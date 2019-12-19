@@ -90,7 +90,7 @@ pip install plotly
 pip install cufflinks
 ```
 
-Then, reopen terminal, run **export PATH="$HOME/miniconda3/bin:$PATH"** or wherever you installed miniconda, then run ./analysis.sh. All the graphs will be saved in <catkin_ws_name>/src/Results. The folder Plants Position has the plants positions for engrais3 and 4, and the folder Analysis results will have all the graphs
+Then, reopen terminal, run **export PATH="$HOME/miniconda3/bin:$PATH"** or where you installed miniconda, then run ./analysis.sh. All the graphs will be saved in <catkin_ws_name>/src/Results. The folder Plants Position has the plants positions for engrais3 and 4, and the folder Analysis results will have all the graphs
 
 \***WARNING**\*
 
