@@ -1,7 +1,3 @@
-
-
-
-
 # ENGRAIS Master
 This repository contains all the packages to simulate and control a robot through an unknown field, using LIDAR sensors.
 
