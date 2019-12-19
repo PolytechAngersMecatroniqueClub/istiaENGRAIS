@@ -69,4 +69,4 @@ printf "\nsource ~/catkin_ws/devel/setup.bash" >> ~/.bashrc
 
 rm -rf ~/temp
 
-source ~/catkin_ws/devel/setup.bash
+source /opt/ros/melodic/setup.bash

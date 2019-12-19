@@ -25,7 +25,6 @@ To use all ROS nodes and liberaries created, we have a few settings to make.
     4) Clone the git repository inside the workspace and change to the "raspberry_pi" branch
         ~$ cd catkin_ws/src/
         ~/catkin_ws/src$ git clone https://github.com/PolytechAngersMecatroniqueClub/istiaENGRAIS.git
-        ~/catkin_ws/src$ git checkout raspberry_pi
 
     5) In directory ~/catkin_ws/src/istiaENGRAIS/engrais_control/src/.fuzzylite-6.0 copy fuzzylite-6.0-linux64.zip to ~/Downloads and extract it
 
@@ -43,6 +42,14 @@ To use all ROS nodes and liberaries created, we have a few settings to make.
     9) Using ~$ gedit .bashrc add the following lines to the end of it :
         source /opt/ros/melodic/setup.bash
         source ~/catkin_ws/devel/setup.bash 
+
+        IP=`hostname -I`
+
+        IP=`echo "$IP" | cut -d' ' -f 1`
+
+        export ROS_MASTER_IP=$IP
+        export ROS_MASTER_URI=http://$ROS_MASTER_IP:11311
+        export ROS_IP=$IP
 
 # Gazebo Setup
 
