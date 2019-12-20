@@ -82,13 +82,21 @@ Now your pc should be able to launch ENGRAIS' ROS nodes
 # Network Setup
 To be able to launch ROS nodes remotely, some configurations must be made to the ssh.
 
-In your pc, run
+Firstly, ROS requires verified ssh connections, to do this you should delete the ~/.ssh folder, then run
 
     ~$ ssh -oHostKeyAlgorithms='ssh-rsa' username@IP
 
 for each one of the connected devices. In our case it had to be done to all 4 Raspberry Pi and the Jetson TX2.
 
 This proceadure must be repeated in every other device if you want to launch ROS nodes from everywhere.
+
+Secondly, since ROS skipks executing ~/.bashrc, you need to create a config.sh file somewhere in the remote machine. In this repository, this file is already at istiaENGRAIS/config/config.sh, having as content:
+
+```
+export ROS_IP=`hostname -I`
+. ~/catkin_ws/devel/setup.sh
+exec "$@"
+```
 
 # Jetson TX2 Ubuntu Installation
 To install Jetson's OS, you will need to connect your turned off jetson to another PC using the Micro USB port, and connect it to a monitor using the HDMI port. 
