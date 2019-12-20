@@ -186,6 +186,12 @@ link_directories(./src/.fuzzylite-6.0/bin/)
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
 
+add_executable(robot_filter robot_filter.cpp
+    src/1_Point/Point.cpp
+    src/3_Utility/Utility.cpp
+)
+target_link_libraries(robot_filter ${catkin_LIBRARIES})
+
 
 add_executable(robot_findlines robot_findlines.cpp
     src/1_Point/Point.cpp

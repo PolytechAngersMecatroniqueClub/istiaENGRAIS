@@ -7,15 +7,28 @@
 
 	<!--> Nodes Names <-->
     <arg name="findlines_node" default="engrais_findlines_back"/>
+    <arg name="filter_node" default="engrais_filter_back"/>
 	<arg name="sick_node" default="sick_back_rpi_3"/>
 
 	<!--> ROS Topic Names <-->
-	<arg name="scan_topic_name" default="/lidar_points/scan_back"/>
+	<arg name="scan_topic_name" default="/lidar_points/raw_scan_back"/>
+	<arg name="filtered_topic_name" default="/lidar_points/filtered_scan_back"/>
 	<arg name="lines_topic_name" default="/lines/lines_back"/>
 
 	<!--> Rviz Frame <-->
 	<arg name="rviz_frame" default="laser_back"/>
 
+	<!--> Filter Arguments <-->
+	<arg name="radius_minimum" default="0.55"/>
+	<arg name="radius_maximum" default="INFINITY"/>
+
+	<arg name="box_x_minimum" default="0.0"/>
+	<arg name="box_x_maximum" default="INFINITY"/>
+
+	<arg name="box_y_minimum" default="-INFINITY"/>
+	<arg name="box_y_maximum" default="INFINITY"/>
+
+	
 	<!--> Findlines Arguments <-->
 	<arg name="algorithm" default="RubyGeneticOnePointPosNeg"/>
     <arg name="emer_topic_name" default="none"/>
@@ -29,12 +42,23 @@
 	    <arg name="IP_Lidar" value="$(arg lidar_IP)"/>
 
 	    <arg name="findlines_node_name" value="$(arg findlines_node)"/>
+		<arg name="filter_node_name" default="$(arg filter_node)"/>
 	    <arg name="sick_node_name" value="$(arg sick_node)"/>
 
 	    <arg name="scan_topic" value="$(arg scan_topic_name)"/>
+	    <arg name="filtered_topic" value="$(arg filtered_topic_name)"/>
 	    <arg name="lines_topic" value="$(arg lines_topic_name)"/>
 
 	    <arg name="rviz_frame_name" value="$(arg rviz_frame)"/>
+
+		<arg name="radius_min" value="$(arg radius_minimum)"/>
+		<arg name="radius_max" value="$(arg radius_maximum)"/>
+
+		<arg name="box_x_min" value="$(arg box_x_minimum)"/>
+		<arg name="box_x_max" value="$(arg box_x_maximum)"/>
+
+		<arg name="box_y_min" value="$(arg box_y_minimum)"/>
+		<arg name="box_y_max" value="$(arg box_y_maximum)"/>
 	    
 	    <arg name="used_algorithm" value="$(arg algorithm)"/>
         <arg name="emer_topic" value="$(arg emer_topic_name)"/>

@@ -4,16 +4,33 @@
 	<!--> Lidar IP <-->
 	<arg name="IP_Lidar" default="192.168.10.112"/>
 
+
 	<!--> Node Name <-->
 	<arg name="findlines_node_name" default="default_findlines"/>
+	<arg name="filter_node_name" default="default_filter"/>
 	<arg name="sick_node_name" default="default_sick_tim"/>
 
+
 	<!--> ROS Topic Names <-->
-	<arg name="scan_topic" default="default/lidar_points"/>
+	<arg name="scan_topic" default="default/raw_lidar_points"/>
+	<arg name="filtered_topic" default="default/filtered_lidar_points"/>
 	<arg name="lines_topic" default="default/found_lines"/>
+
 
 	<!--> Rviz Frame Name <-->
 	<arg name="rviz_frame_name" default="laser_front"/>
+
+
+	<!--> Filter Arguments <-->
+	<arg name="radius_min" default="0.55"/>
+	<arg name="radius_max" default="INFINITY"/>
+
+	<arg name="box_x_min" default="0.0"/>
+	<arg name="box_x_max" default="INFINITY"/>
+
+	<arg name="box_y_min" default="-INFINITY"/>
+	<arg name="box_y_max" default="INFINITY"/>
+
 
 	<!--> Find Lines Arguments <-->
 	<arg name="used_algorithm" default="RubyGeneticOnePointPosNeg"/>
@@ -30,9 +47,25 @@
 	</include>
 
 
-    <!--> Launch Findlines node <-->
-	<node name="$(arg findlines_node_name)" pkg="engrais_control" type="robot_findlines" output="screen">
+    <!--> Launch Filter node <-->
+	<node name="$(arg filter_node_name)" pkg="engrais_control" type="robot_filter" output="screen">
 		<param name="subscribe_topic" type="string" value="$(arg scan_topic)"/>
+		<param name="publish_topic" type="string" value="$(arg filtered_topic)"/>
+
+		<param name="radius_minimum" type="double" value="$(arg radius_min)"/>
+		<param name="radius_maximum" type="double" value="$(arg radius_max)"/>
+
+		<param name="box_x_minimum" type="double" value="$(arg box_x_min)"/>
+		<param name="box_x_maximum" type="double" value="$(arg box_x_max)"/>
+
+		<param name="box_y_minimum" type="double" value="$(arg box_y_min)"/>
+		<param name="box_y_maximum" type="double" value="$(arg box_y_max)"/>
+	</node>
+
+
+    <!--> Launch Findlines node <-->
+	<node name="$(arg findlines_node_name)" pkg="engrais_control" type="robot_findlines">
+		<param name="subscribe_topic" type="string" value="$(arg filtered_topic)"/>
 		<param name="publish_topic" type="string" value="$(arg lines_topic)"/>
 
 		<param name="rviz_frame" type="string" value="$(arg rviz_frame_name)"/>

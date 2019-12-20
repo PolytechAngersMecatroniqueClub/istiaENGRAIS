@@ -1,25 +1,31 @@
 <?xml version="1.6" ?>
 <launch>
-
-    <!-- IP Values -->
+	
+	<!--> Periferals IPs <-->
     <arg name="rasp3_IP" default="192.168.10.103" />
     <arg name="rasp4_IP" default="192.168.10.104" />
 
-    <arg name="back_Lidar_IP" default="192.168.10.111"/>
-	<arg name="front_Lidar_IP" default="192.168.10.112"/>
+	<arg name="back_lidar_IP" default="192.168.10.111"/>
+	<arg name="front_lidar_IP" default="192.168.10.112"/>
 
 
-	<!-- Node Names -->
+	<!--> Nodes Names <-->
 	<arg name="back_sick_node_name" default="sick_back_rpi_3"/>
 	<arg name="front_sick_node_name" default="sick_front_rpi_4"/>
+
+	<arg name="back_filter_node_name" default="engrais_filter_back"/>
+	<arg name="front_filter_node_name" default="engrais_filter_front"/>
 
 	<arg name="back_findlines_node_name" default="engrais_findlines_back"/>
 	<arg name="front_findlines_node_name" default="engrais_findlines_front"/>
 
 
-	<!-- ROS Topics -->
-	<arg name="back_scan_topic" default="/lidar_points/scan_back"/>
-	<arg name="front_scan_topic" default="/lidar_points/scan_front"/>
+	<!--> ROS Topic Names <-->
+	<arg name="back_scan_topic" default="/lidar_points/raw_scan_back"/>
+	<arg name="front_scan_topic" default="/lidar_points/raw_scan_front"/>
+
+	<arg name="back_filtered_topic" default="/lidar_points/filtered_scan_back"/>
+	<arg name="front_filtered_topic" default="/lidar_points/filtered_scan_front"/>
 
 	<arg name="back_lines_topic" default="/lines/lines_back"/>
 	<arg name="front_lines_topic" default="/lines/lines_front"/>
@@ -27,30 +33,51 @@
     <arg name="emer_topic_name" default="none"/>
 
 
-	<!-- Rviz Frame Names -->
+	<!--> Rviz Frame <-->
 	<arg name="back_rviz_frame" default="laser_back"/>
 	<arg name="front_rviz_frame" default="laser_front"/>
+
+
+	<!--> Filter Arguments <-->
+	<arg name="radius_minimum" default="0.55"/>
+	<arg name="radius_maximum" default="INFINITY"/>
+
+	<arg name="box_x_minimum" default="0.0"/>
+	<arg name="box_x_maximum" default="INFINITY"/>
+
+	<arg name="box_y_minimum" default="-INFINITY"/>
+	<arg name="box_y_maximum" default="INFINITY"/>
 
 
 	<!--> Findlines Arguments <-->
 	<arg name="algorithm" default="RubyGeneticOnePointPosNeg"/>
     <arg name="output_file" default="none"/>
-	
 
-	<!-- Connect to Rasp3 -->
+
  	<machine name="rasp3" address="$(arg rasp3_IP)" user="engrais" password="engrais" env-loader="~/catkin_ws/src/istiaENGRAIS/config/config.sh" default="true"/>
 
 	<include file="$(find engrais_control)/launch/findlines.launch">
 
-	    <arg name="IP_Lidar" value="$(arg back_Lidar_IP)"/>
+	    <arg name="IP_Lidar" value="$(arg back_lidar_IP)"/>
 
 	    <arg name="findlines_node_name" value="$(arg back_findlines_node_name)"/>
+		<arg name="filter_node_name" default="$(arg back_filter_node_name)"/>
 	    <arg name="sick_node_name" value="$(arg back_sick_node_name)"/>
 
 	    <arg name="scan_topic" value="$(arg back_scan_topic)"/>
+	    <arg name="filtered_topic" value="$(arg back_filtered_topic)"/>
 	    <arg name="lines_topic" value="$(arg back_lines_topic)"/>
 
 	    <arg name="rviz_frame_name" value="$(arg back_rviz_frame)"/>
+
+		<arg name="radius_min" value="$(arg radius_minimum)"/>
+		<arg name="radius_max" value="$(arg radius_maximum)"/>
+
+		<arg name="box_x_min" value="$(arg box_x_minimum)"/>
+		<arg name="box_x_max" value="$(arg box_x_maximum)"/>
+
+		<arg name="box_y_min" value="$(arg box_y_minimum)"/>
+		<arg name="box_y_max" value="$(arg box_y_maximum)"/>
 	    
 	    <arg name="used_algorithm" value="$(arg algorithm)"/>
         <arg name="emer_topic" value="$(arg emer_topic_name)"/>
@@ -59,25 +86,36 @@
 	</include>
 
 
- 	<!-- Connect to Rasp4 -->
  	<machine name="rasp4" address="$(arg rasp4_IP)" user="engrais" password="engrais" env-loader="~/catkin_ws/src/istiaENGRAIS/config/config.sh" default="true"/>
 
 	<include file="$(find engrais_control)/launch/findlines.launch">
 
-	    <arg name="IP_Lidar" value="$(arg front_Lidar_IP)"/>
+	    <arg name="IP_Lidar" value="$(arg front_lidar_IP)"/>
 
 	    <arg name="findlines_node_name" value="$(arg front_findlines_node_name)"/>
-	    <arg name="sick_node_name" value="$(arg front_sick_node_name)"/>
+		<arg name="filter_node_name" default="$(arg front_filter_node_name"/>
+	    <arg name="sick_node_name" value="$(arg front_sick_node_name"/>
 
 	    <arg name="scan_topic" value="$(arg front_scan_topic)"/>
+	    <arg name="filtered_topic" value="$(arg front_filtered_topic)"/>
 	    <arg name="lines_topic" value="$(arg front_lines_topic)"/>
 
 	    <arg name="rviz_frame_name" value="$(arg front_rviz_frame)"/>
+
+		<arg name="radius_min" value="$(arg radius_minimum)"/>
+		<arg name="radius_max" value="$(arg radius_maximum)"/>
+
+		<arg name="box_x_min" value="$(arg box_x_minimum)"/>
+		<arg name="box_x_max" value="$(arg box_x_maximum)"/>
+
+		<arg name="box_y_min" value="$(arg box_y_minimum)"/>
+		<arg name="box_y_max" value="$(arg box_y_maximum)"/>
 	    
 	    <arg name="used_algorithm" value="$(arg algorithm)"/>
         <arg name="emer_topic" value="$(arg emer_topic_name)"/>
 	    <arg name="output_file_name" value="$(arg output_file)"/>
 
 	</include>
+
 
 </launch>
