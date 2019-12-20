@@ -36,7 +36,7 @@ struct Message{
 };
 
 Message message;
-
+int counter = 0;
 
 //--------------------------------------------------------------------------------------------------------
 ros::Time lastMsg; //Store last time
@@ -92,8 +92,8 @@ void sendSpeed(){ //Send wheel target speed
             ROS_ERROR("UNABLE TO WAKE THE WHEELS");
             exit(-2);
         }
-
-        if((back_port_name != "none" || back_wheel->getStateOfCharge() != -1) && (front_port_name != "none" || front_wheel->getStateOfCharge() != -1)) //Sends message to both wheels in order to wake them
+        
+        if((back_port_name == "none" || back_wheel->getStateOfCharge() != -1) && (front_port_name == "none" || front_wheel->getStateOfCharge() != -1)) //Sends message to both wheels in order to wake them
             break;
 
         ros::Duration(0.05).sleep(); //Sleep 50ms
