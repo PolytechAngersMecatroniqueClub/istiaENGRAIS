@@ -5,6 +5,7 @@
 #include <string>
 #include <iostream>
 #include <ros/ros.h>
+#include <stdexcept>
 #include "serial/serial.h"
 
 class EzWheelSerial{
@@ -38,9 +39,9 @@ class EzWheelSerial{
 	private:
 
 		//################################################################################################
-
+		int listenResponse(uint8_t* frame); //Listens and builds response frame, -1 if it fails
 		//------------------------------------------------------------------------------------------------
-		uint8_t addCRC(uint8_t* frame, const size_t size); //Calculates Frame CRC 
+		uint8_t calculateCRC(uint8_t* frame, const size_t size); //Calculates Frame CRC 
 		//------------------------------------------------------------------------------------------------
 		void print_frame(const uint8_t * frame, uint8_t size); //Print frame for debugging
 

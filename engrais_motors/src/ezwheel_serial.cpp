@@ -1,6 +1,6 @@
 #include "ezwheel_serial.h"
 
-
+using namespace std;
 //########################################################################################################
 
 //--------------------------------------------------------------------------------------------------------
@@ -22,7 +22,7 @@ EzWheelSerial::EzWheelSerial(const std::string port_name, const int baud, const 
     }
 }
 //--------------------------------------------------------------------------------------------------------
-EzWheelSerial::~EzWheelSerial(){ //Destructor to destroy pointer
+EzWheelSerial::~EzWheelSerial(){ //Destructor to destroy pointer 
     if(this->my_serial != NULL){
         this->my_serial->close();
         delete this->my_serial; 
@@ -31,14 +31,39 @@ EzWheelSerial::~EzWheelSerial(){ //Destructor to destroy pointer
 
 //########################################################################################################
 
+int EzWheelSerial::listenResponse(uint8_t* frame){ //Listens and builds response frame, -1 if it fails 
+    uint8_t synch = 0; //Synchronization Byte
+
+    while(synch != 0xAA){ //Wait for 0xAA
+        if(!this->my_serial->read(&synch, 1)){ //Read 1 byte
+            return -1; //If it didn't receive data, return -1 
+        }
+
+        frame[0] = synch; //Store 0xAA to frame[0]
+    }
+
+    if(!this->my_serial->read(&synch, 1)){ //Read 1 byte
+        return -1; //If it didn't receive data, return -1 
+    }
+
+    frame[1] = synch; //Store frame size
+
+    uint8_t response[synch]; //Declare message body
+    if(this->my_serial->read(response, synch) != synch){ //Read X bytes
+        return -1;
+    }
+
+    for(int i = 0; i < synch; i++) //Writes all bytes into response frame
+        frame[i + 2] = response[i];
+
+    return synch + 2; //Return size
+}
 //--------------------------------------------------------------------------------------------------------
-uint8_t EzWheelSerial::addCRC(uint8_t frame[], const size_t size){ //Calculates Frame CRC 
+uint8_t EzWheelSerial::calculateCRC(uint8_t frame[], const size_t size){ //Calculates Frame CRC 
     uint8_t crc = 0; //Initialize Sum
-    for(size_t i = 2; i < size-1; i++){ //Skip the header (first 2 bytes) and the crc (last byte)
+    for(size_t i = 2; size > 0 && i < size-1; i++){ //Skip the header (first 2 bytes) and the crc (last byte)
         crc += frame[i];
     }
-    frame[size-1] = crc; //Assign to last value
-
     return crc;
 }
 
@@ -46,8 +71,8 @@ uint8_t EzWheelSerial::addCRC(uint8_t frame[], const size_t size){ //Calculates 
 
 //--------------------------------------------------------------------------------------------------------
 void EzWheelSerial::initSetRequest(uint8_t request[], const uint8_t data_size){ //Initialize common bytes for set requests 
-    request[0]  = 0xAA; //Reserved
-    request[1]  = 0x0F + data_size;
+    request[0]  = 0xAA; //Synchronization
+    request[1]  = 0x0F + data_size; //Frame size
     request[2]  = 0x08; //Reserved
 
     request[3]  = 0x10 + this->frame_count; //Frame identification
@@ -62,9 +87,6 @@ void EzWheelSerial::initSetRequest(uint8_t request[], const uint8_t data_size){ 
 
     request[9]  = 0x02; // Set request type
     request[10] = 0x05; // Reserved
-
-    if(++this->frame_count >= 0x10) //Reset counter if more than 16
-        this->frame_count = 0x00;
 }
 //--------------------------------------------------------------------------------------------------------
 bool EzWheelSerial::setWheelSpeed(const double speed, const bool isClockwise){ //Sends Velocity Target 
@@ -91,32 +113,32 @@ bool EzWheelSerial::setWheelSpeed(const double speed, const bool isClockwise){ /
     request[17] = 0x00; //Don't change
     request[18] = speedBytes & 0xFF; // 8 Least significant bits for velocity
     request[19] = (speedBytes >> 8) & 0x3; // 2 most significant bits for velocity
-    this->addCRC(request, req_size); //Calculates CRC
+    request[req_size - 1] = this->calculateCRC(request, req_size); //Calculates CRC
 
     this->my_serial->write(request, req_size); //Sends signal
-    //cout << "Send: " << endl;
-    //print_frame(request, req_size);
 
-    size_t resp_size = 9;
-    uint8_t response[resp_size];
+    size_t resp_size = 9; // 9 + data size
+    uint8_t response[resp_size] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-    int recv = this->my_serial->read(response, resp_size); //Waits for response
-    //cout << "Received: " << recv << endl;
-    //print_frame(response, recv);  
+    int recv = this->listenResponse(response);
 
-    if(recv == resp_size && response[6] != 0xFF && request[3] == response[3]){ //If response frame was ok, then communication was a success
-        return true;
+    if(recv == resp_size && response[6] != 0xFF && request[3] == response[3] && this->calculateCRC(response, recv) == response[recv - 1]){
+        //If response size has the correct size, session ID, Return Type and CRC are correct, then this is a valid response
+        if(++this->frame_count >= 0x10)
+            this->frame_count = 0x00;
+
+        return true; //If communication was OK, return absolute speed
     }
 
-    return false; //If error frame, returns 0
+    return false; //If error frame, returns 0*/
 }
 
 //########################################################################################################
 
 //--------------------------------------------------------------------------------------------------------
 void EzWheelSerial::initGetRequest(uint8_t request[]){ //Initialize common bytes for get requests 
-    request[0]  = 0xAA; // Reserved
-    request[1]  = 0x0F; // Reserved
+    request[0]  = 0xAA; // Synchronization
+    request[1]  = 0x0F; // Frame Size
     request[2]  = 0x08;
 
     request[3]  = 0x10 + this->frame_count; //Frame identification
@@ -130,16 +152,13 @@ void EzWheelSerial::initGetRequest(uint8_t request[]){ //Initialize common bytes
     request[9]  = 0x01; // Get request type
 
     request[10] = 0x05; // Reserved
-
-    if(++this->frame_count >= 0x10)
-        this->frame_count = 0x00;
 }
 //--------------------------------------------------------------------------------------------------------
 double EzWheelSerial::getWheelSpeed(){ //Get absolute wheel speed, -1 if communication failed 
     size_t req_size = 17; //Declare frame
-    uint8_t request[req_size];
+    uint8_t request[req_size] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-    this->initGetRequest(request); //Initialize common bytes
+    this->initGetRequest(request); //Initialize common byts
 
     request[11] = 0x00; //Data address
     request[12] = 0x00; //Data address
@@ -147,28 +166,30 @@ double EzWheelSerial::getWheelSpeed(){ //Get absolute wheel speed, -1 if communi
     request[14] = 0x08; //Data address
 
     request[15] = 0x02; //Data Size
-    this->addCRC(request, req_size); //Calculates CRC
-    
-    this->my_serial->write(request, req_size); //Send frame
-    //cout << "Send: " << endl;
-    //print_frame(request, req_size);
+    request[req_size - 1] = this->calculateCRC(request, req_size); //Calculates CRC
 
-    size_t resp_size = 11; //9 + data_size;
-    uint8_t response[resp_size];
+    this->my_serial->write(request, req_size); //Sends frame
 
-    int recv = this->my_serial->read(response, resp_size); //Wait for response
-    //cout << "Received: " << recv << endl;
-    //print_frame(response, recv);  
+    size_t resp_size = 11; // 9 + data size
+    uint8_t response[resp_size] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-    if(recv == resp_size && response[6] != 0xFF && request[3] == response[3]) //If communication was OK, return speed
-        return (response[9] << 8 | response[8])/10.0;
+    int recv = this->listenResponse(response);
 
-    return -1; //If not, returns -1
+    if(recv == resp_size && response[6] != 0xFF && request[3] == response[3] && this->calculateCRC(response, recv) == response[recv - 1]){
+        //If response size has the correct size, session ID, Return Type and CRC are correct, then this is a valid response
+        if(++this->frame_count >= 0x10)
+            this->frame_count = 0x00;
+
+        return (response[9] << 8 | response[8])/10.0; //If communication was OK, return absolute speed
+    }
+
+    return -1;
 }
 //--------------------------------------------------------------------------------------------------------
 int EzWheelSerial::getStateOfCharge(){ //Get wheel's battery level 
     size_t req_size = 17; //Declare frame
-    uint8_t request[req_size];
+    uint8_t request[req_size] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
     this->initGetRequest(request); //Initialize common byts
 
     request[11] = 0x01; // Data address
@@ -177,23 +198,24 @@ int EzWheelSerial::getStateOfCharge(){ //Get wheel's battery level
     request[14] = 0x06; // Data address
 
     request[15] = 0x01; // Data Size
-    this->addCRC(request, req_size); //Calculates CRC
+    request[req_size - 1] = this->calculateCRC(request, req_size); //Calculates CRC
 
     this->my_serial->write(request, req_size); //Sends frame
-    //cout << "Send: " << endl;
-    //print_frame(request, req_size);
 
-    size_t resp_size = 10; //9 + data_size;
-    uint8_t response[resp_size];
+    size_t resp_size = 10; // 9 + data size
+    uint8_t response[resp_size] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-    int recv = this->my_serial->read(response, resp_size); //Wait for response
-    //cout << "Received: " << recv << endl;
-    //print_frame(response, recv);  
+    int recv = this->listenResponse(response);
 
-    if(recv == resp_size && response[6] != 0xFF && request[3] == response[3]) //If communication was OK, return battery level in %
-        return (int)response[8];
-    
-    return -1; //If not, return -1
+    if(recv == resp_size && response[6] != 0xFF && request[3] == response[3] && this->calculateCRC(response, recv) == response[recv - 1]){
+        //If response size has the correct size, session ID, Return Type and CRC are correct, then this is a valid response
+        if(++this->frame_count >= 0x10)
+            this->frame_count = 0x00;
+
+        return (int)response[8]; //If communication was OK, return battery level in %
+    }
+
+    return -1;
 }
 
 //########################################################################################################
