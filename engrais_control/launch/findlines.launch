@@ -31,6 +31,8 @@
 	<arg name="box_y_min" default="-INFINITY"/>
 	<arg name="box_y_max" default="INFINITY"/>
 
+	<arg name="filter_operator" default="union"/>
+
 
 	<!--> Find Lines Arguments <-->
 	<arg name="used_algorithm" default="RubyGeneticOnePointPosNeg"/>
@@ -60,6 +62,9 @@
 
 		<param name="box_y_minimum" type="double" value="$(arg box_y_min)"/>
 		<param name="box_y_maximum" type="double" value="$(arg box_y_max)"/>
+
+		<param name="operator" type="string" value="$(arg filter_operator)"/>
+
 	</node>
 
 

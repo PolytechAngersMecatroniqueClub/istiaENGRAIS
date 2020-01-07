@@ -48,6 +48,7 @@
 	<arg name="box_y_minimum" default="-INFINITY"/>
 	<arg name="box_y_maximum" default="INFINITY"/>
 
+	<arg name="operator" default="union"/>
 
 	<!--> Findlines Arguments <-->
 	<arg name="algorithm" default="RubyGeneticOnePointPosNeg"/>
@@ -78,6 +79,8 @@
 
 		<arg name="box_y_min" value="$(arg box_y_minimum)"/>
 		<arg name="box_y_max" value="$(arg box_y_maximum)"/>
+
+		<arg name="filter_operator" value="$(arg operator)"/>
 	    
 	    <arg name="used_algorithm" value="$(arg algorithm)"/>
         <arg name="emer_topic" value="$(arg emer_topic_name)"/>
@@ -110,6 +113,8 @@
 
 		<arg name="box_y_min" value="$(arg box_y_minimum)"/>
 		<arg name="box_y_max" value="$(arg box_y_maximum)"/>
+
+		<arg name="filter_operator" value="$(arg operator)"/>
 	    
 	    <arg name="used_algorithm" value="$(arg algorithm)"/>
         <arg name="emer_topic" value="$(arg emer_topic_name)"/>

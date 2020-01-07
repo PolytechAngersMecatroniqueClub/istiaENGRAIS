@@ -13,7 +13,7 @@ ros::NodeHandle* node;
 
 ros::Publisher pub;
 
-string node_name;
+string node_name, groupOperator;
 
 double radius_min, radius_max, box_x_minimum, box_x_maximum, box_y_minimum, box_y_maximum;
 
@@ -28,7 +28,10 @@ sensor_msgs::LaserScan filterMsg(const sensor_msgs::LaserScan & msg, const doubl
 	for(int i = 0; i < filteredMsg.ranges.size(); i++){ //For each ray
 		Point p(filteredMsg.ranges[i] * cos(angle), filteredMsg.ranges[i] * sin(angle));
 
-		if(!((box_x_min <= p.getX() && p.getX() <= box_x_max && box_y_min <= p.getY() && p.getY() <= box_y_max) || (r_min <= filteredMsg.ranges[i] && filteredMsg.ranges[i] <= r_max))){
+		if(groupOperator == "union" && !((box_x_min <= p.getX() && p.getX() <= box_x_max && box_y_min <= p.getY() && p.getY() <= box_y_max) || (r_min <= filteredMsg.ranges[i] && filteredMsg.ranges[i] <= r_max))){
+			filteredMsg.ranges[i] = INFINITY;
+		}
+		else if(groupOperator == "intersection" && !((box_x_min <= p.getX() && p.getX() <= box_x_max && box_y_min <= p.getY() && p.getY() <= box_y_max) && (r_min <= filteredMsg.ranges[i] && filteredMsg.ranges[i] <= r_max))){
 			filteredMsg.ranges[i] = INFINITY;
 		}
 
@@ -66,6 +69,9 @@ int main(int argc, char **argv){ //Main function
     node->param<double>(node_name + "/box_y_minimum", box_y_minimum, -INFINITY);
     node->param<double>(node_name + "/box_y_maximum", box_y_maximum, INFINITY);
 
+    node->param<string>(node_name + "/operator", groupOperator, "union");
+
+    cout << "GROUP OPERATOR: " << groupOperator << endl;
 
     ros::Subscriber sub = node->subscribe(sub_topic, 10, OnRosMsg); // /engrais/laser_front/scan or /engrais/laser_back/scan
     pub = node->advertise<sensor_msgs::LaserScan>(pub_topic, 10);// /engrais/laser_front/lines or /engrais/laser_back/lines
