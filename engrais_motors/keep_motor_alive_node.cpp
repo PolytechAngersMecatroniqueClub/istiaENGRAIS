@@ -33,7 +33,7 @@ int main(int argc, char **argv){
     EzWheelSerial wheel(port_name, baud, timeout, bytesize, parity, stop_bit, flowctrl); //Sets serial communication for back wheel
 
     while(ros::ok()){
-        int r = wheel.getStateOfCharge();
+        auto r = wheel.setWheelSpeed(1,false);
         cout << "Return : " << r << endl << endl << endl;
         ros::Duration(0.05).sleep();
     }

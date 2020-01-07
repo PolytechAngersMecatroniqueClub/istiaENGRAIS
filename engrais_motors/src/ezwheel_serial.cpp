@@ -1,6 +1,6 @@
 #include "ezwheel_serial.h"
 
-using namespace std;
+
 //########################################################################################################
 
 //--------------------------------------------------------------------------------------------------------
@@ -116,11 +116,18 @@ bool EzWheelSerial::setWheelSpeed(const double speed, const bool isClockwise){ /
     request[req_size - 1] = this->calculateCRC(request, req_size); //Calculates CRC
 
     this->my_serial->write(request, req_size); //Sends signal
+    //cout << "Sent: " << endl;
+    //print_frame(request, req_size);
 
     size_t resp_size = 9; // 9 + data size
     uint8_t response[resp_size] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
     int recv = this->listenResponse(response);
+    /*cout << "Received: " << recv << endl;
+
+    if(recv != -1){
+        print_frame(response, recv);
+    }*/
 
     if(recv == resp_size && response[6] != 0xFF && request[3] == response[3] && this->calculateCRC(response, recv) == response[recv - 1]){
         //If response size has the correct size, session ID, Return Type and CRC are correct, then this is a valid response
@@ -169,11 +176,18 @@ double EzWheelSerial::getWheelSpeed(){ //Get absolute wheel speed, -1 if communi
     request[req_size - 1] = this->calculateCRC(request, req_size); //Calculates CRC
 
     this->my_serial->write(request, req_size); //Sends frame
+    //cout << "Sent: " << endl;
+    //print_frame(request, req_size);
 
     size_t resp_size = 11; // 9 + data size
     uint8_t response[resp_size] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
     int recv = this->listenResponse(response);
+    /*cout << "Received: " << recv << endl;
+
+    if(recv != -1){
+        print_frame(response, recv);
+    }*/
 
     if(recv == resp_size && response[6] != 0xFF && request[3] == response[3] && this->calculateCRC(response, recv) == response[recv - 1]){
         //If response size has the correct size, session ID, Return Type and CRC are correct, then this is a valid response
@@ -201,12 +215,18 @@ int EzWheelSerial::getStateOfCharge(){ //Get wheel's battery level
     request[req_size - 1] = this->calculateCRC(request, req_size); //Calculates CRC
 
     this->my_serial->write(request, req_size); //Sends frame
+    //cout << "Sent: " << endl;
+    //print_frame(request, req_size);
 
     size_t resp_size = 10; // 9 + data size
     uint8_t response[resp_size] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
     int recv = this->listenResponse(response);
+    /*cout << "Received: " << recv << endl;
 
+    if(recv != -1){
+        print_frame(response, recv);
+    }*/
     if(recv == resp_size && response[6] != 0xFF && request[3] == response[3] && this->calculateCRC(response, recv) == response[recv - 1]){
         //If response size has the correct size, session ID, Return Type and CRC are correct, then this is a valid response
         if(++this->frame_count >= 0x10)
