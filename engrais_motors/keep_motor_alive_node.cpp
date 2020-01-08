@@ -17,6 +17,11 @@ int main(int argc, char **argv){
 
     std::string port_name = "/dev/ttyUSB0";
 
+    string node_name = ros::this_node::getName();
+    int address = 0;
+
+    node.param<int>(node_name + "/addr", address, 8);
+
     int baud = 57600;
     //node.getParam("baud", baud);
     int timeout = 50;
@@ -30,12 +35,19 @@ int main(int argc, char **argv){
     int stop_bit = 1;
     //node.getParam("stop_bit", stop_bit);
 
+    uint8_t addr = (uint8_t)address;
+
     EzWheelSerial wheel(port_name, baud, timeout, bytesize, parity, stop_bit, flowctrl); //Sets serial communication for back wheel
 
+    double vel = 0;
     while(ros::ok()){
-        auto r = wheel.setWheelSpeed(1,false);
-        cout << "Return : " << r << endl << endl << endl;
+        auto r = wheel.getWheelStructure();
+        auto r2 = wheel.setWheelSpeed(1,1);
+        cout << "Return : " << r << endl << endl<< endl;//", r2: " << r2 << ", vel: " << vel << endl << endl << endl;
         ros::Duration(0.05).sleep();
+
+        if(vel < 26)
+            vel += 0.1;
     }
     return 0;
 }

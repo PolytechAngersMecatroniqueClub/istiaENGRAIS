@@ -1,6 +1,6 @@
 #include "ezwheel_serial.h"
 
-
+using namespace std;
 //########################################################################################################
 
 //--------------------------------------------------------------------------------------------------------
@@ -236,6 +236,53 @@ int EzWheelSerial::getStateOfCharge(){ //Get wheel's battery level
     }
 
     return -1;
+}
+//--------------------------------------------------------------------------------------------------------
+WheelStatusStructure EzWheelSerial::getWheelStructure(){ //Get wheel's status structure
+    WheelStatusStructure r;
+
+    size_t req_size = 17; //Declare frame
+    uint8_t request[req_size] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
+    this->initGetRequest(request); //Initialize common byts
+
+    request[11] = 0x00; // Data address
+    request[12] = 0x00; // Data address
+    request[13] = 0x04; // Data address
+    request[14] = 0x06; //Data address
+
+    request[15] = 0x04; // Data Size
+    request[req_size - 1] = this->calculateCRC(request, req_size); //Calculates CRC
+
+    this->my_serial->write(request, req_size); //Sends frame
+    cout << "Sent: " << endl;
+    print_frame(request, req_size);
+
+    size_t resp_size = 13; // 9 + data size
+    uint8_t response[resp_size] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
+    int recv = this->listenResponse(response);
+    cout << "Received: " << recv << endl;
+
+    if(recv != -1){
+        print_frame(response, recv);
+    }
+    if(recv == resp_size && response[6] != 0xFF && request[3] == response[3] && this->calculateCRC(response, recv) == response[recv - 1]){
+        //If response size has the correct size, session ID, Return Type and CRC are correct, then this is a valid response
+        if(++this->frame_count >= 0x10)
+            this->frame_count = 0x00;
+
+        r.direction = response[8] & 0b0011;
+        r.type = (response[8] & 0b0100) >> 2;
+        r.brakeMode = (response[8] & 0b10000) >> 4;
+        r.torque = (response[9] & 0xFF) << 2 | (response[8] & 0xC0) >> 6;
+        r.speed = (response[10] & 0xFF) | (response[11] & 0b11) << 2;
+        r.error = (response[11] & 0b100) >> 2;
+        r.chargeStatus = (response[11] & 0b11000) >> 3;
+        r.batteryStatus = (response[11] & 0b1100000) >> 5;
+    }
+
+    return r;
 }
 
 //########################################################################################################
