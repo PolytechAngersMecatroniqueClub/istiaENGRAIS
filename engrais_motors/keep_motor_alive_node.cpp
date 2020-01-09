@@ -41,12 +41,12 @@ int main(int argc, char **argv){
 
     double vel = 0;
     while(ros::ok()){
-        auto r = wheel.getWheelStructure();
-        auto r2 = wheel.setWheelSpeed(1,1);
-        cout << "Return : " << r << endl << endl<< endl;//", r2: " << r2 << ", vel: " << vel << endl << endl << endl;
+        auto r = wheel.getStateOfCharge();
+        auto r2 = wheel.setWheelSpeed(vel,1);
+        cout << "Battery : " << r << endl << endl<< endl;//", r2: " << r2 << ", vel: " << vel << endl << endl << endl;
         ros::Duration(0.05).sleep();
 
-        if(vel < 26)
+        if(vel < 7)
             vel += 0.1;
     }
     return 0;
