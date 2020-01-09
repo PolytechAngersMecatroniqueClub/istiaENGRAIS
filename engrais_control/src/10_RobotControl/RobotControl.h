@@ -70,6 +70,8 @@ class RobotControl{ //Robot Control Class
 
         //------------------------------------------------------------------------------------------------
         void clearModels(); //Clear all weighted models
+        //------------------------------------------------------------------------------------------------
+        void reset(); //Clear all weighted models
 
         //################################################################################################
 
@@ -144,6 +146,8 @@ inline RobotControl::RobotControl(const int NLines, const int NTimesTurn, const 
 
 //--------------------------------------------------------------------------------------------------------
 inline void RobotControl::clearModels(){ models.clear(); } //Clear all weighted models
+//--------------------------------------------------------------------------------------------------------
+inline void RobotControl::reset(){ si = SavedInfos(); models.clear(); selected.clear(); frontPoints.clear(); backPoints.clear(); } //Clear all weighted models
 
 #endif
 //********************************************************************************************************

@@ -11,16 +11,18 @@
 
 #include <ros/ros.h>
 #include <std_msgs/Float64.h>
+#include <std_msgs/String.h>
 
 using namespace std;
 
 double max_vel;
-string node_name, emergecy_topic;
+string node_name, emergecy_topic, change_mode_topic, mode = "manual";
 
 ros::Publisher pubLeftControl;
 ros::Publisher pubRightControl;
-ros::Publisher pubEmergency;
 
+ros::Publisher pubEmergency;
+ros::Publisher pubModeChange;
 
 //--------------------------------------------------------------------------------------------------------
 void RestoreKeyboardBlocking(struct termios *initial_settings){
@@ -89,6 +91,14 @@ void sendSpeedCommand(){
                 }
             }
         }
+        else if(c == ' '){
+            mode = mode == "manual" ? "automatic" : "manual";
+
+            std_msgs::String stringData;
+
+            stringData.data = mode;
+            pubModeChange.publish(stringData);
+        }
         //cout << "Left: " << leftCmd.data << ", Right: " << rightCmd.data << endl;
         if(int(c) == 3)
             break;
@@ -127,14 +137,21 @@ void sendSpeedCommand(){
         leftCmd.data *= max_vel;
         rightCmd.data *= max_vel;
 
-        pubLeftControl.publish(leftCmd);
-        pubRightControl.publish(rightCmd);
+        if(mode == "manual"){
+            pubLeftControl.publish(leftCmd);
+            pubRightControl.publish(rightCmd);
+        }
 
         if (emergecy_topic != "none")
             pubEmergency.publish(emerg);
 
         loop_rate.sleep();  
     }
+
+    emerg.data = true;
+
+    if (emergecy_topic != "none")
+        pubEmergency.publish(emerg);
 }
 
 
@@ -148,12 +165,13 @@ int main(int argc, char **argv){
     
     node_name = ros::this_node::getName();
 
-    if(!node.getParam(node_name + "/pub_topic_right", pub_topic_right) || !node.getParam(node_name + "/pub_topic_left", pub_topic_left) || !node.getParam(node_name + "/desired_velocity", max_vel)){ //Get mandatory parameters
-        ROS_ERROR_STREAM("Argument missing in node " << node_name << ", expected pub_topic_right, 'pub_topic_left' and 'desired_velocity'.\n\n");
-        return -1;
-    }
-
+    node.param<string>(node_name + "/pub_topic_right", pub_topic_right, "default/right_wheel_control_signal");
+    node.param<string>(node_name + "/pub_topic_left", pub_topic_left, "default/left_wheel_control_signal");
+    
     node.param<string>(node_name + "/emergency_topic", emergecy_topic, "none");
+    node.param<string>(node_name + "/mode_change_topic", change_mode_topic, "/default/mode");
+
+    node.param<double>(node_name + "/desired_velocity", max_vel, 1.0);
     
     struct termios term_settings;
     SetKeyboardNonBlock(&term_settings);
@@ -161,6 +179,8 @@ int main(int argc, char **argv){
     pubLeftControl = node.advertise<std_msgs::Float64>(pub_topic_left, 10);
     pubRightControl = node.advertise<std_msgs::Float64>(pub_topic_right, 10);
     
+    pubModeChange = node.advertise<std_msgs::String>(change_mode_topic, 10);
+
     if (emergecy_topic != "none")
         pubEmergency = node.advertise<std_msgs::Bool>(emergecy_topic, 10);
 

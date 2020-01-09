@@ -71,8 +71,6 @@ int main(int argc, char **argv){ //Main function
 
     node->param<string>(node_name + "/operator", groupOperator, "union");
 
-    cout << "GROUP OPERATOR: " << groupOperator << endl;
-
     ros::Subscriber sub = node->subscribe(sub_topic, 10, OnRosMsg); // /engrais/laser_front/scan or /engrais/laser_back/scan
     pub = node->advertise<sensor_msgs::LaserScan>(pub_topic, 10);// /engrais/laser_front/lines or /engrais/laser_back/lines
 

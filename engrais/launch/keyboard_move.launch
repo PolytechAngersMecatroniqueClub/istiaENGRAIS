@@ -12,7 +12,7 @@
     <arg name="keyaboard_move_node_name" default="keyaboard_move_node" />
     <arg name="right_motor_node_name" default="right_side_wheels" />
     <arg name="left_motor_node_name" default="left_side_wheels" />
-
+    <arg name="change_mode_topic" default="settings/change_mode_topic"/>
 
     <!-- ROS Topics -->
     <arg name="right_wheel_control_signal" default="wheel_command/right_wheel" />
@@ -99,6 +99,8 @@
     <node name="$(arg keyaboard_move_node_name)" pkg="engrais" type="robot_keyboard_move" output="screen">
         <param name="pub_topic_right" type="string" value="$(arg right_wheel_control_signal)"/>
         <param name="pub_topic_left" type="string" value="$(arg left_wheel_control_signal)"/>
+
+        <param name="mode_change_topic" type="string" value="$(arg change_mode_topic)"/>
 
         <param name="emergency_topic" type="string" value="$(arg emer_topic_name)"/>
         <param name="desired_velocity" type="double" value="$(arg velocity)"/>

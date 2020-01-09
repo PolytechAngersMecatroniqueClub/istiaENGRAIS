@@ -60,7 +60,8 @@ void RobotControl::backLinesMessage(const visualization_msgs::Marker & msg){ //R
 
 
 //--------------------------------------------------------------------------------------------------------
-std::pair<std::vector<Model>, std::vector<bool>> RobotControl::selectModels(){ //Finds and calculates best models 
+std::pair<std::vector<Model>, std::vector<bool>> RobotControl::selectModels(){ //Finds and calculates best models
+
     if(this->si.cont < 10){ //If counter < 10, continue to initialize
         selected = initializeRobot(); //Searches for models that are coherent with initialization phase
 
