@@ -35,7 +35,7 @@ ros::Publisher pubLeftControl;
 ros::Publisher pubRightControl;
 ros::Publisher pubSelectedLines;
 
-RobotControl* control;
+RobotControl* control = NULL;
 
 ros::NodeHandle* node;
 
@@ -105,7 +105,10 @@ void ModeChangeMsg(const std_msgs::String & msg){ //Message to change mode
     if(msg.data != "automatic"){ //If received something that is not automatic
         mode = "manual"; //Change to manual
     }
-    else{
+    else{   
+        if(mode == "manual")
+            control->reset();
+
         mode = "automatic"; //Change to automatic
     }
 
@@ -178,29 +181,27 @@ void emergencyThread(){ //Emergency exit
 //--------------------------------------------------------------------------------------------------------
 void controlThread(){ //Control Thread 
     while(ros::ok()){ //While the program runs
-
-        critSec.lock(); //Lock critical section
-        control->clearModels(); //Clear all models
-        critSec.unlock(); //Unlock critical section
-
-        usleep(SLEEP_TIME * TO_MILLISECOND); //Sleep for a time
-
-        critSec.lock();  //Lock critical section
-
-        std::pair<vector<Model>, std::vector<bool>> selectedModels = control->selectModels(); //Select models
-        sendLine(selectedModels); //Send selected lines
-        pair<std_msgs::Float64, std_msgs::Float64> wheels = control->getWheelsCommand(); //Calculates wheels' commands
-        
-        critSec.unlock(); //Unlock
-
         if(mode == "automatic"){
+            critSec.lock(); //Lock critical section
+            control->clearModels(); //Clear all models
+            critSec.unlock(); //Unlock critical section
+
+            usleep(SLEEP_TIME * TO_MILLISECOND); //Sleep for a time
+
+            critSec.lock();  //Lock critical section
+
+            std::pair<vector<Model>, std::vector<bool>> selectedModels = control->selectModels(); //Select models
+            sendLine(selectedModels); //Send selected lines
+            pair<std_msgs::Float64, std_msgs::Float64> wheels = control->getWheelsCommand(); //Calculates wheels' commands
+            
+            critSec.unlock(); //Unlock
+        
             pubLeftControl.publish(wheels.first); //Send left wheel command
             pubRightControl.publish(wheels.second); //Send right wheel command
         }
-
-        cout << "First: " << wheels.first.data << ", second: " << wheels.second.data << endl;
-
-        cout << "----------------------------------------------------------" << endl; 
+        else{
+            usleep(SLEEP_TIME * TO_MILLISECOND); //Sleep for a time
+        }
     }
 }
 
