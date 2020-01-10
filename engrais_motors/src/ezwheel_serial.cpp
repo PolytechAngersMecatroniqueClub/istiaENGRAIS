@@ -276,7 +276,7 @@ WheelStatusStructure EzWheelSerial::getWheelStructure(){ //Get wheel's status st
         r.type = (response[8] & 0b0100) >> 2;
         r.brakeMode = (response[8] & 0b10000) >> 4;
         r.torque = (response[9] & 0xFF) << 2 | (response[8] & 0xC0) >> 6;
-        r.speed = (response[10] & 0xFF) | (response[11] & 0b11) << 2;
+        r.speed = ((response[10] & 0xFF) | (response[11] & 0b11) << 2)/10.0;
         r.error = (response[11] & 0b100) >> 2;
         r.chargeStatus = (response[11] & 0b11000) >> 3;
         r.batteryStatus = (response[11] & 0b1100000) >> 5;
