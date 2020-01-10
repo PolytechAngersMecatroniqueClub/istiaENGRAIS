@@ -43,7 +43,7 @@ int main(int argc, char **argv){
     while(ros::ok()){
         auto recv = wheel.setWheelSpeed(vel,1);
         auto bat = wheel.getStateOfCharge();
-        auto wheelStatus = wheel.getWheelStructure(addr);
+        auto wheelStatus = wheel.getWheelStructure();
 
         /*cout << "Set Wheel speed vel: " << vel << ", rcv = " << recv << ", Battery = " << bat << endl << endl << wheelStatus << endl << endl << endl;
 
