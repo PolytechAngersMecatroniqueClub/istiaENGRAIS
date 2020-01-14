@@ -191,13 +191,19 @@ void controlThread(){ //Control Thread
             critSec.lock();  //Lock critical section
 
             std::pair<vector<Model>, std::vector<bool>> selectedModels = control->selectModels(); //Select models
+            Utility::printVector(selectedModels.first);
+
             sendLine(selectedModels); //Send selected lines
-            pair<std_msgs::Float64, std_msgs::Float64> wheels = control->getWheelsCommand(); //Calculates wheels' commands
+            pair<std_msgs::Float64, std_msgs::Float64> wheels = control->getWheelsCommand(selectedModels.first); //Calculates wheels' commands
             
             critSec.unlock(); //Unlock
         
             pubLeftControl.publish(wheels.first); //Send left wheel command
             pubRightControl.publish(wheels.second); //Send right wheel command
+
+            cout << "Left Wheel: " << wheels.first << ", Right wheel: " << wheels.second << endl << endl;
+
+            cout << "------------------------------------------------------------" << endl << endl;
         }
         else{
             ros::Duration((double)SLEEP_TIME / (double)TO_MILLISECOND).sleep();

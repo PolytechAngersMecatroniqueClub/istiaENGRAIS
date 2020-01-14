@@ -36,6 +36,7 @@
 
 	<!--> Find Lines Arguments <-->
 	<arg name="used_algorithm" default="RubyGeneticOnePointPosNeg"/>
+	<arg name="time_factor" default="0.5"/>
     <arg name="emer_topic" default="none"/>
     <arg name="output_file_name" default="none"/>
 
@@ -50,7 +51,7 @@
 
 
     <!--> Launch Filter node <-->
-	<node name="$(arg filter_node_name)" pkg="engrais_control" type="robot_filter" output="screen">
+	<node name="$(arg filter_node_name)" pkg="engrais_control" type="robot_filter">
 		<param name="subscribe_topic" type="string" value="$(arg scan_topic)"/>
 		<param name="publish_topic" type="string" value="$(arg filtered_topic)"/>
 
@@ -69,7 +70,7 @@
 
 
     <!--> Launch Findlines node <-->
-	<node name="$(arg findlines_node_name)" pkg="engrais_control" type="robot_findlines">
+	<node name="$(arg findlines_node_name)" pkg="engrais_control" type="robot_findlines" output="screen">
 		<param name="subscribe_topic" type="string" value="$(arg filtered_topic)"/>
 		<param name="publish_topic" type="string" value="$(arg lines_topic)"/>
 
@@ -78,6 +79,8 @@
 
         <param name="emergency_topic" type="string" value="$(arg emer_topic)"/>
         <param name="arq_name" type="string" value="$(arg output_file_name)"/>
+
+        <param name="recalculate_time_factor" type="double" value="$(arg time_factor)"/>
 	</node>
 
 </launch>

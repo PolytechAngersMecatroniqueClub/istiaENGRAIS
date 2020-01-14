@@ -90,7 +90,7 @@ class RobotControl{ //Robot Control Class
         //------------------------------------------------------------------------------------------------
         std::pair<std::vector<Model>, std::vector<bool>> selectModels(); //Return best models and if it was estimated or found inside findLines' messages
         //------------------------------------------------------------------------------------------------
-        std::pair<std_msgs::Float64, std_msgs::Float64> getWheelsCommand(); //Get wheel command from finite state machine
+        std::pair<std_msgs::Float64, std_msgs::Float64> getWheelsCommand(std::vector<Model> & selectedModels); //Get wheel command from finite state machine
 
         //################################################################################################
 
@@ -147,7 +147,7 @@ inline RobotControl::RobotControl(const int NLines, const int NTimesTurn, const 
 //--------------------------------------------------------------------------------------------------------
 inline void RobotControl::clearModels(){ models.clear(); } //Clear all weighted models
 //--------------------------------------------------------------------------------------------------------
-inline void RobotControl::reset(){ si = SavedInfos(); models.clear(); selected.clear(); frontPoints.clear(); backPoints.clear(); } //Clear all weighted models
+inline void RobotControl::reset(){ si = SavedInfos(); models.clear(); selected.clear(); frontPoints.clear(); backPoints.clear(); robotFSM.reset(); } //Clear all weighted models
 
 #endif
 //********************************************************************************************************

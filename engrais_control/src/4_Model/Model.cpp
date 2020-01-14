@@ -111,11 +111,11 @@ void Model::pushPoint(const Point & p) { //Interts a point in the model
 //--------------------------------------------------------------------------------------------------------
 std::ostream & operator << (std::ostream &out, const Model &m){ //Print model 
     out << "Model: [ a: " << m.a << ", b: " << m.b << ", energy: " << m.energy << ", parallelCount: " << m.parallelCount << ", fitness: " << m.fitness;
-    out << "\n\t Positive Points: " << m.positivePoints << ", Points: Vector {";
+    out << ", Points: " << m.positivePoints << " ] ";/*<< ", Points: Vector {";
     for(int i = 0; i < m.pointsInModel.size(); i++){
         out << "\n\t\t [" << i << "]: " << m.pointsInModel[i];
     }
-    out << "\n\t }\n       ]";
+    out << "\n\t }\n       ]";*/
 
     return out; 
 }

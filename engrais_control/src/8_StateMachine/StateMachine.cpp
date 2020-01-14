@@ -1,7 +1,7 @@
 //********************************************************************************************************
 #include "StateMachine.h"
 
-
+using namespace std;
 //--------------------------------------------------------------------------------------------------------
 StateMachine::Transition::Transition(const States & st, const std::pair<double, double> & out){ //Constructor 
     this->nextState = st; //Stores next state
@@ -13,7 +13,7 @@ StateMachine::Transition::Transition(const States & st, const std::pair<double, 
 //--------------------------------------------------------------------------------------------------------
 std::pair<double, double> StateMachine::makeTransition(std::vector<Model> & models, const double dist){ //Compute a transition from the State machine 
     Transition stateTransition(INITIAL, std::pair<double, double> (0,0)); //Initialize Transition
-
+    //Utility::printVector(models);
     switch(this->currentState){
         case INITIAL:
             stateTransition = initialStateRoutine(models); //Initial State
@@ -68,7 +68,7 @@ std::pair<double, double> StateMachine::makeTransition(std::vector<Model> & mode
 
     }
     
-    //std::cout << "Error count: " << errorCount <<", Next State: " << stateTransition.nextState << std::endl << std::endl;
+    std::cout << "Error count: " << errorCount << ", Current State: " << currentState << ", Next State: " << stateTransition.nextState << std::endl << std::endl;
 
     this->currentState = stateTransition.nextState; //Goes to next state
     return stateTransition.output; //Returns wheels command
@@ -139,13 +139,13 @@ StateMachine::Transition StateMachine::forwardStateRoutine(std::vector<Model> & 
         else{
             std::pair<double, double> controls = this->fuzzy.getOutputValues(calculateRatio(m), calculateAngle(m)); //Calculates fuzzy output
             
-            return Transition(FORWARD, std::pair<double, double> (controls.first, controls.second));
+            return Transition(FORWARD, std::pair<double, double> (MAX_VEL*controls.first, MAX_VEL*controls.second));
         }
     }
 
     else{ //If nothing was found
         distanceCounter = 0; //Reset distance counter
-        if(++this->errorCount == 3) //Increment error counter
+        if(++this->errorCount == 20) //Increment error counter
             return Transition(END, std::pair<double, double> (0,0)); //If 3 errors in a row, stop
 
         return Transition(FORWARD, std::pair<double, double> (0,0)); //Continue
@@ -193,12 +193,12 @@ StateMachine::Transition StateMachine::backwardStateRoutine(std::vector<Model> &
         else{
             std::pair<double, double> controls = this->fuzzy.getOutputValues(calculateRatio(m), -calculateAngle(m)); //Calculates fuzzy output
             
-            return Transition(BACKWARD, std::pair<double, double> (-controls.first, -controls.second));
+            return Transition(BACKWARD, std::pair<double, double> (-MAX_VEL*controls.first, -MAX_VEL*controls.second));
         }
     }
     else{ //If nothing was found
         distanceCounter = 0; //Reset distance counter
-        if(++this->errorCount == 3) //Increment error counter
+        if(++this->errorCount == 20) //Increment error counter
             return Transition(END, std::pair<double, double> (0,0)); //If 3 errors in a row, stop
 
         return Transition(BACKWARD, std::pair<double, double> (0,0)); //Continue
@@ -246,7 +246,7 @@ StateMachine::Transition StateMachine::linearStopStateRoutine(std::vector<Model>
     }
 
     else{ //If nothing found
-        if(++this->errorCount == 3){ //Increment Err counter
+        if(++this->errorCount == 20){ //Increment Err counter
             first = true;
             return Transition(END, std::pair<double, double> (0,0)); //If error occurred more than 3 times, stop
         }
@@ -302,7 +302,7 @@ StateMachine::Transition StateMachine::angularStopStateRoutine(std::vector<Model
     }
 
     else{ //If nothing found
-        if(++this->errorCount == 3){ //Increment error
+        if(++this->errorCount == 20){ //Increment error
             std::cout << "Error" << std::endl << std::endl;
             first = true; //Sets flag to true again
             return Transition(END, std::pair<double, double> (0,0)); //If error occurred more than 3 times, stop
@@ -337,7 +337,7 @@ StateMachine::Transition StateMachine::leftTurnBeginStateRoutine(std::vector<Mod
     }
 
     else{ //Nothing was found
-        if(++this->errorCount == 3){ //Increment err counter
+        if(++this->errorCount == 20){ //Increment err counter
             std::cout << "Error" << std::endl << std::endl;
             return Transition(END, std::pair<double, double> (0,0)); //If error occurred more than 3 times, stop
         }
@@ -385,7 +385,7 @@ StateMachine::Transition StateMachine::leftTurnMidStateRoutine(std::vector<Model
     }
 
     else{ //Nothing was found
-        if(++this->errorCount == 3){ //Increment err counter
+        if(++this->errorCount == 20){ //Increment err counter
             std::cout << "Error" << std::endl << std::endl;
             return Transition(END, std::pair<double, double> (0,0)); //If error occurred more than 3 times, stop
         }
@@ -428,7 +428,7 @@ StateMachine::Transition StateMachine::leftTurnMergeStateRoutine(std::vector<Mod
     }
 
     else{ //Nothing was found
-        if(++this->errorCount == 3){ //Increment err counter
+        if(++this->errorCount == 20){ //Increment err counter
             std::cout << "Error" << std::endl << std::endl;
             return Transition(END, std::pair<double, double> (0,0)); //If error occurred more than 3 times, stop
         }
@@ -462,7 +462,7 @@ StateMachine::Transition StateMachine::rightTurnBeginStateRoutine(std::vector<Mo
     }
 
     else{ //Nothing was found
-        if(++this->errorCount == 3){ //Increment err counter
+        if(++this->errorCount == 20){ //Increment err counter
             std::cout << "Error" << std::endl << std::endl;
             return Transition(END, std::pair<double, double> (0,0)); //If error occurred more than 3 times, stop
         }
@@ -509,7 +509,7 @@ StateMachine::Transition StateMachine::rightTurnMidStateRoutine(std::vector<Mode
     }
 
     else{ //Nothing was found
-        if(++this->errorCount == 3){ //Increment err counter
+        if(++this->errorCount == 20){ //Increment err counter
             std::cout << "Error" << std::endl << std::endl;
             return Transition(END, std::pair<double, double> (0,0)); //If error occurred more than 3 times, stop
         }
@@ -551,7 +551,7 @@ StateMachine::Transition StateMachine::rightTurnMergeStateRoutine(std::vector<Mo
     }
 
     else{ //Nothing was found
-        if(++this->errorCount == 3){ //Increment err counter
+        if(++this->errorCount == 20){ //Increment err counter
             std::cout << "Error" << std::endl << std::endl;
             return Transition(END, std::pair<double, double> (0,0)); //If error occurred more than 3 times, stop
         }

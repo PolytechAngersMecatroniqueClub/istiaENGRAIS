@@ -33,6 +33,8 @@ Pearl* usedAlgo; //Used algorithm
 
 ofstream arq; //Output file
 
+double TIME_FACTOR;
+
 string mapName, node_name, emergecy_topic, arq_name;
 
 ros::NodeHandle* node;
@@ -152,7 +154,7 @@ void OnRosMsg(const sensor_msgs::LaserScan & msg){ //ROS message received
     ros::Duration diff = start - last; //Get elapsed time from first message
     ros::Duration elapsed_seconds; //Set 0
 
-    while(ros::ok() && elapsed_seconds.toSec() <= diff.toSec() * 0.7){ //Continue calculating until hit 70% of message period
+    while(ros::ok() && elapsed_seconds.toSec() <= diff.toSec() * TIME_FACTOR){ //Continue calculating until hit 70% of message period
         usedAlgo->populateOutliers(msg); //Populate outliers
 
         if(arq_name != "none")
@@ -198,6 +200,8 @@ int main(int argc, char **argv){ //Main function
 
     node->param<string>(node_name + "/emergency_topic", emergecy_topic, "none");
     node->param<string>(node_name + "/arq_name", arq_name, "none");
+
+    node->param<double>(node_name + "/recalculate_time_factor", TIME_FACTOR, 0.5);
 
     if(arq_name != "none"){ //Open file if necessary
         arq.open(arq_name, std::ofstream::out | std::ofstream::trunc);

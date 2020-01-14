@@ -14,7 +14,7 @@
 
 #include <FuzzyController.h>
 
-
+using namespace std;
 class StateMachine{ //Class to implement a state machine 
     private:
 
@@ -55,6 +55,8 @@ class StateMachine{ //Class to implement a state machine
     public:
         //------------------------------------------------------------------------------------------------
         StateMachine(const int NLines, const int NTimesTurn, const double MVel, const double BSize); //Default Constructor
+        //------------------------------------------------------------------------------------------------
+        void reset();
         //------------------------------------------------------------------------------------------------
         std::pair<double, double> makeTransition(std::vector<Model> & allModels, const double dist); //Compute a transition from the State machine, imagine this as a way to make this machine without a clock, and the user calls this function as a way to customize the clock frequency 
 
@@ -97,7 +99,9 @@ class StateMachine{ //Class to implement a state machine
 };
 
 //--------------------------------------------------------------------------------------------------------
-inline StateMachine::StateMachine(const int NLines, const int NTimesTurn, const double MVel, const double BSize) : NUM_OF_TIMES_TURN(NTimesTurn), MAX_VEL(MVel), BODY_SIZE(BSize), NUM_OF_LINES(NLines), tAfterStop(INITIAL, std::pair<double, double> (0,0)) {} //Initialize class members
+inline StateMachine::StateMachine(const int NLines, const int NTimesTurn, const double MVel, const double BSize) : NUM_OF_TIMES_TURN(NTimesTurn), MAX_VEL(MVel), BODY_SIZE(BSize), NUM_OF_LINES(NLines), tAfterStop(INITIAL, std::pair<double, double> (0,0)) {cout << "Max_vel: " << MAX_VEL << ", Bsize: " << BODY_SIZE << endl;} //Initialize class members
+//--------------------------------------------------------------------------------------------------------
+inline void StateMachine::reset(){errorCount = 0; currentRowPos = 1; toTurn = LEFT; currentState = lastMovement = INITIAL; tAfterStop = Transition(INITIAL, std::pair<double, double> (0,0));}
 
 #endif
 //********************************************************************************************************

@@ -52,6 +52,7 @@
 
 	<!--> Findlines Arguments <-->
 	<arg name="algorithm" default="RubyGeneticOnePointPosNeg"/>
+	<arg name="recalculate_time_factor" default="0.5"/>
     <arg name="output_file" default="none"/>
 
 
@@ -83,6 +84,7 @@
 		<arg name="filter_operator" value="$(arg operator)"/>
 	    
 	    <arg name="used_algorithm" value="$(arg algorithm)"/>
+	    <arg name="time_factor" value="$(arg recalculate_time_factor)"/>
         <arg name="emer_topic" value="$(arg emer_topic_name)"/>
 	    <arg name="output_file_name" value="$(arg output_file)"/>
 
@@ -96,8 +98,8 @@
 	    <arg name="IP_Lidar" value="$(arg front_lidar_IP)"/>
 
 	    <arg name="findlines_node_name" value="$(arg front_findlines_node_name)"/>
-		<arg name="filter_node_name" default="$(arg front_filter_node_name"/>
-	    <arg name="sick_node_name" value="$(arg front_sick_node_name"/>
+		<arg name="filter_node_name" default="$(arg front_filter_node_name)"/>
+	    <arg name="sick_node_name" value="$(arg front_sick_node_name)"/>
 
 	    <arg name="scan_topic" value="$(arg front_scan_topic)"/>
 	    <arg name="filtered_topic" value="$(arg front_filtered_topic)"/>
@@ -117,6 +119,7 @@
 		<arg name="filter_operator" value="$(arg operator)"/>
 	    
 	    <arg name="used_algorithm" value="$(arg algorithm)"/>
+	    <arg name="time_factor" value="$(arg recalculate_time_factor)"/>
         <arg name="emer_topic" value="$(arg emer_topic_name)"/>
 	    <arg name="output_file_name" value="$(arg output_file)"/>
 
