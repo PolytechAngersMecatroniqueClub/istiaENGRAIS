@@ -93,7 +93,7 @@
 
 	<!--> Findlines Arguments <-->
 	<arg name="algorithm" default="RubyGeneticOnePointPosNeg"/>
-    <arg name="recalculate_time_factor" default="0.5"/>
+    <arg name="recalculate_time_factor" default="0.0"/>
     <arg name="output_file" default="none"/>
 
 
