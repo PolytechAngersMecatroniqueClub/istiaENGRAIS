@@ -42,8 +42,8 @@
     <arg name="back_lines_topic" default="/lines/lines_back"/>
     <arg name="front_lines_topic" default="/lines/lines_front"/>
 
-    <arg name="emer_topic_name" default="none"/>
-    <arg name="change_mode_topic" default="settings/change_mode_topic"/>
+    <arg name="emer_topic_name" default="none"/> <!--> "none" to disable this function <-->
+    <arg name="change_mode_topic" default="settings/change_mode_topic"/> <!--> "none" to disable this function <-->
 
     <arg name="left_wheel_control_signal" default="/control_signal/left_wheel"/>
     <arg name="right_wheel_control_signal" default="/control_signal/right_wheel"/>
@@ -52,24 +52,24 @@
 
 
     <!--> Filter Arguments <-->
-    <arg name="radius_minimum" default="0.55"/>
-    <arg name="radius_maximum" default="3"/>
+    <arg name="radius_minimum" default="0"/> <!--> INFINITY or a number <-->
+    <arg name="radius_maximum" default="INFINITY"/> <!--> INFINITY or a number <-->
 
-    <arg name="box_x_minimum" default="0.0"/>
-    <arg name="box_x_maximum" default="50"/>
+    <arg name="box_x_minimum" default="0.0"/> <!--> INFINITY or a number <-->
+    <arg name="box_x_maximum" default="5"/> <!--> INFINITY or a number <-->
+ 
+    <arg name="box_y_minimum" default="-2"/> <!--> INFINITY or a number <-->
+    <arg name="box_y_maximum" default="2"/> <!--> INFINITY or a number <-->
 
-    <arg name="box_y_minimum" default="-3"/>
-    <arg name="box_y_maximum" default="3"/>
-
-    <arg name="operator" default="union"/>
+    <arg name="operator" default="intersection"/>
 
 
     <!-- USB Names -->
-    <arg name="right_serial_back_port" default="/dev/ttyUSB0" />
-    <arg name="right_serial_front_port" default="none" />
+    <arg name="right_serial_back_port" default="/dev/ttyUSB0" /> <!--> "none" to disable this function <-->
+    <arg name="right_serial_front_port" default="none" /> <!--> "none" to disable this function <-->
 
-    <arg name="left_serial_back_port" default="/dev/ttyUSB0" />
-    <arg name="left_serial_front_port" default="none" />
+    <arg name="left_serial_back_port" default="/dev/ttyUSB0" /> <!--> "none" to disable this function <-->
+    <arg name="left_serial_front_port" default="none" /> <!--> "none" to disable this function <-->
 
 
     <!-- Robot Side -->
@@ -102,9 +102,9 @@
 
 	<arg name="number_lines" default="4"/>
 	<arg name="turn_times" default="5"/>
-	<arg name="sleep_time_ms" default="250"/>
+	<arg name="sleep_time_ms" default="150"/>
 
-	<arg name="max_velocity" default="0.6"/>
+	<arg name="max_velocity" default="3"/>
 	<arg name="body_size" default="1.1"/>
 
 	<arg name="central_global_frame" default="body"/>
